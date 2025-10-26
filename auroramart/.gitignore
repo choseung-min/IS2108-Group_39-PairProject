@@ -10,3 +10,5 @@ venv/
 # macOS / VSCode
 .DS_Store
 .vscode/
+
+*.csv

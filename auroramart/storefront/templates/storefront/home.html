@@ -1,0 +1,129 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aurora Mart</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <style>
+    :root { --gap: 12px; --fg:#222; --muted:#666; --line:#eee; --chip:#f6f6f6; }
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial}
+    a{color:inherit;text-decoration:none}
+    header{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);z-index:20}
+    .wrap{max-width:1100px;margin:auto;padding:16px}
+    .row{display:flex;align-items:center;gap:var(--gap)}
+    .grow{flex:1}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px}
+    .brand img{height:32px;width:auto;display:block}
+    .search{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+    .search input{border:0;outline:0;width:100%;font-size:14px}
+    .navlinks{display:flex;align-items:center;gap:16px}
+    .chipbar{display:flex;flex-wrap:wrap;gap:10px;padding:12px 0}
+    .chip{background:var(--chip);border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-size:14px}
+    .toolbar{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+    .muted{color:var(--muted);font-size:14px}
+    .sort form{display:flex;align-items:center;gap:8px}
+    .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:16px}
+    @media (max-width:1024px){ .grid{grid-template-columns:repeat(3,1fr)} }
+    @media (max-width:640px){ .grid{grid-template-columns:repeat(2,1fr)} .navlinks{gap:10px} }
+    .card{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+    .card img{width:100%;aspect-ratio:1/1;object-fit:cover;background:#fafafa}
+    .card .b{padding:10px}
+    .card .name{font-size:14px;line-height:1.4;height:2.8em;overflow:hidden}
+    .price{font-weight:600;margin-top:6px}
+    .star{color:#f6b400;margin-left:6px}
+    .btn{display:inline-block;border:1px solid var(--line);padding:8px 10px;border-radius:8px;background:#fff}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="wrap row">
+    <a class="brand" href="{% url 'home' %}">
+      <img src="{% static 'img/AuroraMart Logo.png' %}" alt="Aurora Mart" />
+      <span>Aurora&nbsp;Mart</span>
+    </a>
+
+    <form class="search grow" method="get" action="{% url 'home' %}">
+      <input type="search" name="q" value="{{ q }}" placeholder="Search for products…" />
+      <button class="btn" type="submit">🔎</button>
+    </form>
+
+    <nav class="navlinks">
+      <a href="{% url 'cart' %}">Cart ({{ cart_count|default:0 }})</a>
+      {% if request.user.is_authenticated %}
+        <a href="{% url 'account' %}">Hi, {{ request.user.username }}</a>
+        <a href="{% url 'logout' %}">Logout</a>
+      {% else %}
+        <a href="{% url 'signup' %}">Sign up</a> | <a href="{% url 'login' %}">Login</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- Categories -->
+  <h2 style="margin:16px 0 4px">Categories</h2>
+  <div class="chipbar">
+    {% for c in categories %}
+      <a class="chip" href="{% url 'category' c.slug %}">{{ c.name }}</a>
+    {% empty %}
+      <span class="muted">No categories yet.</span>
+    {% endfor %}
+  </div>
+
+  <!-- Daily Discover toolbar -->
+  <div class="toolbar">
+    <h2 style="margin:0">Daily Discover</h2>
+    <div class="row" style="gap:10px">
+      <!-- Sort control (select submits GET with current q preserved) -->
+      <div class="sort">
+        <form method="get">
+          <input type="hidden" name="q" value="{{ q }}">
+          <label class="muted">Sort:</label>
+          <select name="sort" onchange="this.form.submit()">
+            <option value=""      {% if not sort %}selected{% endif %}>Relevance</option>
+            <option value="rating" {% if sort == 'rating' %}selected{% endif %}>Rating (High → Low)</option>
+            <option value="price_asc"  {% if sort == 'price_asc' %}selected{% endif %}>Price (Low → High)</option>
+            <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price (High → Low)</option>
+            <option value="new"   {% if sort == 'new' %}selected{% endif %}>Newest</option>
+          </select>
+          <noscript><button class="btn" type="submit">Sort</button></noscript>
+        </form>
+      </div>
+
+      <!-- Placeholder filter icon/button -->
+      <button class="btn" title="Filter (coming soon)">⎙ Filter</button>
+    </div>
+  </div>
+
+  <!-- Products grid (sorted by rating by default on the view) -->
+  <section class="grid">
+    {% for p in products %}
+      <article class="card">
+        <a href="{% url 'product' p.slug %}">
+          <img src="{{ p.image_url|default:'https://via.placeholder.com/400x400?text=Product' }}" alt="{{ p.name }}">
+        </a>
+        <div class="b">
+          <a class="name" href="{% url 'product' p.slug %}">{{ p.name }}</a>
+          <div class="row" style="justify-content:space-between;margin-top:6px">
+            <span class="price">${{ p.price|floatformat:2 }}</span>
+            <span class="muted">★ {{ p.rating|default:"0.0" }}</span>
+          </div>
+          <div style="margin-top:8px">
+            <form method="post" action="{% url 'cart_add' p.id %}">
+              {% csrf_token %}
+              <button class="btn" type="submit">Add to cart</button>
+            </form>
+          </div>
+        </div>
+      </article>
+    {% empty %}
+      <p class="muted">No products yet. Check back soon!</p>
+    {% endfor %}
+  </section>
+</main>
+
+</body>
+</html>
