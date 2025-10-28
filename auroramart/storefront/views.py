@@ -1,5 +1,7 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login, logout
 from .models import Product, Category
+from .forms import UserSignupForm, CustomerForm, EmailLoginForm
 
 # Create your views here.
 
@@ -35,10 +37,49 @@ def home(request, slug=None):
 
     context = {
         'categories': categories,
-        'products': products[:50],
+        'products': products[:500],
         'q': q,
         'sort': sort,
         'cart_count': request.session.get('cart_count', 0),
         'category': category,
     }
     return render(request, 'storefront/home.html', context)
+
+def signup(request):
+    # Handle GET (empty form) vs POST (submitted form)
+    if request.method == "POST":
+        uform = UserSignupForm(request.POST)
+        cform = CustomerForm(request.POST)
+        if uform.is_valid() and cform.is_valid():
+            # 1️⃣ Create the Django User
+            user = uform.save()  
+            
+            # 2️⃣ Create the Customer linked to that User
+            customer = cform.save(user=user)
+            
+            # 3️⃣ Auto-login the new user
+            login(request, user)
+
+            # 4️⃣ Redirect to homepage after success
+            return redirect("home")
+    else:
+        uform = UserSignupForm()
+        cform = CustomerForm()
+
+    # Render the signup page
+    return render(request, "storefront/signup.html", {"uform": uform, "cform": cform})
+
+def login_view(request):
+    if request.method == "POST":
+        form = EmailLoginForm(request.POST)
+        if form.is_valid():
+            user = form.cleaned_data["user"]
+            login(request, user)
+            return redirect("home")
+    else:
+        form = EmailLoginForm()
+    return render(request, "storefront/login.html", {"form": form})
+
+def logout_view(request):
+    logout(request)
+    return redirect('home')

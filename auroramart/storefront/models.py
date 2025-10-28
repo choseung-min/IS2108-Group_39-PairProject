@@ -12,6 +12,12 @@ class User(AbstractUser):
     )
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='customer')
 
+    def save(self, *args, **kwargs):
+        # auto-set admin role when creating a superuser
+        if self.is_superuser:
+            self.role = 'admin'
+        super().save(*args, **kwargs)
+
 class Customer(models.Model):
 
     HOUSEHOLD_SIZE = (
