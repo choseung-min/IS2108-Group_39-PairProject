@@ -12,7 +12,7 @@
     <a href ="{% url 'home' %}">Home</a>
     <br /><br />
     <form method="get">
-      <input type="text" name="q" value="{{ query }}" />
+      <input type="text" name="q" value="{{ query|default:'' }}" />
       <button type="submit">Search</button>
       <select name="category">
         <!-- prettier-ignore -->
@@ -47,7 +47,7 @@
         <td>{{ product.category.parent }}</td>
         <td>{{ product.category }}</td>
         <td>{% if product.is_active %}Active{% else %}Inactive{% endif %}</td>
-        <td>{{ product.price }}</td>
+        <td>${{ product.price }}</td>
         <td>{{ product.rating }}</td>
         <td>
           <a href="">Edit | </a>
