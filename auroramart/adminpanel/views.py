@@ -8,17 +8,16 @@ def home(request):
 def products(request):
     products = Product.objects.filter(is_active=True)
     query = request.GET.get('q')
-    category_id = int(request.GET.get('category')) if request.GET.get('category') else None
+    main_categories = Category.objects.filter(parent__isnull=True)
+    selected_categories = [c for c in request.GET.getlist("category") if c.strip() != ""]
 
     if query:
         products = products.filter(Q(name__icontains=query) | Q(description__icontains=query) | Q(category__name__icontains=query))
 
-    if category_id:
-        products = products.filter(category_id=category_id)
+    if selected_categories:
+        products = products.filter(Q(category_id__in=selected_categories) | Q(category__parent_id__in=selected_categories))
 
-    categories = Category.objects.all().only("id", "name")
-
-    context = {'products': products, 'query': query, 'category_id': category_id, 'categories': categories}
+    context = {'products': products, 'query': query, 'selected_categories': selected_categories, 'main_categories': main_categories}
 
     return render(request, 'adminpanel/products/product_catalogue.html', context)
 

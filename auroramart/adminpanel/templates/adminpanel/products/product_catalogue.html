@@ -9,18 +9,27 @@
   </head>
   <body>
     <h2>Product Catalogue</h2>
+    <a href ="{% url 'home' %}">Home</a>
+    <br /><br />
     <form method="get">
       <input type="text" name="q" value="{{ query }}" />
       <button type="submit">Search</button>
       <select name="category">
         <!-- prettier-ignore -->
-        {% for cat in categories %}
-          <option value="{{ cat.id }}" {% if category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+         <option value="" {% if not selected_categories %}selected{% endif %}>-- All Categories --</option>
+        {% for main in main_categories %}
+          <optgroup label ="{{ main.name }}">
+            <option value="{{ main.id }}" {% if main.id|stringformat:"s" in selected_categories %}selected{% endif %}> All {{ main.name }} </option>
+            {% for sub in main.category_set.all %}
+              <option value="{{ sub.id }}" {% if sub.id|stringformat:"s" in selected_categories %}selected{% endif %}>&nbsp;&nbsp;{{ sub.name }}</option>
+            {% endfor %}
+          </optgroup>
         {% endfor %}
       </select>
       <button type="submit">Filter</button>
+      <a href="{% url 'products' %}">Clear Filters</a>
     </form>
-    <table border="1" cellpadding="5" cellspacing="0">
+    <table border="1" cellpadding="5" cellspacing="0" style="width: 90%; margin-left: auto; margin-right: auto; margin-top: 20px;">
       <tr>
         <th>SKU</th>
         <th>Product Name</th>
@@ -35,9 +44,9 @@
       <tr>
         <td>{{ product.sku }}</td>
         <td>{{ product.name }}</td>
+        <td>{{ product.category.parent }}</td>
         <td>{{ product.category }}</td>
-        <td>{{ product.sub_category }}</td>
-        <td>{{ product.stock_status }}</td>
+        <td>{% if product.is_active %}Active{% else %}Inactive{% endif %}</td>
         <td>{{ product.price }}</td>
         <td>{{ product.rating }}</td>
         <td>
