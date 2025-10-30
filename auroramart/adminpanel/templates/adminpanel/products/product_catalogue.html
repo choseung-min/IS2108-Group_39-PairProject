@@ -9,6 +9,47 @@
   </head>
   <body>
     <h2>Product Catalogue</h2>
-    <p>This is the product catalogue page.</p>
+    <form method="get">
+      <input type="text" name="q" value="{{ query }}" />
+      <button type="submit">Search</button>
+      <select name="category">
+        <!-- prettier-ignore -->
+        {% for cat in categories %}
+          <option value="{{ cat.id }}" {% if category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit">Filter</button>
+    </form>
+    <table border="1" cellpadding="5" cellspacing="0">
+      <tr>
+        <th>SKU</th>
+        <th>Product Name</th>
+        <th>Category</th>
+        <th>Sub-category</th>
+        <th>Stock Status</th>
+        <th>Price</th>
+        <th>Rating</th>
+        <th>Actions</th>
+      </tr>
+      {% for product in products %}
+      <tr>
+        <td>{{ product.sku }}</td>
+        <td>{{ product.name }}</td>
+        <td>{{ product.category }}</td>
+        <td>{{ product.sub_category }}</td>
+        <td>{{ product.stock_status }}</td>
+        <td>{{ product.price }}</td>
+        <td>{{ product.rating }}</td>
+        <td>
+          <a href="">Edit | </a>
+          <a href="">Delete</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td style="text-align: center" colspan="8">No products found.</td>
+      </tr>
+      {% endfor %}
+    </table>
   </body>
 </html>
