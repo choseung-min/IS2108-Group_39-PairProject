@@ -3,6 +3,7 @@ from django.utils.text import slugify
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
+from decimal import Decimal
 
 # Create your models here.
 class User(AbstractUser):
@@ -110,17 +111,33 @@ class Product(models.Model):
         return self.name
 
 class Cart(models.Model):
-    customer = models.OneToOneField('Customer', on_delete=models.CASCADE)
+    customer = models.OneToOneField('Customer', on_delete=models.CASCADE, related_name='cart')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def total(self):
+        return sum((item.line_total for item in self.items.select_related('product')), Decimal('0.00'))
+    
+    @property
+    def count(self) -> int:
+        return sum(item.quantity for item in self.items.all())
 
     def __str__(self):
         return f"Cart of {self.customer.name}"
     
 class CartItem(models.Model):
-    cart = models.ForeignKey('Cart', on_delete=models.CASCADE)
+    cart = models.ForeignKey('Cart', on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey('Product', on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+    price_snapshot = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    class Meta:
+        unique_together = ('cart', 'product')
+    
+    @property
+    def line_total(self) -> Decimal:
+        return self.price_snapshot * self.quantity
 
     def __str__(self):
         return f"{self.quantity} of {self.product.name} in {self.cart.customer.name}'s cart"
