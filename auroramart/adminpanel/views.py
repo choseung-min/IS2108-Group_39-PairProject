@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from .models import Product, Category
 from django.db.models import Q
+from django.core.paginator import Paginator
 
 def home(request):
     return render(request, 'adminpanel/home_page.html')
@@ -16,8 +17,12 @@ def products(request):
 
     if selected_categories:
         products = products.filter(Q(category_id__in=selected_categories) | Q(category__parent_id__in=selected_categories))
+    
+    paginator = Paginator(products, 20)
+    page_num = request.GET.get('page')
+    page_obj = paginator.get_page(page_num)
 
-    context = {'products': products, 'query': query, 'selected_categories': selected_categories, 'main_categories': main_categories}
+    context = {'page_obj': page_obj, 'products': page_obj.object_list, 'query': query, 'selected_categories': selected_categories, 'main_categories': main_categories}
 
     return render(request, 'adminpanel/products/product_catalogue.html', context)
 
