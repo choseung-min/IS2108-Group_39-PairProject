@@ -91,7 +91,7 @@
 
     <div class="actions">
       <a class="btn" href="{% url 'home' %}">← Continue shopping</a>
-      <a class="btn p" href="#">Continue to checkout</a>
+      <a class="btn p" href="{% url 'checkout_address' %}">Continue to checkout</a>
     </div>
     {% else %}
       <p>Your cart is empty.</p>
