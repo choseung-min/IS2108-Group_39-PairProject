@@ -11,6 +11,13 @@
     <h2>Product Catalogue</h2>
     <a href ="{% url 'home' %}">Home</a>
     <br /><br />
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
     <form method="get">
       <input type="text" name="q" value="{{ query|default:'' }}" />
       <button type="submit">Search</button>
@@ -29,6 +36,28 @@
       </select>
       <!-- prettier-ignore-end -->
 
+      <select name="status_filter">
+        <option value=""> -- Product Statuses -- </option>
+        <option value="active" {% if status_filter == "active" %}selected{% endif %}> Active </option>
+        <option value="inactive" {% if status_filter == "inactive" %}selected{% endif %}> Inactive </option>
+      </select>
+      <select name="stock_filter">
+        <option value=""> -- Stock Level -- </option>
+        <option value="healthy" {% if stock_filter == "healthy" %}selected{% endif %}> Healthy </option>
+        <option value="low" {% if stock_filter == "low" %}selected{% endif %}> Low Stock </option>
+        <option value="out" {% if stock_filter == "out" %}selected{% endif %}> Out of Stock </option>
+      </select>
+      <select name="rating_filter">
+        <option value="">-- Rating Filter --</option>
+        <option value="4" {% if rating_filter == "4" %}selected{% endif %}>&gt;4 stars</option>
+        <option value="3" {% if rating_filter == "3" %}selected{% endif %}>&gt;3 stars</option>
+        <option value="2" {% if rating_filter == "2" %}selected{% endif %}>&gt;2 stars</option>
+        <option value="1" {% if rating_filter == "1" %}selected{% endif %}>&gt;1 star</option>
+      </select>
+
+      <input type="number" name="min_price" placeholder="Min Price" step="0.01" min="0" value="{{ min_price|default:'' }}" />
+      <input type="number" name="max_price" placeholder="Max Price" step="0.01" min="0" value="{{ max_price|default:'' }}" />
+
       <button type="submit">Filter</button>
       <a href="{% url 'products' %}">Clear Filters</a>
     </form>
@@ -36,41 +65,43 @@
     <span>Showing Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
     <div class="pagination">
       {% if page_obj.has_previous %}
-        <a href="?{% if query %}q={{ query }}&{% endif %}{% for cat in selected_categories %}category={{ cat }}&{% endfor %}page={{ page_obj.previous_page_number }}">Prev</a>
+        <a href="?{{ query_string }}&page={{ page_obj.previous_page_number }}">Prev</a>
       {% endif %}
       {% for num in page_obj.paginator.page_range %}
         {% if num == page_obj.number %}
           <span>{{ num }}</span>
         {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-          <a href="?{% if query %}q={{ query }}&{% endif %}{% for cat in selected_categories %}category={{ cat }}&{% endfor %}page={{ num }}">{{ num }}</a>
+          <a href="?{{ query_string }}&page={{ num }}">{{ num }}</a>
         {% endif %}
       {% endfor %}
       {% if page_obj.has_next %}
-        <a href="?{% if query %}q={{ query }}&{% endif %}{% for cat in selected_categories %}category={{ cat }}&{% endfor %}page={{ page_obj.next_page_number }}">Next</a>
+        <a href="?{{ query_string }}&page={{ page_obj.next_page_number }}">Next</a>
       {% endif %}
     </div>
     <div style="width: 11%;float: right;">
       <a href="{% url 'add_product' %}">+ Add Product</a>
     </div>
     <br />
-    <table border="1" cellpadding="5" cellspacing="0" style="width: 90%; margin-left: auto; margin-right: auto; margin-top: 20px;">
+    <table border="1" cellpadding="5" cellspacing="0" style="width: 95%; margin-left: auto; margin-right: auto; margin-top: 20px;">
       <tr>
         <th>SKU</th>
-        <th>Product Name</th>
+        <th><a href="?{{ query_string }}&sort={% if request.GET.sort == 'name' %}-name{% else %}name{% endif %}">Product Name {% if request.GET.sort == 'name' %}&uarr;{% else %}&darr;{% endif %}</a></th>
         <th>Category</th>
         <th>Sub-category</th>
-        <th>Stock Status</th>
-        <th>Price</th>
-        <th>Rating</th>
+        <th>Product Status</th>
+        <th>Stock Level</th>
+        <th><a href="?{{ query_string }}&sort={% if request.GET.sort == 'price' %}-price{% else %}price{% endif %}">Price {% if request.GET.sort == 'price' %}&uarr;{% else %}&darr;{% endif %}</a></th>
+        <th><a href="?{{ query_string }}&sort={% if request.GET.sort == 'rating' %}-rating{% else %}rating{% endif %}">Rating {% if request.GET.sort == 'rating' %}&uarr;{% else %}&darr;{% endif %}</a></th>
         <th>Actions</th>
       </tr>
       {% for product in products %}
       <tr>
         <td>{{ product.sku }}</td>
-        <td>{{ product.name }}</td>
+        <td><a href="{% url 'product_detail' product.pk %}">{{ product.name }}</a></td>
         <td>{{ product.category.parent }}</td>
         <td>{{ product.category }}</td>
         <td>{% if product.is_active %}Active{% else %}Inactive{% endif %}</td>
+        <td>{% if product.stock > product.reorder_threshold %}Healthy{% elif product.stock < product.reorder_threshold %}Low Stock{% else %}Out of Stock{% endif %}</td>
         <td>${{ product.price }}</td>
         <td>
           {% if product.rating %}
@@ -80,8 +111,9 @@
           {% endif %}
         </td>
         <td>
-          <a href="">Edit | </a>
-          <a href="">Delete</a>
+          <a href="{% url 'product_detail' product.pk %}">View</a>
+          <span>|</span>
+          <a href="{% url 'product_detail' product.pk %}?edit=true">Edit</a>
         </td>
       </tr>
       {% empty %}
