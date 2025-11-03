@@ -28,33 +28,31 @@
         {% endfor %}
       </select>
       <!-- prettier-ignore-end -->
-       
+
       <button type="submit">Filter</button>
       <a href="{% url 'products' %}">Clear Filters</a>
     </form>
     <p>Total: {{ page_obj.paginator.count }} products</p>
-    <p>Showing Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p>
+    <span>Showing Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
     <div class="pagination">
       {% if page_obj.has_previous %}
         <a href="?{% if query %}q={{ query }}&{% endif %}{% for cat in selected_categories %}category={{ cat }}&{% endfor %}page={{ page_obj.previous_page_number }}">Prev</a>
       {% endif %}
       {% for num in page_obj.paginator.page_range %}
-        {% if num == 1 %}
-          <a href="?{% if query %}q={{ query }}&{% endif %}{% for cat in selected_categories %}category={{ cat }}&{% endfor %}page=1">1</a>
-        {% endif %}
-        {% if num == page_obj.number and num != 1 and num != page_obj.paginator.num_pages %}
+        {% if num == page_obj.number %}
           <span>{{ num }}</span>
-        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' and num != 1 and num != page_obj.paginator.num_pages %}
-          <a href="?page={{ num }}">{{ num }}</a>
-        {% endif %}
-        {% if num == page_obj.paginator.num_pages %}
-          <a href="?{% if query %}q={{ query }}&{% endif %}{% for cat in selected_categories %}category={{ cat }}&{% endfor %}page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <a href="?{% if query %}q={{ query }}&{% endif %}{% for cat in selected_categories %}category={{ cat }}&{% endfor %}page={{ num }}">{{ num }}</a>
         {% endif %}
       {% endfor %}
       {% if page_obj.has_next %}
         <a href="?{% if query %}q={{ query }}&{% endif %}{% for cat in selected_categories %}category={{ cat }}&{% endfor %}page={{ page_obj.next_page_number }}">Next</a>
       {% endif %}
     </div>
+    <div style="width: 11%;float: right;">
+      <a href="{% url 'add_product' %}">+ Add Product</a>
+    </div>
+    <br />
     <table border="1" cellpadding="5" cellspacing="0" style="width: 90%; margin-left: auto; margin-right: auto; margin-top: 20px;">
       <tr>
         <th>SKU</th>
@@ -74,7 +72,13 @@
         <td>{{ product.category }}</td>
         <td>{% if product.is_active %}Active{% else %}Inactive{% endif %}</td>
         <td>${{ product.price }}</td>
-        <td>{{ product.rating }}</td>
+        <td>
+          {% if product.rating %}
+            {{ product.rating }}
+          {% else %}
+            No ratings yet
+          {% endif %}
+        </td>
         <td>
           <a href="">Edit | </a>
           <a href="">Delete</a>

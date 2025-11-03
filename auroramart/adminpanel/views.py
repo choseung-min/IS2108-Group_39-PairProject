@@ -1,7 +1,9 @@
-from django.shortcuts import render
+from django.contrib import messages
+from django.shortcuts import redirect, render
 from .models import Product, Category
 from django.db.models import Q
 from django.core.paginator import Paginator
+from .forms import ProductForm
 
 def home(request):
     return render(request, 'adminpanel/home_page.html')
@@ -25,6 +27,23 @@ def products(request):
     context = {'page_obj': page_obj, 'products': page_obj.object_list, 'query': query, 'selected_categories': selected_categories, 'main_categories': main_categories}
 
     return render(request, 'adminpanel/products/product_catalogue.html', context)
+
+def add_product(request):
+    if request.method == "POST":
+        form = ProductForm(request.POST, request.FILES)
+        
+        if form.is_valid():
+            form.save()
+            messages.success(request, "New product \"{name}\" added successfully!".format(name=form.cleaned_data["name"]))
+            return redirect("add_product")
+        
+        else:
+            messages.error(request, "Please correct the errors below.")
+    
+    else:
+        form = ProductForm()
+
+    return render(request, "adminpanel/products/add_product.html", {"form": form})
 
 def restock(request):
     return render(request, 'adminpanel/restock/restock_dashboard.html')
