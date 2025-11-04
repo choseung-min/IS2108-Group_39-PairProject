@@ -2,6 +2,7 @@ from django import forms
 
 from .models import Category, Product
 
+
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
@@ -29,8 +30,10 @@ class ProductForm(forms.ModelForm):
             "image": "Product Image",
             "is_active": "Active?",
         }
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.main_categories = Category.objects.filter(parent__isnull=True).prefetch_related("category_set")
+        self.main_categories = Category.objects.filter(
+            parent__isnull=True
+        ).prefetch_related("category_set")
         self.fields["category"].queryset = Category.objects.all()

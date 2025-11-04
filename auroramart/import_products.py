@@ -1,13 +1,17 @@
 import csv
 from adminpanel.models import Category, Product
 
-with open("b2c_products_500.csv", newline='', encoding='latin1') as f:
+with open("b2c_products_500.csv", newline="", encoding="latin1") as f:
     reader = csv.DictReader(f)
     for row in reader:
-        main_cat, _ = Category.objects.get_or_create(name=row["Product Category"], parent=None)
+        main_cat, _ = Category.objects.get_or_create(
+            name=row["Product Category"], parent=None
+        )
         sub_cat = None
         if row["Product Subcategory"]:
-            sub_cat, _ = Category.objects.get_or_create(name=row["Product Subcategory"], parent=main_cat)
+            sub_cat, _ = Category.objects.get_or_create(
+                name=row["Product Subcategory"], parent=main_cat
+            )
 
         Product.objects.update_or_create(
             sku=row["SKU code"],
