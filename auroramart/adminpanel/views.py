@@ -1,7 +1,7 @@
 from urllib import request
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
-from .models import Product, Category
+from storefront.models import Product, Category
 from django.db.models import Q, F, ExpressionWrapper, FloatField
 from django.core.paginator import Paginator
 from .forms import ProductForm

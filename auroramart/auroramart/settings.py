@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "storefront",
+    "adminpanel",
 ]
 
 AUTH_USER_MODEL = "storefront.User"
