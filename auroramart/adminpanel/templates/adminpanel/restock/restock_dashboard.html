@@ -1,0 +1,94 @@
+{% extends 'shared/base.html' %}
+{% block title %}Restocking Dashboard{% endblock %}
+{% block header %}Restocking Dashboard{% endblock %}
+{% block nav %}
+    <a href="{% url 'home' %}">Home</a>
+    <a href="{% url 'products' %}">Product Catalogue</a>
+{% endblock %}
+{% block filters %}
+    <form method="get">
+        <input type="text"
+               name="q"
+               value="{{ query|default:'' }}"
+               placeholder="Search..." />
+        <button type="submit">Search</button>
+        <select name="category">
+            <option value="" {% if not selected_categories %}selected{% endif %}>-- All Categories --</option>
+            {% for main in main_categories %}
+                <optgroup label="{{ main.name }}">
+                    <option value="{{ main.id }}"
+                            {% if main.id|stringformat:"s" in selected_categories %}selected{% endif %}>
+                        All {{ main.name }}
+                    </option>
+                    {% for sub in main.category_set.all %}
+                        <option value="{{ sub.id }}"
+                                {% if sub.id|stringformat:"s" in selected_categories %}selected{% endif %}>
+                            &nbsp;&nbsp;{{ sub.name }}
+                        </option>
+                    {% endfor %}
+                </optgroup>
+            {% endfor %}
+        </select>
+        <button type="submit">Filter</button>
+        <a href="{% url 'restock' %}">Clear Filters</a>
+    </form>
+{% endblock %}
+{% block add_button %}
+    <div style="width: 11%; float: right;">
+        <a href="{% url 'add_stock_select' %}">+ Add Stock</a>
+    </div>
+{% endblock %}
+{% block table_headers %}
+    <th>SKU</th>
+    <th>Product Name</th>
+    <th>
+        <a href="?{{ query_string }}&sort={% if sort == '-stock' %}stock{% else %}-stock{% endif %}">Current Stock
+            {% if sort == '-stock' %}
+                &darr;
+            {% else %}
+                &uarr;
+            {% endif %}
+        </a>
+    </th>
+    <th>Reorder Threshold</th>
+    <th>
+        <a href="?{{ query_string }}&sort={% if sort == '-restock_ratio' %}restock_ratio{% else %}-restock_ratio{% endif %}">Restock Priority
+            {% if sort == '-restock_ratio' %}
+                &darr;
+            {% else %}
+                &uarr;
+            {% endif %}
+        </a>
+    </th>
+    <th>Actions</th>
+{% endblock %}
+{% block table_rows %}
+    {% for product in products_to_restock %}
+        <tr class="{% if product.stock < product.reorder_threshold %}low-stock{% endif %}">
+            <td>{{ product.sku }}</td>
+            <td>
+                <a href="{% url 'product_detail' pk=product.pk %}">{{ product.name }}</a>
+            </td>
+            <td style="text-align: center">{{ product.stock }}</td>
+            <td style="text-align: center">{{ product.reorder_threshold }}</td>
+            <td>
+                {% if product.restock_ratio <= 0.25 %}
+                    <span style="color: red; font-weight: bold;">Critical</span>
+                {% elif product.restock_ratio <= 0.5 %}
+                    <span style="color: #ed8a09; font-weight: bold;">High</span>
+                {% elif product.restock_ratio <= 0.75 %}
+                    <span style="color: #f0ce0c; font-weight: bold;">Medium</span>
+                {% else %}
+                    <span style="color: green; font-weight: bold;">Low</span>
+                {% endif %}
+            </td>
+            <td style="text-align: center">
+                <a href="{% url 'add_stock' pk=product.pk %}">Add Stock</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td style="text-align: center" colspan="6">All products are sufficiently stocked!</td>
+        </tr>
+    {% endfor %}
+{% endblock %}
