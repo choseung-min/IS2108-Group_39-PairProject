@@ -1,0 +1,189 @@
+{% load custom_filters %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order Details</title>
+    <style>
+        body {
+            font-family: "Arial";
+        }
+        table {
+            border-collapse: collapse;
+            margin: 20px 0;
+            width: 100%;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+        }
+        .readonly-note {
+            background-color: #ffffcc;
+            padding: 10px;
+            border: 1px solid #ffcc00;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Order Details - #{{ order.id }}</h2>
+    <a href="{% url 'adminpanel:customer_detail' order.customer.id %}">← Back to Customer</a>
+    
+    <hr>
+    
+    <div class="readonly-note">
+        <strong>Note:</strong> This is a read-only view for reference purposes only.
+    </div>
+    
+    <div class="section">
+        <h3>Order Information</h3>
+        <table>
+            <tr>
+                <th>Order ID</th>
+                <td>#{{ order.id }}</td>
+            </tr>
+            <tr>
+                <th>Order Date</th>
+                <td>{{ order.created_at|date:"F d, Y H:i" }}</td>
+            </tr>
+            <tr>
+                <th>Status</th>
+                <td>{{ order.status }}</td>
+            </tr>
+            <tr>
+                <th>Total Amount</th>
+                <td>${{ order.total_amount|floatformat:2 }}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h3>Customer Information</h3>
+        <table>
+            <tr>
+                <th>Customer Name</th>
+                <td>{{ order.customer.user.first_name }} {{ order.customer.user.last_name }}</td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td>{{ order.customer.user.email }}</td>
+            </tr>
+            <tr>
+                <th>Phone</th>
+                <td>{{ order.customer.phone }}</td>
+            </tr>
+            <tr>
+                <th>Delivery Address</th>
+                <td>{{ order.delivery_address }}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h3>Order Items</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Price at Purchase</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items.all %}
+                <tr>
+                    <td>
+                        {% if item.product %}
+                            {{ item.product.name }}
+                        {% else %}
+                            <em>(Product no longer available)</em>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.quantity }}</td>
+                    <td>${{ item.price_at_purchase|floatformat:2 }}</td>
+                    <td>${{ item.price_at_purchase|multiply:item.quantity|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+                <tr style="font-weight: bold; background-color: #f0f0f0;">
+                    <td colspan="3" style="text-align: right;">Total:</td>
+                    <td>${{ order.total_amount|floatformat:2 }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
+                </div>
+                <div class="info-item">
+                    <label>Total Amount</label>
+                    <div class="value">${{ order.total_amount|floatformat:2 }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Customer Information</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Customer Name</label>
+                    <div class="value">{{ order.customer.user.first_name }} {{ order.customer.user.last_name }}</div>
+                </div>
+                <div class="info-item">
+                    <label>Email</label>
+                    <div class="value">{{ order.customer.user.email }}</div>
+                </div>
+                <div class="info-item">
+                    <label>Phone</label>
+                    <div class="value">{{ order.customer.phone }}</div>
+                </div>
+                <div class="info-item" style="grid-column: 1 / -1;">
+                    <label>Delivery Address</label>
+                    <div class="value">{{ order.delivery_address }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Order Items</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Price at Purchase</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items.all %}
+                    <tr>
+                        <td>
+                            {% if item.product %}
+                                {{ item.product.name }}
+                            {% else %}
+                                <em>(Product no longer available)</em>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.quantity }}</td>
+                        <td>${{ item.price_at_purchase|floatformat:2 }}</td>
+                        <td>${{ item.quantity|mul:item.price_at_purchase|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="total-row">
+                        <td colspan="3" style="text-align: right;">Total:</td>
+                        <td>${{ order.total_amount|floatformat:2 }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
