@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sign In - Aurora Mart</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #fafafa;
+    }
+    .container {
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      padding: 32px;
+      width: 360px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .logo img {
+      width: 140px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    label {
+      font-weight: 600;
+      font-size: 14px;
+    }
+    input {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+    }
+    .btn {
+      background: black;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .link {
+      font-size: 14px;
+      text-decoration: underline;
+      color: #333;
+    }
+    .signup-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <a href="{% url 'home' %}">
+        <img src="{% static 'img/AuroraMart Logo.png' %}" alt="Aurora Mart Logo">
+      </a>
+    </div>
+
+    <h2>Login</h2>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      
+      <label for="id_email">Email</label>
+      {{ form.email }}
+
+      <label for="id_password">Password</label>
+      {{ form.password }}
+
+      <div class="actions">
+        <button type="submit" class="btn">Sign in</button>
+        <a href="#" class="link">Forgot password?</a>
+      </div>
+    </form>
+
+    <div class="signup-link">
+      New here? <a href="{% url 'signup' %}" class="link">Create an account</a>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Checkout — Address</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --gap: 24px; --border:#e5e7eb; --text:#111827; --muted:#6b7280; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin:0; color:var(--text); }
+    header, main { max-width: 1100px; margin:auto; padding: 16px; }
+    header a { text-decoration:none; color:var(--muted); }
+    h1 { margin: 12px 0 8px; }
+    .grid { display:grid; grid-template-columns: 2fr 1fr; gap: var(--gap); }
+    @media (max-width: 900px){ .grid{ grid-template-columns:1fr; } }
+    form { background:#fff; border:1px solid var(--border); border-radius:10px; padding:16px; }
+    label { display:block; font-size:14px; margin:12px 0 6px; color:#374151; }
+    textarea, input[type="text"] { width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:15px; }
+    .row { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    .save-line { margin: 12px 0; font-size:14px; color:#374151; display:flex; align-items:center; gap:8px; }
+    button { padding:12px 14px; border:0; border-radius:10px; font-weight:600; cursor:pointer; background:#111827; color:#fff; }
+    aside { border:1px solid var(--border); border-radius:10px; padding:16px; background:#fff; }
+    ul { padding-left:18px; }
+    .totals p { margin:6px 0; }
+    .muted { color:var(--muted); font-size:14px; }
+    .flash { margin: 10px 0; color: #b91c1c; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="{% url 'cart' %}">← Back to Cart</a>
+    <h1>Checkout — Address</h1>
+    <p class="muted">Step 1 of 2</p>
+  </header>
+
+  <main class="grid">
+    <section>
+      {# Optional flash messages #}
+      {% if messages %}
+        <div class="flash">
+          {% for message in messages %}{{ message }}{% if not forloop.last %}<br/>{% endif %}{% endfor %}
+        </div>
+      {% endif %}
+
+    <form method="post" action="">
+        {% csrf_token %}
+
+        <!-- Address field -->
+        <div style="margin-bottom:16px;">
+            <label for="id_address" style="display:block; font-weight:600; margin-bottom:6px;">
+            Address
+            </label>
+            {{ form.address }}
+        </div>
+
+        <!-- City/State and Postal Code -->
+        <div style="display:flex; gap:12px; margin-bottom:16px;">
+            <div style="flex:1;">
+            <label for="id_city_state" style="display:block; font-weight:600; margin-bottom:6px;">
+                {{ form.city_state.label }}
+            </label>
+            {{ form.city_state }}
+            </div>
+            <div style="flex:1;">
+            <label for="id_postal_code" style="display:block; font-weight:600; margin-bottom:6px;">
+                {{ form.postal_code.label }}
+            </label>
+            {{ form.postal_code }}
+            </div>
+        </div>
+
+        <!-- Save to profile -->
+        <div style="margin-bottom:16px;">
+            {{ form.save_to_profile }} <span>{{ form.save_to_profile.label }}</span>
+        </div>
+
+        <!-- Button -->
+        <button type="submit" class="btn">Continue to payment</button>
+    </form>
+
+    </section>
+
+    <aside>
+      <h3>Order Summary</h3>
+      <ul>
+        {% for item in cart_items %}
+          <li>{{ item.product.name }} × {{ item.quantity }}</li>
+        {% endfor %}
+      </ul>
+      <div class="totals">
+        <p>Subtotal: ${{ subtotal|floatformat:2 }}</p>
+        <p>Shipping: ${{ shipping_fee|floatformat:2 }}</p>
+        <p>Tax: ${{ tax|floatformat:2 }}</p>
+        <p><strong>Total: ${{ total|floatformat:2 }}</strong></p>
+      </div>
+    </aside>
+  </main>
+</body>
+</html>
