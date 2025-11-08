@@ -1,9 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <title>Your Cart – Aurora Mart</title>
-  <style>
+    <head>
+        <meta charset="utf-8">
+        <title>Your Cart – Aurora Mart</title>
+        <style>
     body{
         font-family:system-ui;
         margin:0;
@@ -46,57 +46,68 @@
         justify-content:space-between;
         margin-top:16px;
     }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <h1>Cart ({{ cart.count }})</h1>
-
-    {% if items %}
-    <table>
-      <thead>
-        <tr><th>Item</th><th>Price</th><th style="width:160px;">Qty</th><th>Subtotal</th><th></th></tr>
-      </thead>
-      <tbody>
-        {% for it in items %}
-        <tr>
-          <td>
-            <a href="{% url 'product' it.product.slug %}">{{ it.product.name }}</a>
-          </td>
-          <td>${{ it.price_snapshot }}</td>
-          <td class="qty">
-            <form method="post" action="{% url 'cart_update' it.id %}">{% csrf_token %}
-              <input type="hidden" name="action" value="dec">
-              <button class="btn" type="submit">−</button>
-            </form>
-            <span style="display:inline-block;min-width:28px;text-align:center">{{ it.quantity }}</span>
-            <form method="post" action="{% url 'cart_update' it.id %}">{% csrf_token %}
-              <input type="hidden" name="action" value="inc">
-              <button class="btn" type="submit">+</button>
-            </form>
-          </td>
-          <td>${{ it.line_total }}</td>
-          <td>
-            <form method="post" action="{% url 'cart_remove' it.id %}">{% csrf_token %}
-              <button class="btn" type="submit">Remove</button>
-            </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-      <tfoot>
-        <tr><td colspan="3" style="text-align:right">Total</td><td>${{ cart.total }}</td><td></td></tr>
-      </tfoot>
-    </table>
-
-    <div class="actions">
-      <a class="btn" href="{% url 'home' %}">← Continue shopping</a>
-      <a class="btn p" href="{% url 'checkout_address' %}">Continue to checkout</a>
-    </div>
-    {% else %}
-      <p>Your cart is empty.</p>
-      <a class="btn" href="{% url 'home' %}">Browse products</a>
-    {% endif %}
-  </div>
-</body>
+        </style>
+    </head>
+    <body>
+        <div class="wrap">
+            <h1>Cart ({{ cart.count }})</h1>
+            {% if items %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Price</th>
+                            <th style="width:160px;">Qty</th>
+                            <th>Subtotal</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for it in items %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'product' it.product.slug %}">{{ it.product.name }}</a>
+                                </td>
+                                <td>${{ it.price_snapshot }}</td>
+                                <td class="qty">
+                                    <form method="post" action="{% url 'cart_update' it.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="dec">
+                                        <button class="btn" type="submit">−</button>
+                                    </form>
+                                    <span style="display:inline-block;min-width:28px;text-align:center">{{ it.quantity }}</span>
+                                    <form method="post" action="{% url 'cart_update' it.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="inc">
+                                        <button class="btn" type="submit">+</button>
+                                    </form>
+                                </td>
+                                <td>${{ it.line_total }}</td>
+                                <td>
+                                    <form method="post" action="{% url 'cart_remove' it.id %}">
+                                        {% csrf_token %}
+                                        <button class="btn" type="submit">Remove</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" style="text-align:right">Total</td>
+                            <td>${{ cart.total }}</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                <div class="actions">
+                    <a class="btn" href="{% url 'home' %}">← Continue shopping</a>
+                    <a class="btn p" href="{% url 'checkout_address' %}">Continue to checkout</a>
+                </div>
+            {% else %}
+                <p>Your cart is empty.</p>
+                <a class="btn" href="{% url 'home' %}">Browse products</a>
+            {% endif %}
+        </div>
+    </body>
 </html>

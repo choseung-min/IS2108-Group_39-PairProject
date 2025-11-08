@@ -1,10 +1,10 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Create Account - Aurora Mart</title>
-    <style>
+    <head>
+        <meta charset="UTF-8">
+        <title>Create Account - Aurora Mart</title>
+        <style>
         body {
             font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;
             background-color: #fafafa;
@@ -92,107 +92,120 @@
             font-weight: 600;
             margin: 0;                     
         }
-    </style>
-</head>
-<body>
-  <!-- HEADER -->
-  <header>
-    <div class="wrap row" style="max-width:1100px;margin:auto;padding:16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eee;">
-      <a href="{% url 'home' %}" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;">
-        <img src="{% static 'img/AuroraMart Logo.png' %}" alt="Aurora Mart" style="height:60px;width:auto;">
-        <span style="font-weight:700;font-size:18px;">Aurora&nbsp;Mart</span>
-      </a>
-      <a href="{% url 'login' %}" style="color:#0070f3;text-decoration:none;font-size:14px;">Already have an account?</a>
-    </div>
-  </header>
-
-  <!-- MAIN CONTENT -->
-  <main class="container">
-    <h2 style="text-align:center;margin-bottom:20px;">Create your account</h2>
-
-    <form method="post">
-      {% csrf_token %}
-      
-      <!-- AUTH USER FORM -->
-      {{ uform.non_field_errors }}
-      <div class="full">
-        <label for="id_username">Username</label>
-        {{ uform.username }} {{ uform.username.errors }}
-      </div>
-      <div>
-        <label for="id_email">Email</label>
-        {{ uform.email }} {{ uform.email.errors }}
-      </div>
-      <div>
-        <label for="id_password1">Password</label>
-        {{ uform.password1 }} {{ uform.password1.errors }}
-      </div>
-      <div>
-        <label for="id_password2">Confirm Password</label>
-        {{ uform.password2 }} {{ uform.password2.errors }}
-      </div>
-
-      <!-- CUSTOMER FORM -->
-      {{ cform.non_field_errors }}
-      <div>
-        <label for="id_name">Full Name</label>
-        {{ cform.name }} {{ cform.name.errors }}
-      </div>
-      <div>
-        <label for="id_phone">Phone</label>
-        {{ cform.phone }} {{ cform.phone.errors }}
-      </div>
-      <div>
-        <label for="id_age">Age</label>
-        {{ cform.age }} {{ cform.age.errors }}
-      </div>
-      <div>
-        <label for="id_gender">Gender</label>
-        {{ cform.gender }} {{ cform.gender.errors }}
-      </div>
-        <div>
-            <label for="id_household_size">Household Size</label>
-            {{ cform.household_size }} {{ cform.household_size.errors }}
-        </div>
-      <div class="checkbox full">
-        <label class="checkwrap" for="{{ cform.has_children.id_for_label }}">
-            {{ cform.has_children }} <span>Has children</span>
-        </label>
-        {{ cform.has_children.errors }}
-        </div>
-      <div>
-        <label for="id_employment_status">Employment</label>
-        {{ cform.employment_status }} {{ cform.employment_status.errors }}
-      </div>
-      <div>
-        <label for="id_occupation">Occupation</label>
-        {{ cform.occupation }} {{ cform.occupation.errors }}
-      </div>
-      <div>
-        <label for="id_education">Education</label>
-        {{ cform.education }} {{ cform.education.errors }}
-      </div>
-      <div>
-        <label for="id_monthly_income">Monthly Income</label>
-        {{ cform.monthly_income }} {{ cform.monthly_income.errors }}
-      </div>
-      <div class="full">
-        <label for="id_address">Address Line</label>
-        {{ cform.address }} {{ cform.address.errors }}
-      </div>
-      <div>
-        <label for="id_city_state">City / State</label>
-        {{ cform.city_state }} {{ cform.city_state.errors }}
-      </div>
-      <div>
-        <label for="id_postal_code">Postal Code</label>
-        {{ cform.postal_code }} {{ cform.postal_code.errors }}
-      </div>
-
-      <div class="actions">
-        <button type="submit">Create Account</button>
-      </div>
-    </form>
-  </main>
-</body>
+        </style>
+    </head>
+    <body>
+        <!-- HEADER -->
+        <header>
+            <div class="wrap row"
+                 style="max-width:1100px;
+                        margin:auto;
+                        padding:16px;
+                        display:flex;
+                        align-items:center;
+                        justify-content:space-between;
+                        border-bottom:1px solid #eee">
+                <a href="{% url 'home' %}"
+                   style="display:flex;
+                          align-items:center;
+                          gap:10px;
+                          text-decoration:none;
+                          color:inherit">
+                    <img src="{% static 'img/AuroraMart Logo.png' %}"
+                         alt="Aurora Mart"
+                         style="height:60px;
+                                width:auto">
+                    <span style="font-weight:700;font-size:18px;">Aurora&nbsp;Mart</span>
+                </a>
+                <a href="{% url 'login' %}"
+                   style="color:#0070f3;
+                          text-decoration:none;
+                          font-size:14px">Already have an account?</a>
+            </div>
+        </header>
+        <!-- MAIN CONTENT -->
+        <main class="container">
+            <h2 style="text-align:center;margin-bottom:20px;">Create your account</h2>
+            <form method="post">
+                {% csrf_token %}
+                <!-- AUTH USER FORM -->
+                {{ uform.non_field_errors }}
+                <div class="full">
+                    <label for="id_username">Username</label>
+                    {{ uform.username }} {{ uform.username.errors }}
+                </div>
+                <div>
+                    <label for="id_email">Email</label>
+                    {{ uform.email }} {{ uform.email.errors }}
+                </div>
+                <div>
+                    <label for="id_password1">Password</label>
+                    {{ uform.password1 }} {{ uform.password1.errors }}
+                </div>
+                <div>
+                    <label for="id_password2">Confirm Password</label>
+                    {{ uform.password2 }} {{ uform.password2.errors }}
+                </div>
+                <!-- CUSTOMER FORM -->
+                {{ cform.non_field_errors }}
+                <div>
+                    <label for="id_name">Full Name</label>
+                    {{ cform.name }} {{ cform.name.errors }}
+                </div>
+                <div>
+                    <label for="id_phone">Phone</label>
+                    {{ cform.phone }} {{ cform.phone.errors }}
+                </div>
+                <div>
+                    <label for="id_age">Age</label>
+                    {{ cform.age }} {{ cform.age.errors }}
+                </div>
+                <div>
+                    <label for="id_gender">Gender</label>
+                    {{ cform.gender }} {{ cform.gender.errors }}
+                </div>
+                <div>
+                    <label for="id_household_size">Household Size</label>
+                    {{ cform.household_size }} {{ cform.household_size.errors }}
+                </div>
+                <div class="checkbox full">
+                    <label class="checkwrap" for="{{ cform.has_children.id_for_label }}">
+                        {{ cform.has_children }} <span>Has children</span>
+                    </label>
+                    {{ cform.has_children.errors }}
+                </div>
+                <div>
+                    <label for="id_employment_status">Employment</label>
+                    {{ cform.employment_status }} {{ cform.employment_status.errors }}
+                </div>
+                <div>
+                    <label for="id_occupation">Occupation</label>
+                    {{ cform.occupation }} {{ cform.occupation.errors }}
+                </div>
+                <div>
+                    <label for="id_education">Education</label>
+                    {{ cform.education }} {{ cform.education.errors }}
+                </div>
+                <div>
+                    <label for="id_monthly_income">Monthly Income</label>
+                    {{ cform.monthly_income }} {{ cform.monthly_income.errors }}
+                </div>
+                <div class="full">
+                    <label for="id_address">Address Line</label>
+                    {{ cform.address }} {{ cform.address.errors }}
+                </div>
+                <div>
+                    <label for="id_city_state">City / State</label>
+                    {{ cform.city_state }} {{ cform.city_state.errors }}
+                </div>
+                <div>
+                    <label for="id_postal_code">Postal Code</label>
+                    {{ cform.postal_code }} {{ cform.postal_code.errors }}
+                </div>
+                <div class="actions">
+                    <button type="submit">Create Account</button>
+                </div>
+            </form>
+        </main>
+    </body>
 </html>

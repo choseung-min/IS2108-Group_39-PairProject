@@ -62,8 +62,6 @@ class Customer(models.Model):
     )
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
     phone = models.CharField(max_length=15)
     age = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(18), MaxValueValidator(120)]
@@ -142,7 +140,7 @@ class Cart(models.Model):
         return sum(item.quantity for item in self.items.all())
 
     def __str__(self):
-        return f"Cart of {self.customer.name}"
+        return f"Cart of {self.customer.user.get_full_name() or self.customer.user.username}"
 
 
 class CartItem(models.Model):
@@ -161,7 +159,7 @@ class CartItem(models.Model):
         return self.price_snapshot * self.quantity
 
     def __str__(self):
-        return f"{self.quantity} of {self.product.name} in {self.cart.customer.name}'s cart"
+        return f"{self.quantity} of {self.product.name} in {self.cart.customer.user.get_full_name() or self.cart.customer.user.username}'s cart"
 
 
 class Order(models.Model):
@@ -172,7 +170,7 @@ class Order(models.Model):
     delivery_address = models.CharField(max_length=255)
 
     def __str__(self):
-        return f"Order {self.id} by {self.customer.name}"
+        return f"Order {self.id} by {self.customer.user.get_full_name() or self.customer.user.username}"
 
 
 class OrderItem(models.Model):

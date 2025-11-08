@@ -1,10 +1,10 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Sign In - Aurora Mart</title>
-  <style>
+    <head>
+        <meta charset="UTF-8">
+        <title>Sign In - Aurora Mart</title>
+        <style>
     body {
       font-family: system-ui, -apple-system, sans-serif;
       margin: 0;
@@ -71,37 +71,31 @@
       margin-top: 20px;
       font-size: 14px;
     }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="logo">
-      <a href="{% url 'home' %}">
-        <img src="{% static 'img/AuroraMart Logo.png' %}" alt="Aurora Mart Logo">
-      </a>
-    </div>
-
-    <h2>Login</h2>
-
-    <form method="post" novalidate>
-      {% csrf_token %}
-      {{ form.non_field_errors }}
-      
-      <label for="id_email">Email</label>
-      {{ form.email }}
-
-      <label for="id_password">Password</label>
-      {{ form.password }}
-
-      <div class="actions">
-        <button type="submit" class="btn">Sign in</button>
-        <a href="#" class="link">Forgot password?</a>
-      </div>
-    </form>
-
-    <div class="signup-link">
-      New here? <a href="{% url 'signup' %}" class="link">Create an account</a>
-    </div>
-  </div>
-</body>
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="logo">
+                <a href="{% url 'home' %}">
+                    <img src="{% static 'img/AuroraMart Logo.png' %}" alt="Aurora Mart Logo">
+                </a>
+            </div>
+            <h2>Login</h2>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                <label for="id_email">Email</label>
+                {{ form.email }}
+                <label for="id_password">Password</label>
+                {{ form.password }}
+                <div class="actions">
+                    <button type="submit" class="btn">Sign in</button>
+                    <a href="#" class="link">Forgot password?</a>
+                </div>
+            </form>
+            <div class="signup-link">
+                New here? <a href="{% url 'signup' %}" class="link">Create an account</a>
+            </div>
+        </div>
+    </body>
 </html>

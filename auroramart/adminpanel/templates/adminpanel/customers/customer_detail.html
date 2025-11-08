@@ -1,371 +1,255 @@
-<!DOCTYPE html>
 <html>
-<head>
-    <title>Customer Details</title>
-    <style>
-        body {
-            font-family: "Arial";
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        h2 {
-            color: #333;
-            margin: 0;
-        }
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            text-decoration: none;
-            display: inline-block;
-            margin-left: 10px;
-        }
-        .btn-primary {
-            background-color: #007bff;
-            color: white;
-        }
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
-        .btn-danger {
-            background-color: #dc3545;
-            color: white;
-        }
-        .btn-warning {
-            background-color: #ffc107;
-            color: #333;
-        }
-        .section {
-            margin-bottom: 30px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 20px;
-        }
-        .section h3 {
-            margin-top: 0;
-            color: #333;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 10px;
-        }
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-        .info-item {
-            display: flex;
-            flex-direction: column;
-        }
-        .info-item label {
-            font-weight: 600;
-            color: #666;
-            font-size: 12px;
-            margin-bottom: 5px;
-        }
-        .info-item input, .info-item select {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        .info-item input:disabled {
-            background-color: #f8f9fa;
-            cursor: not-allowed;
-        }
-        .status-badge {
-            padding: 6px 12px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            display: inline-block;
-        }
-        .status-active {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        .status-inactive {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-        }
-        .link-btn {
-            color: #007bff;
-            text-decoration: none;
-        }
-        .link-btn:hover {
-            text-decoration: underline;
-        }
-        .messages {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-        }
-        .messages.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .action-buttons {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        .modal-content {
-            background-color: white;
-            margin: 15% auto;
-            padding: 30px;
-            border-radius: 8px;
-            width: 400px;
-            text-align: center;
-        }
-        .modal-buttons {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>Customer Details - {{ customer.user.first_name }} {{ customer.user.last_name }}</h2>
-        <a href="{% url 'adminpanel:customer_records' %}" class="btn btn-secondary">← Back to Customer Records</a>
-        
-        <hr>
-        
-        {% if messages %}
-            {% for message in messages %}
-                <p style="color: green;"><strong>{{ message }}</strong></p>
-            {% endfor %}
-        {% endif %}
-        
-        <div class="section">
-            <h3>Edit Customer Information</h3>
-            <form method="post" action="{% url 'adminpanel:customer_detail' customer.id %}">
-                {% csrf_token %}
-                <table>
-                    <tr>
-                        <th>Customer ID</th>
-                        <td>#{{ customer.id }}</td>
-                    </tr>
-                    <tr>
-                        <th>Account Status</th>
-                        <td>{% if customer.is_active %}Active{% else %}Inactive{% endif %}</td>
-                    </tr>
-                    <tr>
-                        <th>First Name</th>
-                        <td><input type="text" name="first_name" value="{{ customer.user.first_name }}" required></td>
-                    </tr>
-                    <tr>
-                        <th>Last Name</th>
-                        <td><input type="text" name="last_name" value="{{ customer.user.last_name }}" required></td>
-                    </tr>
-                    <tr>
-                        <th>Email</th>
-                        <td><input type="email" name="email" value="{{ customer.user.email }}" required></td>
-                    </tr>
-                    <tr>
-                        <th>Phone</th>
-                        <td><input type="text" name="phone" value="{{ customer.phone }}" required></td>
-                    </tr>
-                    <tr>
-                        <th>Address</th>
-                        <td><input type="text" name="address_line" value="{{ customer.address_line }}" required style="width: 400px;"></td>
-                    </tr>
-                    <tr>
-                        <th>Postal Code</th>
-                        <td><input type="text" name="postal_code" value="{{ customer.postal_code }}" required></td>
-                    </tr>
-                    <tr>
-                        <th>City/State</th>
-                        <td><input type="text" name="city_state" value="{{ customer.city_state }}" required></td>
-                    </tr>
-                </table>
-                
-                <button type="submit">Save Changes</button>
-            </form>
-            
-            <hr>
-            
-            <h4>Account Actions</h4>
-            {% if customer.is_active %}
-                <form method="post" action="{% url 'adminpanel:customer_deactivate' customer.id %}" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" onclick="return confirm('Are you sure you want to deactivate this account?')">Deactivate Account</button>
-                </form>
+    <head>
+        <style>
+      body {
+        font-family: "Arial";
+      }
+      .messages {
+        list-style: none;
+        padding: 0;
+      }
+      .messages li {
+        padding: 6px;
+        margin-bottom: 4px;
+      }
+      .messages li.success {
+        background-color: #e8f5e9;
+      }
+      .messages li.error {
+        background-color: #ffebee;
+      }
+        </style>
+        <title>
+            {% if customer.user.first_name or customer.user.last_name %}
+                {{ customer.user.first_name }} {{ customer.user.last_name }}
+            {% else %}
+                {{ customer.user.username }}
             {% endif %}
-            
-            <form method="post" action="{% url 'adminpanel:customer_delete' customer.id %}" style="display: inline;">
+        </title>
+    </head>
+    <body>
+        <h2>
+            {% if customer.user.first_name or customer.user.last_name %}
+                {{ customer.user.first_name }} {{ customer.user.last_name }}
+            {% else %}
+                {{ customer.user.username }} <em>(no name set)</em>
+            {% endif %}
+        </h2>
+        <a href="{% url 'customers' %}">Back to Customer Records</a>
+        <br />
+        <br />
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}
+            </ul>
+        {% endif %}
+        {% if editing %}
+            <form method="post">
                 {% csrf_token %}
-                <button type="submit" onclick="return confirm('WARNING: This will permanently delete this customer account. Are you sure?')" style="background-color: red; color: white;">Delete Account</button>
-            </form>
-        </div>
-        
-        <div class="section">
-            <h3>Demographic Information (Read-Only)</h3>
-            <table>
-                <tr>
-                    <th>Gender</th>
-                    <td>{{ customer.gender }}</td>
-                </tr>
-                <tr>
-                    <th>Age</th>
-                    <td>{{ customer.age }}</td>
-                </tr>
-                <tr>
-                    <th>Employment Status</th>
-                    <td>{{ customer.employment_status }}</td>
-                </tr>
-                <tr>
-                    <th>Occupation</th>
-                    <td>{{ customer.occupation|default:"N/A" }}</td>
-                </tr>
-                <tr>
-                    <th>Education</th>
-                    <td>{{ customer.education|default:"N/A" }}</td>
-                </tr>
-                <tr>
-                    <th>Household Size</th>
-                    <td>{{ customer.household_size|default:"N/A" }}</td>
-                </tr>
-                <tr>
-                    <th>Has Children</th>
-                    <td>{% if customer.has_children %}Yes{% else %}No{% endif %}</td>
-                </tr>
-                <tr>
-                    <th>Monthly Income</th>
-                    <td>${{ customer.monthly_income|default:"N/A" }}</td>
-                </tr>
-            </table>
-        </div>
-        
-        <div class="section">
-            <h3>Purchase History</h3>
-            {% if orders %}
-                <table>
-                    <thead>
+                <table border="1"
+                       cellpadding="5"
+                       cellspacing="0"
+                       style="width: 80%;
+                              margin: 20px auto">
+                    <tr>
+                        <th>Field</th>
+                        <th>Value</th>
+                        <th>Remarks</th>
+                    </tr>
+                    {% for field in form %}
                         <tr>
-                            <th>Order ID</th>
-                            <th>Date</th>
-                            <th>Items</th>
-                            <th>Total Amount</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for order in orders %}
-                        <tr>
-                            <td>#{{ order.id }}</td>
-                            <td>{{ order.created_at|date:"M d, Y H:i" }}</td>
-                            <td>{{ order.items.count }} item(s)</td>
-                            <td>${{ order.total_amount|floatformat:2 }}</td>
-                            <td>{{ order.status }}</td>
-                            <td>
-                                <a href="{% url 'adminpanel:order_detail' order.id %}">View Details</a>
+                            <td style="width: 20%">
+                                <b>{{ field.label_tag }}</b>
+                            </td>
+                            <td style="width: 60%">{{ field }}</td>
+                            <td style="width: 20%">
+                                {% if field.errors %}{{ field.errors }}{% endif %}
                             </td>
                         </tr>
-                        {% endfor %}
-                    </tbody>
+                    {% endfor %}
                 </table>
-            {% else %}
-                <p>No purchase history available.</p>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- Deactivate Modal -->
-    <div id="deactivateModal" class="modal">
-        <div class="modal-content">
-            <h3>Deactivate Customer Account</h3>
-            <p>Are you sure you want to deactivate this customer account?</p>
-            <p>The customer will no longer be able to log in.</p>
-            <form method="post" action="{% url 'adminpanel:customer_deactivate' customer.id %}">
-                {% csrf_token %}
-                <div class="modal-buttons">
-                    <button type="button" onclick="closeModal('deactivateModal')" class="btn btn-secondary">Cancel</button>
-                    <button type="submit" class="btn btn-warning">Deactivate</button>
+                <div style="text-align: center; margin-top: 10px">
+                    <button type="submit">Save Changes</button>
+                    <a href="{% url 'customer_detail' pk=customer.pk %}">Cancel</a>
                 </div>
             </form>
+            <table border="1"
+                   cellpadding="5"
+                   cellspacing="0"
+                   style="width: 30%;
+                          margin: 20px auto">
+                <tr>
+                    <th>Field</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Username</b>
+                    </td>
+                    <td>{{ customer.user.username }}</td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Account Status</b>
+                    </td>
+                    <td>
+                        {% if customer.user.is_active %}
+                            Active
+                        {% else %}
+                            Inactive
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        {% else %}
+            <div>
+                <table border="1"
+                       cellpadding="5"
+                       cellspacing="0"
+                       style="width: 80%;
+                              margin: 20px auto">
+                    <tr>
+                        <th>Field</th>
+                        <th>Value</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Username</b>
+                        </td>
+                        <td>{{ customer.user.username }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>First Name</b>
+                        </td>
+                        <td>{{ customer.user.first_name|default:"Not set" }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Last Name</b>
+                        </td>
+                        <td>{{ customer.user.last_name|default:"Not set" }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Email</b>
+                        </td>
+                        <td>{{ customer.user.email|default:"Not set" }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Phone</b>
+                        </td>
+                        <td>{{ customer.phone }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Age</b>
+                        </td>
+                        <td>{{ customer.age }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Gender</b>
+                        </td>
+                        <td>{{ customer.gender }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Household Size</b>
+                        </td>
+                        <td>{{ customer.household_size }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Has Children</b>
+                        </td>
+                        <td>
+                            {% if customer.has_children %}
+                                Yes
+                            {% else %}
+                                No
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Monthly Income</b>
+                        </td>
+                        <td>${{ customer.monthly_income }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Employment Status</b>
+                        </td>
+                        <td>{{ customer.employment_status }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Occupation</b>
+                        </td>
+                        <td>{{ customer.occupation }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Education Level</b>
+                        </td>
+                        <td>{{ customer.education }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Address</b>
+                        </td>
+                        <td>{{ customer.address }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Postal Code</b>
+                        </td>
+                        <td>{{ customer.postal_code }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>City/State</b>
+                        </td>
+                        <td>{{ customer.city_state }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Account Status</b>
+                        </td>
+                        <td>
+                            {% if customer.user.is_active %}
+                                Active
+                            {% else %}
+                                Inactive
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        {% endif %}
+        <div>
+            <p>
+                <a href="?edit=true">Edit Customer</a>
+            </p>
         </div>
-    </div>
-
-    <!-- Delete Modal -->
-    <div id="deleteModal" class="modal">
-        <div class="modal-content">
-            <h3>Delete Customer Account</h3>
-            <p><strong>Warning:</strong> This action cannot be undone!</p>
-            <p>Are you sure you want to permanently delete this customer account?</p>
-            <form method="post" action="{% url 'adminpanel:customer_delete' customer.id %}">
+        {% if customer.user.is_active %}
+            <form method="post"
+                  action="{% url 'deactivate_customer' pk=customer.pk %}"
+                  style="display: inline"
+                  onsubmit="return confirm('Are you sure you want to deactivate this customer account?');">
                 {% csrf_token %}
-                <div class="modal-buttons">
-                    <button type="button" onclick="closeModal('deleteModal')" class="btn btn-secondary">Cancel</button>
-                    <button type="submit" class="btn btn-danger">Delete Permanently</button>
-                </div>
+                <button type="submit">Deactivate Customer</button>
             </form>
-        </div>
-    </div>
-
-    <script>
-        function showDeactivateModal() {
-            document.getElementById('deactivateModal').style.display = 'block';
-        }
-
-        function showDeleteModal() {
-            document.getElementById('deleteModal').style.display = 'block';
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
-            }
-        }
-    </script>
-</body>
-</html>
+        {% else %}
+            <form method="post"
+                  action="{% url 'activate_customer' pk=customer.pk %}"
+                  style="display: inline"
+                  onsubmit="return confirm('Are you sure you want to activate this customer account?');">
+                {% csrf_token %}
+                <button type="submit">Activate Customer</button>
+            </form>
+        {% endif %}
+    </body>
 </html>

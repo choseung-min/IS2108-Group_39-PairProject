@@ -1,15 +1,96 @@
-<html>
-    <head>
-        <title>Customer Records</title>
-        <style>
-      body {
-        font-family: "Arial";
-      }
-        </style>
-    </head>
-    <body>
-        <h2>Customer Records</h2>
-        <p>This is the customer records page.</p>
-        <a href="{% url 'home' %}">Home</a>
-    </body>
-</html>
+{% extends 'shared/base.html' %}
+{% block title %}Customer Records{% endblock %}
+{% block header %}Customer Records{% endblock %}
+{% block nav %}
+    <a href="{% url 'home' %}">Home</a>
+{% endblock %}
+{% block filters %}
+    <form method="get">
+        <input type="text"
+               name="q"
+               value="{{ query|default:'' }}"
+               placeholder="Search by name or email..." />
+        <button type="submit">Search</button>
+        <select name="status_filter">
+            <option value="">--All Statuses--</option>
+            <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+            <option value="inactive"
+                    {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+        </select>
+        <button type="submit">Filter</button>
+        <a href="{% url 'customers' %}">Clear Filters</a>
+    </form>
+{% endblock %}
+{% block table_headers %}
+    <th>
+        <a href="?{{ query_string }}&sort={% if sort == 'user__first_name' %}-user__first_name{% else %}user__first_name{% endif %}">
+            Name
+            {% if sort == 'user__first_name' %}
+                &uarr;
+            {% elif sort == '-user__first_name' %}
+                &darr;
+            {% endif %}
+        </a>
+    </th>
+    <th>Email</th>
+    <th>Age</th>
+    <th>Gender</th>
+    <th>
+        <a href="?{{ query_string }}&sort={% if sort == 'user__date_joined' %}-user__date_joined{% else %}user__date_joined{% endif %}">Date/Time Joined
+            {% if sort == 'user__date_joined' %}
+                &uarr;
+            {% elif sort == '-user__date_joined' %}
+                &darr;
+            {% endif %}
+        </a>
+    </th>
+    <th>Status</th>
+    <th>Actions</th>
+{% endblock %}
+{% block table_rows %}
+    {% for customer in customers %}
+        <tr>
+            <td>
+                <a href="{% url 'customer_detail' customer.pk %}">
+                    {% if customer.user.first_name or customer.user.last_name %}
+                        {{ customer.user.first_name }} {{ customer.user.last_name }}
+                    {% else %}
+                        {{ customer.user.username }} <em>(no name set)</em>
+                    {% endif %}
+                </a>
+            </td>
+            <td>{{ customer.user.email|default:"No email" }}</td>
+            <td style="text-align: center">{{ customer.age }}</td>
+            <td>{{ customer.gender }}</td>
+            <td>{{ customer.user.date_joined|date:"SHORT_DATETIME_FORMAT" }}</td>
+            <td>{% if customer.user.is_active %}Active{% else %}Inactive{% endif %}</td>
+            <td>
+                <a href="{% url 'customer_detail' customer.pk %}">View</a> |
+                <a href="{% url 'customer_detail' customer.pk %}?edit=true">Edit</a> |
+                {% if customer.user.is_active %}
+                    <form method="post"
+                          action="{% url 'deactivate_customer' pk=customer.pk %}"
+                          style="display: inline"
+                          onsubmit="return confirm('Deactivate this customer?');">
+                        {% csrf_token %}
+                        <button type="submit"
+                                style="background: none; border: none; color: blue; text-decoration: underline; cursor: pointer; padding: 0; font: inherit;">Deactivate</button>
+                    </form>
+                {% else %}
+                    <form method="post"
+                          action="{% url 'activate_customer' pk=customer.pk %}"
+                          style="display: inline"
+                          onsubmit="return confirm('Activate this customer?');">
+                        {% csrf_token %}
+                        <button type="submit"
+                                style="background: none; border: none; color: blue; text-decoration: underline; cursor: pointer; padding: 0; font: inherit;">Activate</button>
+                    </form>
+                {% endif %}
+            </td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td style="text-align: center" colspan="6">No customers found.</td>
+        </tr>
+    {% endfor %}
+{% endblock %}

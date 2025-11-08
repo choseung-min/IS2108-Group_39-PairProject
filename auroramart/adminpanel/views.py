@@ -1,10 +1,10 @@
 from urllib import request
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
-from storefront.models import Product, Category
+from storefront.models import Product, Category, Customer
 from django.db.models import Q, F, ExpressionWrapper, FloatField
 from django.core.paginator import Paginator
-from .forms import ProductForm
+from .forms import ProductForm, CustomerForm
 
 
 def home(request):
@@ -219,7 +219,8 @@ def restock(request):
     query = request.GET.get("q")
     sort = request.GET.get("sort")
     query_params = request.GET.copy()
-    page = query_params.pop("page", [None])[0]
+    query_params.pop("page", None)
+    query_params.pop("sort", None)
     query_string = query_params.urlencode()
 
     if query:
@@ -326,4 +327,116 @@ def add_stock(request, pk):
 
 
 def customers(request):
-    return render(request, "adminpanel/customers/customer_records.html")
+    customers = Customer.objects.all()
+    query = request.GET.get("q")
+    status_filter = request.GET.get("status_filter")
+    sort = request.GET.get("sort")
+
+    query_params = request.GET.copy()
+    page = query_params.pop("page", [None])[0]
+    query_string = query_params.urlencode()
+
+    if query:
+        customers = customers.filter(
+            Q(user__first_name__icontains=query)
+            | Q(user__last_name__icontains=query)
+            | Q(user__email__icontains=query)
+        )
+
+    if status_filter:
+        if status_filter == "active":
+            customers = customers.filter(user__is_active=True)
+        elif status_filter == "inactive":
+            customers = customers.filter(user__is_active=False)
+
+    sort_fields = [
+        "user__first_name",
+        "-user__first_name",
+        "user__date_joined",
+        "-user__date_joined",
+    ]
+
+    if sort in sort_fields:
+        customers = customers.order_by(sort)
+    else:
+        # Default ordering to avoid pagination warning
+        customers = customers.order_by("user__first_name", "user__last_name")
+
+    paginator = Paginator(customers, 15)
+    page_num = request.GET.get("page")
+    page_obj = paginator.get_page(page_num)
+
+    context = {
+        "page_obj": page_obj,
+        "customers": page_obj.object_list,
+        "query": query,
+        "sort": sort,
+        "query_string": query_string,
+        "status_filter": status_filter,
+    }
+
+    return render(request, "adminpanel/customers/customer_records.html", context)
+
+
+def customer_detail(request, pk):
+    customer = get_object_or_404(Customer.objects.select_related("user"), pk=pk)
+    editing = request.GET.get("edit") == "true"
+    form = None
+
+    if editing:
+        if request.method == "POST":
+            form = CustomerForm(request.POST, instance=customer)
+
+            if form.is_valid():
+                form.save()
+                messages.success(
+                    request,
+                    'Customer "{name}" updated successfully!'.format(
+                        name=customer.user.get_full_name() or customer.user.username
+                    ),
+                )
+                return redirect("customer_detail", pk=customer.pk)
+            else:
+                messages.error(
+                    request, "Customer not updated, please correct the errors below!"
+                )
+        else:
+            form = CustomerForm(instance=customer)
+
+    return render(
+        request,
+        "adminpanel/customers/customer_detail.html",
+        {"customer": customer, "editing": editing, "form": form},
+    )
+
+
+def deactivate_customer(request, pk):
+    customer = get_object_or_404(Customer.objects.select_related("user"), pk=pk)
+
+    if request.method == "POST":
+        customer.user.is_active = False
+        customer.user.save()
+        messages.success(
+            request,
+            'Customer "{name}" deactivated successfully!'.format(
+                name=customer.user.get_full_name() or customer.user.username
+            ),
+        )
+        return redirect("customer_detail", pk=customer.pk)
+    return redirect("customer_detail", pk=customer.pk)
+
+
+def activate_customer(request, pk):
+    customer = get_object_or_404(Customer.objects.select_related("user"), pk=pk)
+
+    if request.method == "POST":
+        customer.user.is_active = True
+        customer.user.save()
+        messages.success(
+            request,
+            'Customer "{name}" activated successfully!'.format(
+                name=customer.user.get_full_name() or customer.user.username
+            ),
+        )
+        return redirect("customer_detail", pk=customer.pk)
+    return redirect("customer_detail", pk=customer.pk)

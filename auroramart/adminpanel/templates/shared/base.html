@@ -82,7 +82,7 @@
             </ul>
         {% endif %}
         {% block filters %}{% endblock %}
-        <span>Total: {{ page_obj.paginator.count }} products</span>
+        <span>Total: {{ page_obj.paginator.count }} records</span>
         <br />
         <span>Showing Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
         {% if page_obj.paginator.num_pages > 1 %}

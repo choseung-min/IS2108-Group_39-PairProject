@@ -19,4 +19,15 @@ urlpatterns = [
     path("restock/add", views.add_stock_select, name="add_stock_select"),
     path("restock/add/<int:pk>/", views.add_stock, name="add_stock"),
     path("customers/", views.customers, name="customers"),
+    path("customers/<int:pk>/", views.customer_detail, name="customer_detail"),
+    path(
+        "customers/<int:pk>/activate/",
+        views.activate_customer,
+        name="activate_customer",
+    ),
+    path(
+        "customers/<int:pk>/deactivate/",
+        views.deactivate_customer,
+        name="deactivate_customer",
+    ),
 ]
