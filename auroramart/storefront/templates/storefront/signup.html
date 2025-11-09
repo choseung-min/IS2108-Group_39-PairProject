@@ -139,6 +139,14 @@
                     {{ uform.email }} {{ uform.email.errors }}
                 </div>
                 <div>
+                    <label for="id_first_name">First Name</label>
+                    {{ uform.first_name }} {{ uform.first_name.errors }}
+                </div>
+                <div>
+                    <label for="id_last_name">Last Name</label>
+                    {{ uform.last_name }} {{ uform.last_name.errors }}
+                </div>
+                <div>
                     <label for="id_password1">Password</label>
                     {{ uform.password1 }} {{ uform.password1.errors }}
                 </div>
@@ -148,10 +156,6 @@
                 </div>
                 <!-- CUSTOMER FORM -->
                 {{ cform.non_field_errors }}
-                <div>
-                    <label for="id_name">Full Name</label>
-                    {{ cform.name }} {{ cform.name.errors }}
-                </div>
                 <div>
                     <label for="id_phone">Phone</label>
                     {{ cform.phone }} {{ cform.phone.errors }}

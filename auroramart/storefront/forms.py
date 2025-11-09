@@ -9,10 +9,19 @@ User = get_user_model()
 class UserSignupForm(UserCreationForm):
     # AbstractUser already has an email field; we expose it and enforce uniqueness
     email = forms.EmailField(required=True)
+    first_name = forms.CharField(max_length=150, required=True, label="First Name")
+    last_name = forms.CharField(max_length=150, required=True, label="Last Name")
 
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = ("username", "email", "password1", "password2")
+        fields = (
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "password1",
+            "password2",
+        )
 
     def clean_email(self):
         email = self.cleaned_data["email"].strip().lower()
@@ -25,6 +34,8 @@ class UserSignupForm(UserCreationForm):
         # ensure role is set for signups
         user.role = "customer"
         user.email = self.cleaned_data.get("email", "").strip().lower()
+        user.first_name = self.cleaned_data.get("first_name", "").strip()
+        user.last_name = self.cleaned_data.get("last_name", "").strip()
         if commit:
             user.save()
         return user

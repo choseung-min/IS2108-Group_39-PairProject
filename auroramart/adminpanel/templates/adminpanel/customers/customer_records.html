@@ -55,7 +55,7 @@
                     {% if customer.user.first_name or customer.user.last_name %}
                         {{ customer.user.first_name }} {{ customer.user.last_name }}
                     {% else %}
-                        {{ customer.user.username }} <em>(no name set)</em>
+                        {{ customer.user.username }}
                     {% endif %}
                 </a>
             </td>

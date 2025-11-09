@@ -30,4 +30,5 @@ urlpatterns = [
         views.deactivate_customer,
         name="deactivate_customer",
     ),
+    path("orders/<int:pk>/", views.order_detail, name="order_detail"),
 ]

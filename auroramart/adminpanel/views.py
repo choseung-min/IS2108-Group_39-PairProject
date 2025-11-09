@@ -1,7 +1,7 @@
 from urllib import request
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
-from storefront.models import Product, Category, Customer
+from storefront.models import Product, Category, Customer, Order, OrderItem
 from django.db.models import Q, F, ExpressionWrapper, FloatField
 from django.core.paginator import Paginator
 from .forms import ProductForm, CustomerForm
@@ -383,6 +383,9 @@ def customer_detail(request, pk):
     editing = request.GET.get("edit") == "true"
     form = None
 
+    # Get all orders for this customer
+    orders = customer.order_set.all().order_by("-order_date")
+
     if editing:
         if request.method == "POST":
             form = CustomerForm(request.POST, instance=customer)
@@ -406,7 +409,7 @@ def customer_detail(request, pk):
     return render(
         request,
         "adminpanel/customers/customer_detail.html",
-        {"customer": customer, "editing": editing, "form": form},
+        {"customer": customer, "editing": editing, "form": form, "orders": orders},
     )
 
 
@@ -440,3 +443,19 @@ def activate_customer(request, pk):
         )
         return redirect("customer_detail", pk=customer.pk)
     return redirect("customer_detail", pk=customer.pk)
+
+
+def order_detail(request, pk):
+    order = get_object_or_404(
+        Order.objects.select_related("customer", "customer__user").prefetch_related(
+            "orderitem_set__product"
+        ),
+        pk=pk,
+    )
+    order_items = order.orderitem_set.all()
+
+    return render(
+        request,
+        "adminpanel/orders/order_detail.html",
+        {"order": order, "order_items": order_items},
+    )

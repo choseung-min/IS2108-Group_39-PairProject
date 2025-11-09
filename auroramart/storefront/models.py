@@ -179,5 +179,9 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
     price_at_purchase = models.DecimalField(max_digits=10, decimal_places=2)
 
+    @property
+    def subtotal(self) -> Decimal:
+        return self.price_at_purchase * self.quantity
+
     def __str__(self):
         return f"{self.quantity} of {self.product.name} in Order {self.order.id}"
