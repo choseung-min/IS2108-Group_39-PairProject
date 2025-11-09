@@ -10,11 +10,14 @@
     .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-bottom:16px}
     table{width:100%;border-collapse:collapse} th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left}
     a.btn{padding:10px 12px;border-radius:8px;background:#111827;color:#fff;text-decoration:none}
+    a.back-btn{color:#6b7280;text-decoration:none;font-size:14px;margin-bottom:16px;display:inline-block}
+    a.back-btn:hover{color:#111827}
     pre{white-space:pre-wrap;background:#f8fafc;border:1px dashed var(--line);padding:10px;border-radius:10px}
   </style>
 </head>
 <body>
   <div class="container">
+    <a href="{% url 'home2' %}" class="back-btn">← Back</a>
     <h1>Order #{{ order.id }}</h1>
     <div class="card">
       <p>Status: {{ order.status }} · Placed on {{ order.order_date }}</p>

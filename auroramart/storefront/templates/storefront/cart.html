@@ -1,3 +1,4 @@
+{% load static %}
 <!doctype html>
 <html>
 <head>
@@ -9,6 +10,45 @@
         margin:0;
         background:#fafafa;
     }
+    .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    header.topbar {
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 10px 0;
+      margin-bottom: 24px;
+    }
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .logo-link {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      color: #111827;
+    }
+    .logo {
+      height: 42px;
+      width: auto;
+      margin-right: 10px;
+      border-radius: 8px;
+    }
+    .brand-name {
+      font-weight: 700;
+      font-size: 1.3rem;
+      letter-spacing: -0.02em;
+    }
+    header nav a {
+      margin-left: 20px;
+      text-decoration: none;
+      color: #374151;
+      font-weight: 500;
+    }
+    header nav a:hover { color: #111827; }
     .wrap{
         max-width:1000px;
         margin:auto;
@@ -49,6 +89,20 @@
   </style>
 </head>
 <body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="{% url 'home2' %}" class="logo-link">
+        <img src="{% static 'img/AuroraMart Logo.png' %}" alt="Aurora Mart" class="logo" />
+        <span class="brand-name">Aurora Mart</span>
+      </a>
+      <nav>
+        <a href="{% url 'home2' %}">Home</a>
+        <a href="{% url 'cart' %}">Cart</a>
+        <a href="{% url 'orders_list' %}">Past Orders</a>
+        <a href="{% url 'logout' %}">Logout</a>
+      </nav>
+    </div>
+  </header>
   <div class="wrap">
     <h1>Cart ({{ cart.count }})</h1>
 
@@ -90,12 +144,12 @@
     </table>
 
     <div class="actions">
-      <a class="btn" href="{% url 'home' %}">← Continue shopping</a>
+      <a class="btn" href="{% url 'home2' %}">← Continue shopping</a>
       <a class="btn p" href="{% url 'checkout_address' %}">Continue to checkout</a>
     </div>
     {% else %}
       <p>Your cart is empty.</p>
-      <a class="btn" href="{% url 'home' %}">Browse products</a>
+      <a class="btn" href="{% url 'home2' %}">Browse products</a>
     {% endif %}
   </div>
 </body>

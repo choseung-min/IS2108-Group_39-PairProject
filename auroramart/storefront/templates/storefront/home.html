@@ -24,17 +24,53 @@
     .navlinks { display:flex; align-items:center; gap:16px; }
 
     /* Chips & toolbar */
-    .chipbar { display:flex; flex-wrap:wrap; gap:10px; padding:12px 0; }
-    .chip { background:var(--chip); border:1px solid var(--line); padding:8px 12px; border-radius:999px; font-size:14px; }
+    .chipbar { 
+      display: grid; 
+      grid-template-columns: repeat(6, 1fr); 
+      grid-template-rows: repeat(2, 1fr);
+      gap: 12px; 
+      padding: 12px 0; 
+      max-width: 100%;
+    }
+    .chip { 
+      background:var(--chip); 
+      border:1px solid var(--line); 
+      padding:10px 16px; 
+      border-radius:999px; 
+      font-size:14px; 
+      text-align: center;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+    .chip:hover {
+      background: #e0e0e0;
+      transform: translateY(-1px);
+    }
+    .chip.active { 
+      background: rgb(109, 109, 109); 
+      color:white; 
+      border-color:black; 
+    }
     .toolbar { display:flex; align-items:center; justify-content:space-between; margin-top:8px; }
+    .toolbar > div { display:flex; align-items:center; }
+    .back-link { color:var(--muted); font-size:14px; margin-left:8px; text-decoration:none; }
+    .back-link:hover { color:var(--fg); }
     .muted { color:var(--muted); font-size:14px; }
     .sort form { display:flex; align-items:center; gap:8px; }
     .btn { display:inline-block; border:1px solid var(--line); padding:8px 10px; border-radius:8px; background:#fff; }
 
     /* Product grid */
     .grid { display:grid; grid-template-columns:repeat(5,1fr); gap:16px; margin-top:16px; }
-    @media (max-width:1024px){ .grid{ grid-template-columns:repeat(3,1fr); } }
-    @media (max-width:640px){ .grid{ grid-template-columns:repeat(2,1fr); } .navlinks{ gap:10px; } }
+    @media (max-width:1024px){ 
+      .grid{ grid-template-columns:repeat(3,1fr); }
+      .chipbar { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(4, 1fr); gap: 10px; }
+    }
+    @media (max-width:640px){ 
+      .grid{ grid-template-columns:repeat(2,1fr); } 
+      .navlinks{ gap:10px; }
+      .chipbar { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(6, 1fr); gap: 8px; }
+      .chip { padding: 8px 12px; font-size: 13px; }
+    }
 
     /* Card ALIGNMENT FIX */
     .card {
@@ -83,12 +119,12 @@
 
 <header>
   <div class="wrap row">
-    <a class="brand" href="{% url 'home' %}">
+    <a class="brand" href="{% url 'home2' %}">
       <img src="{% static 'img/AuroraMart Logo.png' %}" alt="Aurora Mart" />
       <span>Aurora&nbsp;Mart</span>
     </a>
 
-    <form class="search grow" method="get" action="{% url 'home' %}">
+    <form class="search grow" method="get" action="{% if category %}{% url 'category' category.slug %}{% else %}{% url 'home2' %}{% endif %}">
       <input type="search" name="q" value="{{ q }}" placeholder="Search for products…" />
       <button class="btn" type="submit">🔎</button>
     </form>
@@ -111,7 +147,7 @@
   <h2 style="margin:16px 0 4px">Categories</h2>
   <div class="chipbar">
     {% for c in categories %}
-      <a class="chip" href="{% url 'category' c.slug %}">{{ c.name }}</a>
+      <a class="chip {% if category and c.slug == category.slug %}active{% endif %}" href="{% url 'category' c.slug %}">{{ c.name }}</a>
     {% empty %}
       <span class="muted">No categories yet.</span>
     {% endfor %}
@@ -119,10 +155,21 @@
 
   <!-- Daily Discover toolbar -->
   <div class="toolbar">
-    <h2 style="margin:0">Daily Discover</h2>
+    <div>
+      <h2 style="margin:0">
+        {% if category %}
+          {{ category.name }}
+        {% else %}
+          Daily Discover
+        {% endif %}
+      </h2>
+      {% if category %}
+        <a href="{% url 'home2' %}" class="back-link">← Back to All Products</a>
+      {% endif %}
+    </div>
     <div class="row" style="gap:10px">
       <div class="sort">
-        <form method="get">
+        <form method="get" action="{% if category %}{% url 'category' category.slug %}{% else %}{% url 'home2' %}{% endif %}">
           <input type="hidden" name="q" value="{{ q }}">
           <label class="muted">Sort:</label>
           <select name="sort" onchange="this.form.submit()">

@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
+from django.utils.http import url_has_allowed_host_and_scheme
 from .forms import UserSignupForm, CustomerForm, EmailLoginForm, AddressForm, PaymentForm, ProfileForm
 from .models import Product, Category, Cart, CartItem, Customer, Order, OrderItem
 
@@ -47,7 +48,6 @@ def home(request, slug=None):
         'products': products[:500],
         'q': q,
         'sort': sort,
-        'cart_count': _get_cart_for(request.user).count if request.user.is_authenticated else request.session.get("cart_count", 0),
         'category': category,
     }
     return render(request, 'storefront/home.html', context)
@@ -69,7 +69,7 @@ def signup(request):
             login(request, user)
 
             # 4️⃣ Redirect to homepage after success
-            return redirect("home")
+            return redirect("home2")
     else:
         uform = UserSignupForm()
         cform = CustomerForm()
@@ -83,14 +83,28 @@ def login_view(request):
         if form.is_valid():
             user = form.cleaned_data["user"]
             login(request, user)
-            return redirect("home")
+            
+            # Check for 'next' parameter first (with security validation)
+            next_url = request.GET.get('next') or request.POST.get('next')
+            if next_url and url_has_allowed_host_and_scheme(
+                next_url, 
+                allowed_hosts={request.get_host()}, 
+                require_https=request.is_secure()
+            ):
+                return redirect(next_url)
+            
+            # Check if user is admin/staff and redirect accordingly
+            if user.is_staff or user.is_superuser:
+                return redirect("/adminpanel/")  # Redirect to admin panel
+            else:
+                return redirect("home2")  # Redirect to storefront
     else:
         form = EmailLoginForm()
     return render(request, "storefront/login.html", {"form": form})
 
 def logout_view(request):
     logout(request)
-    return redirect('home')
+    return redirect('home2')
 
 #Cart Views
 def cart_guest(request):
