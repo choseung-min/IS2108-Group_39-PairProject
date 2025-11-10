@@ -17,9 +17,7 @@
                         align-items: center;
                         gap: 6px;
                         font-weight: 400">
-                ⚠️ <span><b>{{ low_stock_count }}</b> product
-                {% if low_stock_count != 1 %}s{% endif %}
-            need restocking!&nbsp;</span>
+                ⚠️ <span><b>{{ low_stock_count }}</b> product{% if low_stock_count != 1 %}s{% endif %} need restocking!&nbsp;</span>
             <a href="{% url 'restock' %}"
                style="color: #b36b00;
                       font-weight: 400;

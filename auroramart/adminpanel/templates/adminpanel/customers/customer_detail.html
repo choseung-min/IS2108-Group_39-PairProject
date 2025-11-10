@@ -36,6 +36,9 @@
             {% endif %}
         </h2>
         <a href="{% url 'customers' %}">Back to Customer Records</a>
+        <span style="float: right;">
+            <a href="{% url 'admin_logout' %}">Logout</a>
+        </span>
         <br />
         <br />
         {% if messages %}

@@ -248,6 +248,13 @@ class EmailLoginForm(forms.Form):
             except User.DoesNotExist:
                 raise forms.ValidationError("No account found with that email.")
 
+            # Check if account is deactivated BEFORE authenticating
+            if not user.is_active:
+                # Store the email for the deactivated page
+                cleaned_data["deactivated_email"] = email
+                cleaned_data["user"] = None
+                return cleaned_data
+
             user = authenticate(username=user.username, password=password)
             if user is None:
                 raise forms.ValidationError("Invalid email or password.")

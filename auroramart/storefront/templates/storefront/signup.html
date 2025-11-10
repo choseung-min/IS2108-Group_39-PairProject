@@ -131,13 +131,17 @@
         <label for="id_password2">Confirm Password</label>
         {{ uform.password2 }} {{ uform.password2.errors }}
       </div>
+      <div>
+        <label for="id_first_name">First Name</label>
+        {{ uform.first_name }} {{ uform.first_name.errors }}
+      </div>
+      <div>
+        <label for="id_last_name">Last Name</label>
+        {{ uform.last_name }} {{ uform.last_name.errors }}
+      </div>
 
       <!-- CUSTOMER FORM -->
       {{ cform.non_field_errors }}
-      <div>
-        <label for="id_name">Full Name</label>
-        {{ cform.name }} {{ cform.name.errors }}
-      </div>
       <div>
         <label for="id_phone">Phone</label>
         {{ cform.phone }} {{ cform.phone.errors }}

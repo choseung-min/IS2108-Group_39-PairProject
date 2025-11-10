@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Account Deactivated - Aurora Mart</title>
+        <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #fafafa;
+    }
+    .container {
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      padding: 40px;
+      width: 480px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+    .logo {
+      margin-bottom: 24px;
+    }
+    .logo img {
+      width: 140px;
+    }
+    .icon {
+      font-size: 64px;
+      color: #f44336;
+      margin-bottom: 16px;
+    }
+    h2 {
+      color: #333;
+      margin-bottom: 16px;
+    }
+    p {
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+    .email {
+      font-weight: 600;
+      color: #333;
+    }
+    .contact-info {
+      background: #f5f5f5;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 24px 0;
+      text-align: left;
+    }
+    .contact-info h3 {
+      margin-top: 0;
+      color: #333;
+      font-size: 16px;
+    }
+    .contact-info p {
+      margin: 8px 0;
+      font-size: 14px;
+    }
+    .btn {
+      background: black;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 16px;
+    }
+    .btn:hover {
+      background: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <a href="{% url 'home2' %}">
+        <img src="{% static 'img/AuroraMart Logo.png' %}" alt="Aurora Mart Logo">
+      </a>
+    </div>
+
+    <div class="icon">🚫</div>
+
+    <h2>Account Deactivated</h2>
+
+    {% if email %}
+    <p>The account associated with <span class="email">{{ email }}</span> has been deactivated.</p>
+    {% else %}
+    <p>Your account has been deactivated.</p>
+    {% endif %}
+
+    <p>You cannot log in to this account at this time.</p>
+
+    <div class="contact-info">
+      <h3>Need help?</h3>
+      <p>If you believe this is an error or would like to reactivate your account, please contact our support team:</p>
+      <p><strong>Email:</strong> support@auroramart.com</p>
+      <p><strong>Phone:</strong> +65 9876 5432</p>
+    </div>
+
+    <a href="{% url 'home2' %}" class="btn">Return to Home</a>
+  </div>
+</body>
+</html>

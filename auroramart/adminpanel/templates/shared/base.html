@@ -75,6 +75,7 @@
             {% block nav %}
                 <a href="{% url 'home' %}">Home</a>
             {% endblock %}
+            <a href="{% url 'admin_logout' %}" style="float: right;">Logout</a>
         </div>
         {% if messages %}
             <ul class="messages">

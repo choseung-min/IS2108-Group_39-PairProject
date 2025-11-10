@@ -1,5 +1,6 @@
 from urllib import request
 from django.contrib import messages
+from django.contrib.auth import logout
 from django.shortcuts import get_object_or_404, redirect, render
 from storefront.models import Product, Category, Customer, Order, OrderItem
 from django.db.models import Q, F, ExpressionWrapper, FloatField
@@ -459,3 +460,8 @@ def order_detail(request, pk):
         "adminpanel/orders/order_detail.html",
         {"order": order, "order_items": order_items},
     )
+
+
+def logout_view(request):
+    logout(request)
+    return redirect("home2")  # Redirect to storefront home

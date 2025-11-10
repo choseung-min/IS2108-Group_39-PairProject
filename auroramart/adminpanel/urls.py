@@ -31,4 +31,5 @@ urlpatterns = [
         name="deactivate_customer",
     ),
     path("orders/<int:pk>/", views.order_detail, name="order_detail"),
+    path("logout/", views.logout_view, name="admin_logout"),
 ]
