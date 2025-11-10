@@ -13,32 +13,29 @@
     .muted { color:var(--muted); }
     .btn { display:inline-block; margin-top:16px; padding:12px 14px; border:0; border-radius:10px; font-weight:600; cursor:pointer; background:#111827; color:#fff; text-decoration:none; }
     ul { padding-left: 18px; }
-        </style>
-    </head>
-    <body>
-        <main>
-            <div class="card">
-                <h1>Thank you! 🎉</h1>
-                <p>
-                    Your order <strong>#{{ order.id }}</strong> has been placed.
-                </p>
-                <p class="muted">Status: {{ order.status }} &middot; Placed on {{ order.order_date }}</p>
-                <h3>Delivery Address</h3>
-                <pre style="white-space:pre-wrap;
-                            border:1px dashed #e5e7eb;
-                            padding:10px;
-                            border-radius:8px">{{ order.delivery_address }}</pre>
-                <h3>Order Summary</h3>
-                <ul>
-                    {% for item in order.orderitem_set.all %}
-                        <li>{{ item.product.name }} × {{ item.quantity }} @ ${{ item.price_at_purchase|floatformat:2 }}</li>
-                    {% endfor %}
-                </ul>
-                <p>
-                    <strong>Total paid: ${{ order.total_amount|floatformat:2 }}</strong>
-                </p>
-                <a class="btn" href="{% url 'home' %}">Continue shopping</a>
-            </div>
-        </main>
-    </body>
+  </style>
+</head>
+<body>
+  <main>
+    <div class="card">
+      <h1>Thank you! 🎉</h1>
+      <p>Your order <strong>#{{ order.id }}</strong> has been placed.</p>
+      <p class="muted">Status: {{ order.status }} &middot; Placed on {{ order.order_date }}</p>
+
+      <h3>Delivery Address</h3>
+      <pre style="white-space:pre-wrap; border:1px dashed #e5e7eb; padding:10px; border-radius:8px;">{{ order.delivery_address }}</pre>
+
+      <h3>Order Summary</h3>
+      <ul>
+        {% for item in order.orderitem_set.all %}
+          <li>{{ item.product.name }} × {{ item.quantity }} @ ${{ item.price_at_purchase|floatformat:2 }}</li>
+        {% endfor %}
+      </ul>
+
+      <p><strong>Total paid: ${{ order.total_amount|floatformat:2 }}</strong></p>
+
+      <a class="btn" href="{% url 'home2' %}">Continue shopping</a>
+    </div>
+  </main>
+</body>
 </html>

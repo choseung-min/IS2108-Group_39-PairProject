@@ -11,53 +11,44 @@
     .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-bottom:16px}
     table{width:100%;border-collapse:collapse} th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left}
     a.btn{padding:10px 12px;border-radius:8px;background:#111827;color:#fff;text-decoration:none}
+    a.back-btn{color:#6b7280;text-decoration:none;font-size:14px;margin-bottom:16px;display:inline-block}
+    a.back-btn:hover{color:#111827}
     pre{white-space:pre-wrap;background:#f8fafc;border:1px dashed var(--line);padding:10px;border-radius:10px}
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>Order #{{ order.id }}</h1>
-            <div class="card">
-                <p>Status: {{ order.status }} · Placed on {{ order.order_date }}</p>
-                <h3>Delivery Address</h3>
-                <pre>{{ order.delivery_address }}</pre>
-            </div>
-            <div class="card">
-                <h3>Items</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Qty</th>
-                            <th>Price</th>
-                            <th>Line total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for it in items %}
-                            <tr>
-                                <td>{{ it.product.name }}</td>
-                                <td>{{ it.quantity }}</td>
-                                <td>${{ it.price_at_purchase|floatformat:2 }}</td>
-                                <td>${{ it.quantity|add:"0"|floatformat:0|yesno:",," }}{{ it.price_at_purchase|floatformat:2 }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="3" style="text-align:right;">
-                                <strong>Total</strong>
-                            </td>
-                            <td>
-                                <strong>${{ order.total_amount|floatformat:2 }}</strong>
-                            </td>
-                        </tr>
-                    </tfoot>
-                </table>
-                <p style="margin-top:12px;">
-                    <a class="btn" href="{% url 'order_reorder' order.id %}">Reorder all items</a>
-                </p>
-            </div>
-        </div>
-    </body>
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="{% url 'home2' %}" class="back-btn">← Back</a>
+    <h1>Order #{{ order.id }}</h1>
+    <div class="card">
+      <p>Status: {{ order.status }} · Placed on {{ order.order_date }}</p>
+      <h3>Delivery Address</h3>
+      <pre>{{ order.delivery_address }}</pre>
+    </div>
+
+    <div class="card">
+      <h3>Items</h3>
+      <table>
+        <thead><tr><th>Product</th><th>Qty</th><th>Price</th><th>Line total</th></tr></thead>
+        <tbody>
+          {% for it in items %}
+            <tr>
+              <td>{{ it.product.name }}</td>
+              <td>{{ it.quantity }}</td>
+              <td>${{ it.price_at_purchase|floatformat:2 }}</td>
+              <td>${{ it.quantity|add:"0"|floatformat:0|yesno:",," }}{{ it.price_at_purchase|floatformat:2 }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr><td colspan="3" style="text-align:right;"><strong>Total</strong></td>
+              <td><strong>${{ order.total_amount|floatformat:2 }}</strong></td></tr>
+        </tfoot>
+      </table>
+      <p style="margin-top:12px;">
+        <a class="btn" href="{% url 'order_reorder' order.id %}">Reorder all items</a>
+      </p>
+    </div>
+  </div>
+</body>
 </html>

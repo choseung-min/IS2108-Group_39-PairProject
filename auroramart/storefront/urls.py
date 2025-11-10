@@ -1,9 +1,10 @@
 from django.urls import path
 from . import views
 from django.http import HttpResponse
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    path('', views.home, name='home'),
+    path('', views.home, name='home2'),
     path('cart', views.cart_view, name='cart'),
     path('cart/guest/', views.cart_guest, name='cart_guest'),
     path('cart/add/<int:product_id>/', views.cart_add, name='cart_add'),
@@ -21,4 +22,8 @@ urlpatterns = [
     path('checkout/address', views.checkout_address_view, name='checkout_address'),
     path('checkout/payment', views.checkout_payment_view, name='checkout_payment'),
     path('order/success/<str:order_id>/', views.order_success_view, name='order_success'), #take note I am using order_id not order_number
+    path("password_reset/", auth_views.PasswordResetView.as_view(template_name='storefront/password_reset_form.html'), name="password_reset"),
+    path("password_reset/done/", auth_views.PasswordResetDoneView.as_view(template_name='storefront/password_reset_done.html'), name="password_reset_done"),
+    path("reset/<uidb64>/<token>/", auth_views.PasswordResetConfirmView.as_view(template_name='storefront/password_reset_confirm.html'), name="password_reset_confirm"),
+    path("reset/done/", auth_views.PasswordResetCompleteView.as_view(template_name='storefront/password_reset_complete.html'), name="password_reset_complete"),
 ]
