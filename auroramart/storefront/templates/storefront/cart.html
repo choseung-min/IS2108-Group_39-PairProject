@@ -5,87 +5,37 @@
   <meta charset="utf-8">
   <title>Your Cart – Aurora Mart</title>
   <style>
-    body{
-        font-family:system-ui;
-        margin:0;
-        background:#fafafa;
-    }
-    .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
-    header.topbar {
-      background: #fff;
-      border-bottom: 1px solid #e5e7eb;
-      padding: 10px 0;
-      margin-bottom: 24px;
-    }
-    .topbar-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
-    .logo-link {
-      display: flex;
-      align-items: center;
-      text-decoration: none;
-      color: #111827;
-    }
-    .logo {
-      height: 42px;
-      width: auto;
-      margin-right: 10px;
-      border-radius: 8px;
-    }
-    .brand-name {
-      font-weight: 700;
-      font-size: 1.3rem;
-      letter-spacing: -0.02em;
-    }
-    header nav a {
-      margin-left: 20px;
-      text-decoration: none;
-      color: #374151;
-      font-weight: 500;
-    }
-    header nav a:hover { color: #111827; }
-    .wrap{
-        max-width:1000px;
-        margin:auto;
-        padding:24px;
-    }
-    table{
-        width:100%;
-        border-collapse:collapse;
-        background:#fff;
-        border:1px solid #eee;
-    }
-    th,td{
-        padding:12px;
-        border-bottom:1px solid #f0f0f0;
-        text-align:left;
-    }
-    .qty form{
-        display:inline;
-    }
-    .btn{
-        padding:6px 10px;
-        border:1px solid #ddd;background:#fff;
-        border-radius:6px;
-        cursor:pointer;
-    }
-    .btn.p{
-        background:#111;
-        color:#fff;
-    }
-    tfoot td{
-        font-weight:700;
-    }
-    .actions{
-        display:flex;
-        justify-content:space-between;
-        margin-top:16px;
-    }
+    body{ font-family:system-ui; margin:0; background:#fafafa; }
+    .container { max-width:1100px; margin:0 auto; padding:24px; }
+    header.topbar{ background:#fff; border-bottom:1px solid #e5e7eb; padding:10px 0; margin-bottom:24px; }
+    .topbar-inner{ display:flex; align-items:center; justify-content:space-between; max-width:1100px; margin:0 auto; padding:0 24px; }
+    .logo-link{ display:flex; align-items:center; text-decoration:none; color:#111827; }
+    .logo{ height:42px; width:auto; margin-right:10px; border-radius:8px; }
+    .brand-name{ font-weight:700; font-size:1.3rem; letter-spacing:-0.02em; }
+    header nav a{ margin-left:20px; text-decoration:none; color:#374151; font-weight:500; }
+    header nav a:hover{ color:#111827; }
+
+    .wrap{ max-width:1000px; margin:auto; padding:24px; }
+
+    table{ width:100%; border-collapse:collapse; background:#fff; border:1px solid #eee; border-radius:12px; overflow:hidden; box-shadow:0 4px 14px rgba(0,0,0,.06); }
+    th,td{ padding:14px 16px; border-bottom:1px solid #f0f0f0; text-align:left; }
+    thead th{ background:#fafbfc; font-weight:700; }
+    tfoot td{ font-weight:700; }
+
+    .qty form{ display:inline; }
+
+    .btn{ display:inline-block; padding:8px 12px; border:1px solid #ddd; background:#fff; border-radius:10px; cursor:pointer; text-decoration:none; color:#111; transition:transform .04s ease, box-shadow .2s ease; box-shadow:0 4px 10px rgba(0,0,0,.05); }
+    .btn:hover{ transform:translateY(-1px); }
+    .btn.p{ background:#111; color:#fff; border-color:#111; }
+
+    .actions{ display:flex; justify-content:space-between; margin-top:16px; }
+
+    /* Empty state styles */
+    .empty-row td{ padding:40px 16px; }
+    .empty-state{ text-align:center; padding:12px; }
+    .empty-icon{ font-size:42px; line-height:1; margin-bottom:8px; }
+    .empty-state h3{ margin:6px 0 6px; font-size:20px; font-weight:700; }
+    .empty-state p{ margin:0 0 16px; color:#6b7280; }
   </style>
 </head>
 <body>
@@ -103,53 +53,72 @@
       </nav>
     </div>
   </header>
+
   <div class="wrap">
     <h1>Cart ({{ cart.count }})</h1>
 
     {% if items %}
-    <table>
-      <thead>
-        <tr><th>Item</th><th>Price</th><th style="width:160px;">Qty</th><th>Subtotal</th><th></th></tr>
-      </thead>
-      <tbody>
-        {% for it in items %}
-        <tr>
-          <td>
-            <a href="{% url 'product' it.product.slug %}">{{ it.product.name }}</a>
-          </td>
-          <td>${{ it.price_snapshot }}</td>
-          <td class="qty">
-            <form method="post" action="{% url 'cart_update' it.id %}">{% csrf_token %}
-              <input type="hidden" name="action" value="dec">
-              <button class="btn" type="submit">−</button>
-            </form>
-            <span style="display:inline-block;min-width:28px;text-align:center">{{ it.quantity }}</span>
-            <form method="post" action="{% url 'cart_update' it.id %}">{% csrf_token %}
-              <input type="hidden" name="action" value="inc">
-              <button class="btn" type="submit">+</button>
-            </form>
-          </td>
-          <td>${{ it.line_total }}</td>
-          <td>
-            <form method="post" action="{% url 'cart_remove' it.id %}">{% csrf_token %}
-              <button class="btn" type="submit">Remove</button>
-            </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-      <tfoot>
-        <tr><td colspan="3" style="text-align:right">Total</td><td>${{ cart.total }}</td><td></td></tr>
-      </tfoot>
-    </table>
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th><th>Price</th><th style="width:160px;">Qty</th><th>Subtotal</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for it in items %}
+          <tr>
+            <td><a href="{% url 'product' it.product.slug %}">{{ it.product.name }}</a></td>
+            <td>${{ it.price_snapshot }}</td>
+            <td class="qty">
+              <form method="post" action="{% url 'cart_update' it.id %}">{% csrf_token %}
+                <input type="hidden" name="action" value="dec">
+                <button class="btn" type="submit">−</button>
+              </form>
+              <span style="display:inline-block;min-width:28px;text-align:center">{{ it.quantity }}</span>
+              <form method="post" action="{% url 'cart_update' it.id %}">{% csrf_token %}
+                <input type="hidden" name="action" value="inc">
+                <button class="btn" type="submit">+</button>
+              </form>
+            </td>
+            <td>${{ it.line_total }}</td>
+            <td>
+              <form method="post" action="{% url 'cart_remove' it.id %}">{% csrf_token %}
+                <button class="btn" type="submit">Remove</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr><td colspan="3" style="text-align:right">Total</td><td>${{ cart.total }}</td><td></td></tr>
+        </tfoot>
+      </table>
 
-    <div class="actions">
-      <a class="btn" href="{% url 'home2' %}">← Continue shopping</a>
-      <a class="btn p" href="{% url 'checkout_address' %}">Continue to checkout</a>
-    </div>
+      <div class="actions">
+        <a class="btn" href="{% url 'home2' %}">← Continue shopping</a>
+        <a class="btn p" href="{% url 'checkout_address' %}">Continue to checkout</a>
+      </div>
     {% else %}
-      <p>Your cart is empty.</p>
-      <a class="btn" href="{% url 'home2' %}">Browse products</a>
+      <!-- Empty-state TABLE keeping the same layout -->
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th><th>Price</th><th style="width:160px;">Qty</th><th>Subtotal</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="empty-row">
+            <td colspan="5">
+              <div class="empty-state">
+                <div class="empty-icon">🛒</div>
+                <h3>No items in your cart</h3>
+                <p>Your cart looks a little light. Start adding products to see them here.</p>
+                <a class="btn p" href="{% url 'home2' %}">Browse products</a>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     {% endif %}
   </div>
 </body>
