@@ -15,4 +15,5 @@ venv/
 
 *.csv
 
-auroramart/storefront/mlmodels/*.joblib
+storefront/mlmodels/*.joblib
+*.joblib

@@ -7,8 +7,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.urls import reverse
 from .forms import UserSignupForm, CustomerForm, EmailLoginForm, AddressForm, PaymentForm, ProfileForm
 from .models import Product, Category, Cart, CartItem, Customer, Order, OrderItem
+from .ml.category_predictor import predict_preferred_category
 
 # Create your views here.
 
@@ -53,23 +55,61 @@ def home(request, slug=None):
     return render(request, 'storefront/home.html', context)
 
 #Signup / Login / Logout Views
+def preferred_category_url_for(user) -> str:
+    """Return URL to the user's preferred category page, or home2 as fallback."""
+    customer = getattr(user, "customer", None)
+    if not customer or not customer.preferred_category:
+        return reverse("home2")
+
+    label = customer.preferred_category.strip()
+
+    cat = Category.objects.filter(name__iexact=label).first()
+    if not cat:
+        # try slug too, in case the model returned a slug-like string
+        cat = Category.objects.filter(slug__iexact=label).first()
+
+    if cat:
+        return reverse("category", kwargs={"slug": cat.slug})
+    return reverse("home2")
+
 def signup(request):
     # Handle GET (empty form) vs POST (submitted form)
     if request.method == "POST":
         uform = UserSignupForm(request.POST)
         cform = CustomerForm(request.POST)
         if uform.is_valid() and cform.is_valid():
-            # 1️⃣ Create the Django User
+            #Create the Django User
             user = uform.save()  
             
-            # 2️⃣ Create the Customer linked to that User
+            #Create the Customer linked to that User
             customer = cform.save(user=user)
-            
-            # 3️⃣ Auto-login the new user
-            login(request, user)
 
-            # 4️⃣ Redirect to homepage after success
-            return redirect("home2")
+            try:
+                payload = {
+                    "age": customer.age,
+                    "household_size": customer.household_size,
+                    "has_children": 1 if customer.has_children else 0,
+                    "monthly_income_sgd": customer.monthly_income or 0,
+                    "gender": customer.gender,
+                    "employment_status": customer.employment_status,
+                    "occupation": customer.occupation,
+                    "education": customer.education,
+                }
+                category_pred = predict_preferred_category(payload)
+                # Ensure we extract the string from a numpy array or list
+                if isinstance(category_pred, (list, tuple)) or hasattr(category_pred, '__iter__'):
+                    category_pred = category_pred[0]
+                category_str = str(category_pred).strip()
+
+                customer.preferred_category = category_str
+                customer.save(update_fields=["preferred_category"])
+                messages.success(request, f"Preferred category '{category_str}' predicted based on your profile.")
+            except Exception as e:
+                print("AI prediction error:", e)
+                messages.info(request, "Could not predict preferred category at this time.")
+            
+            login(request, user)
+            return redirect(preferred_category_url_for(user))
     else:
         uform = UserSignupForm()
         cform = CustomerForm()
@@ -97,7 +137,7 @@ def login_view(request):
             if user.is_staff or user.is_superuser:
                 return redirect("/adminpanel/")  # Redirect to admin panel
             else:
-                return redirect("home2")  # Redirect to storefront
+                return redirect(preferred_category_url_for(user))  # Redirect to storefront
     else:
         form = EmailLoginForm()
     return render(request, "storefront/login.html", {"form": form})
@@ -361,17 +401,53 @@ def order_success_view(request, order_id):
 #view profile views
 @login_required
 def profile_view(request):
+    customer = request.user.customer
+
     if request.method == "POST":
         form = ProfileForm(request.user, request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Profile updated.")
+            form.save()  # ✅ Save updated profile info first
+
+            # 🔁 Re-run AI prediction after saving
+            try:
+                payload = {
+                    "age": customer.age,
+                    "household_size": customer.household_size,
+                    "has_children": 1 if customer.has_children else 0,
+                    "monthly_income_sgd": customer.monthly_income or 0,
+                    "gender": customer.gender,
+                    "employment_status": customer.employment_status,
+                    "occupation": customer.occupation,
+                    "education": customer.education,
+                }
+
+                category_pred = predict_preferred_category(payload)
+                # Extract string from NumPy array if needed
+                if isinstance(category_pred, (list, tuple)) or hasattr(category_pred, "__iter__"):
+                    category_pred = category_pred[0]
+                category_str = str(category_pred).strip()
+
+                customer.preferred_category = category_str
+                customer.save(update_fields=["preferred_category"])
+
+                messages.success(
+                    request,
+                    f"Profile updated. Preferred category automatically refreshed to '{category_str}'."
+                )
+            except Exception as e:
+                print("AI prediction error (profile update):", e)
+                messages.warning(
+                    request,
+                    "Profile updated, but personalisation could not be refreshed at this time."
+                )
+
             return redirect("account")
-        messages.error(request, "Please correct the errors below.")
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         form = ProfileForm(request.user)
 
-    orders = Order.objects.filter(customer=request.user.customer).order_by("-order_date")[:5]
+    orders = Order.objects.filter(customer=customer).order_by("-order_date")[:5]
     return render(request, "storefront/account.html", {"form": form, "orders": orders})
 
 @login_required

@@ -79,6 +79,8 @@ class Customer(models.Model):
     postal_code = models.CharField(max_length=10)
     city_state = models.CharField(max_length=10, blank=True)
 
+    preferred_category = models.CharField(max_length=100, blank=True, null=True)
+
     def __str__(self):
         return self.user.username
 
