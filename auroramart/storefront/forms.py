@@ -250,8 +250,9 @@ class EmailLoginForm(forms.Form):
 
             # Check if account is deactivated BEFORE authenticating
             if not user.is_active:
-                # Store the email for the deactivated page
+                # Store the email and deactivation reason for the deactivated page
                 cleaned_data["deactivated_email"] = email
+                cleaned_data["deactivation_reason"] = user.deactivation_reason or ""
                 cleaned_data["user"] = None
                 return cleaned_data
 

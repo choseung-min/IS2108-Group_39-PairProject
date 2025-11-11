@@ -36,9 +36,6 @@
             {% endif %}
         </h2>
         <a href="{% url 'customers' %}">Back to Customer Records</a>
-        <span style="float: right;">
-            <a href="{% url 'admin_logout' %}">Logout</a>
-        </span>
         <br />
         <br />
         {% if messages %}
@@ -229,6 +226,14 @@
                             {% endif %}
                         </td>
                     </tr>
+                    {% if not customer.user.is_active and customer.user.deactivation_reason %}
+                        <tr>
+                            <td>
+                                <b>Deactivation Reason</b>
+                            </td>
+                            <td>{{ customer.user.deactivation_reason }}</td>
+                        </tr>
+                    {% endif %}
                 </table>
             </div>
         {% endif %}
@@ -274,21 +279,63 @@
             </p>
         </div>
         {% if customer.user.is_active %}
-            <form method="post"
-                  action="{% url 'deactivate_customer' pk=customer.pk %}"
-                  style="display: inline"
-                  onsubmit="return confirm('Are you sure you want to deactivate this customer account?');">
-                {% csrf_token %}
-                <button type="submit">Deactivate Customer</button>
-            </form>
+            <div style="border: 1px solid #ddd;
+                        padding: 20px;
+                        margin: 20px auto;
+                        width: 60%;
+                        background-color: #fff3cd">
+                <h3 style="color: #856404">Deactivate Customer Account</h3>
+                <form method="post" action="{% url 'deactivate_customer' pk=customer.pk %}">
+                    {% csrf_token %}
+                    <p>
+                        <label for="deactivation_reason">
+                            <b>Reason for Deactivation:</b> (This will be shown to the customer)
+                        </label>
+                        <br />
+                        <textarea id="deactivation_reason"
+                                  name="deactivation_reason"
+                                  rows="4"
+                                  style="width: 100%;
+                                         margin-top: 5px"
+                                  placeholder="e.g., Account suspended due to violation of terms of service..."
+                                  required></textarea>
+                    </p>
+                    <button type="submit"
+                            style="background-color: #dc3545;
+                                   color: white;
+                                   padding: 10px 20px;
+                                   border: none;
+                                   cursor: pointer"
+                            onclick="return confirm('Are you sure you want to deactivate this customer account?');">Deactivate Customer</button>
+                </form>
+            </div>
         {% else %}
-            <form method="post"
-                  action="{% url 'activate_customer' pk=customer.pk %}"
-                  style="display: inline"
-                  onsubmit="return confirm('Are you sure you want to activate this customer account?');">
-                {% csrf_token %}
-                <button type="submit">Activate Customer</button>
-            </form>
+            <div style="border: 1px solid #ddd;
+                        padding: 20px;
+                        margin: 20px auto;
+                        width: 60%;
+                        background-color: #d4edda">
+                <h3 style="color: #155724">Reactivate Customer Account</h3>
+                {% if customer.user.deactivation_reason %}
+                    <p>
+                        <b>Previous Deactivation Reason:</b>
+                        <br />
+                        <i>{{ customer.user.deactivation_reason }}</i>
+                    </p>
+                {% endif %}
+                <form method="post"
+                      action="{% url 'activate_customer' pk=customer.pk %}"
+                      style="display: inline">
+                    {% csrf_token %}
+                    <button type="submit"
+                            style="background-color: #28a745;
+                                   color: white;
+                                   padding: 10px 20px;
+                                   border: none;
+                                   cursor: pointer"
+                            onclick="return confirm('Are you sure you want to reactivate this customer account?');">Activate Customer</button>
+                </form>
+            </div>
         {% endif %}
     </body>
 </html>

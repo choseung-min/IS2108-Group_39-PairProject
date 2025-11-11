@@ -99,6 +99,13 @@
 
     <p>You cannot log in to this account at this time.</p>
 
+    {% if reason %}
+    <div class="contact-info">
+      <h3>Reason for Deactivation</h3>
+      <p>{{ reason }}</p>
+    </div>
+    {% endif %}
+
     <div class="contact-info">
       <h3>Need help?</h3>
       <p>If you believe this is an error or would like to reactivate your account, please contact our support team:</p>

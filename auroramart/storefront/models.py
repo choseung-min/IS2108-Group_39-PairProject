@@ -13,11 +13,19 @@ class User(AbstractUser):
         ("customer", "Customer"),
     )
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="customer")
+    deactivation_reason = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Reason for account deactivation (shown to user)",
+    )
 
     def save(self, *args, **kwargs):
         # auto-set admin role when creating a superuser
         if self.is_superuser:
             self.role = "admin"
+        # Clear deactivation reason if account is reactivated
+        if self.is_active and self.deactivation_reason:
+            self.deactivation_reason = None
         super().save(*args, **kwargs)
 
 

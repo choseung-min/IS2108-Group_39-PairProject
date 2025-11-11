@@ -1,6 +1,7 @@
 from urllib import request
 from django.contrib import messages
 from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import get_object_or_404, redirect, render
 from storefront.models import Product, Category, Customer, Order, OrderItem
 from django.db.models import Q, F, ExpressionWrapper, FloatField
@@ -8,10 +9,21 @@ from django.core.paginator import Paginator
 from .forms import ProductForm, CustomerForm
 
 
+def is_admin_or_staff(user):
+    """Check if user is authenticated and is either staff or admin"""
+    return user.is_authenticated and (
+        user.is_staff or user.is_superuser or user.role == "admin"
+    )
+
+
+@login_required(login_url="/login")
+@user_passes_test(is_admin_or_staff, login_url="/login")
 def home(request):
     return render(request, "adminpanel/home_page.html")
 
 
+@login_required(login_url="/login")
+@user_passes_test(is_admin_or_staff, login_url="/login")
 def products(request):
     products = Product.objects.all()
     query = request.GET.get("q")
@@ -116,6 +128,8 @@ def products(request):
     return render(request, "adminpanel/products/product_catalogue.html", context)
 
 
+@login_required(login_url="/login")
+@user_passes_test(is_admin_or_staff, login_url="/login")
 def add_product(request):
     if request.method == "POST":
         form = ProductForm(request.POST, request.FILES)
@@ -141,6 +155,8 @@ def add_product(request):
     return render(request, "adminpanel/products/add_product.html", {"form": form})
 
 
+@login_required(login_url="/login")
+@user_passes_test(is_admin_or_staff, login_url="/login")
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
     editing = request.GET.get("edit") == "true"
@@ -177,6 +193,8 @@ def product_detail(request, pk):
     )
 
 
+@login_required(login_url="/login")
+@user_passes_test(is_admin_or_staff, login_url="/login")
 def deactivate_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
 
@@ -191,6 +209,8 @@ def deactivate_product(request, pk):
     return redirect("product_detail", pk=product.pk)
 
 
+@login_required(login_url="/login")
+@user_passes_test(is_admin_or_staff, login_url="/login")
 def activate_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
 
@@ -205,6 +225,8 @@ def activate_product(request, pk):
     return redirect("product_detail", pk=product.pk)
 
 
+@login_required(login_url="/login")
+@user_passes_test(is_admin_or_staff, login_url="/login")
 def restock(request):
     products = Product.objects.filter(is_active=True)
     products_to_restock = products.filter(stock__lt=F("reorder_threshold"))
@@ -268,6 +290,8 @@ def restock(request):
     )
 
 
+@login_required(login_url="/login")
+@user_passes_test(is_admin_or_staff, login_url="/login")
 def add_stock_select(request):
     query = request.GET.get("q")
     products = Product.objects.filter(is_active=True)
@@ -297,6 +321,8 @@ def add_stock_select(request):
     )
 
 
+@login_required(login_url="/login")
+@user_passes_test(is_admin_or_staff, login_url="/login")
 def add_stock(request, pk):
     product = get_object_or_404(Product, pk=pk)
 
@@ -327,6 +353,8 @@ def add_stock(request, pk):
     )
 
 
+@login_required(login_url="/login")
+@user_passes_test(is_admin_or_staff, login_url="/login")
 def customers(request):
     customers = Customer.objects.all()
     query = request.GET.get("q")
@@ -379,6 +407,8 @@ def customers(request):
     return render(request, "adminpanel/customers/customer_records.html", context)
 
 
+@login_required(login_url="/login")
+@user_passes_test(is_admin_or_staff, login_url="/login")
 def customer_detail(request, pk):
     customer = get_object_or_404(Customer.objects.select_related("user"), pk=pk)
     editing = request.GET.get("edit") == "true"
@@ -414,11 +444,22 @@ def customer_detail(request, pk):
     )
 
 
+@login_required(login_url="/login")
+@user_passes_test(is_admin_or_staff, login_url="/login")
 def deactivate_customer(request, pk):
     customer = get_object_or_404(Customer.objects.select_related("user"), pk=pk)
 
     if request.method == "POST":
+        deactivation_reason = request.POST.get("deactivation_reason", "").strip()
+
+        if not deactivation_reason:
+            messages.error(
+                request, "Please provide a reason for deactivating the account."
+            )
+            return redirect("customer_detail", pk=customer.pk)
+
         customer.user.is_active = False
+        customer.user.deactivation_reason = deactivation_reason
         customer.user.save()
         messages.success(
             request,
@@ -430,11 +471,14 @@ def deactivate_customer(request, pk):
     return redirect("customer_detail", pk=customer.pk)
 
 
+@login_required(login_url="/login")
+@user_passes_test(is_admin_or_staff, login_url="/login")
 def activate_customer(request, pk):
     customer = get_object_or_404(Customer.objects.select_related("user"), pk=pk)
 
     if request.method == "POST":
         customer.user.is_active = True
+        customer.user.deactivation_reason = None  # Clear the deactivation reason
         customer.user.save()
         messages.success(
             request,
@@ -446,6 +490,8 @@ def activate_customer(request, pk):
     return redirect("customer_detail", pk=customer.pk)
 
 
+@login_required(login_url="/login")
+@user_passes_test(is_admin_or_staff, login_url="/login")
 def order_detail(request, pk):
     order = get_object_or_404(
         Order.objects.select_related("customer", "customer__user").prefetch_related(

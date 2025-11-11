@@ -24,9 +24,6 @@
     <body>
         <h2>Order #{{ order.id }}</h2>
         <a href="{% url 'customer_detail' pk=order.customer.pk %}">Back to Customer Details</a>
-        <span style="float: right;">
-            <a href="{% url 'admin_logout' %}">Logout</a>
-        </span>
         <br />
         <br />
         <h3>Order Information</h3>

@@ -10,9 +10,6 @@
     <body>
         <h2>{{ product.name }}</h2>
         <a href="{% url 'products' %}">Back to Product Catalogue</a>
-        <span style="float: right;">
-            <a href="{% url 'admin_logout' %}">Logout</a>
-        </span>
         <br />
         <br />
         {% if product.image %}

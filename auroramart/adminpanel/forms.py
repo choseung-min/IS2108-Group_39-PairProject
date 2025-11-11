@@ -44,6 +44,20 @@ class CustomerForm(forms.ModelForm):
     first_name = forms.CharField(max_length=150, required=False, label="First Name")
     last_name = forms.CharField(max_length=150, required=False, label="Last Name")
     email = forms.EmailField(required=True, label="Email Address")
+    is_active = forms.BooleanField(
+        required=False, initial=True, label="Account Active?"
+    )
+    deactivation_reason = forms.CharField(
+        widget=forms.Textarea(
+            attrs={
+                "rows": 3,
+                "placeholder": "Reason for deactivating this account (will be shown to the customer)",
+            }
+        ),
+        required=False,
+        label="Deactivation Reason",
+        help_text="This reason will be displayed to the customer when they try to log in.",
+    )
 
     class Meta:
         model = Customer
@@ -87,12 +101,18 @@ class CustomerForm(forms.ModelForm):
             self.fields["first_name"].initial = self.instance.user.first_name
             self.fields["last_name"].initial = self.instance.user.last_name
             self.fields["email"].initial = self.instance.user.email
+            self.fields["is_active"].initial = self.instance.user.is_active
+            self.fields["deactivation_reason"].initial = (
+                self.instance.user.deactivation_reason or ""
+            )
 
         # Reorder fields so User fields come first
         field_order = [
             "first_name",
             "last_name",
-            "email",  # User fields first
+            "email",
+            "is_active",
+            "deactivation_reason",  # User fields first
             "phone",
             "age",
             "household_size",
@@ -115,6 +135,18 @@ class CustomerForm(forms.ModelForm):
             customer.user.first_name = self.cleaned_data.get("first_name", "")
             customer.user.last_name = self.cleaned_data.get("last_name", "")
             customer.user.email = self.cleaned_data.get("email", "")
+            customer.user.is_active = self.cleaned_data.get("is_active", True)
+
+            # Handle deactivation reason
+            if not customer.user.is_active:
+                # If deactivating, save the reason
+                customer.user.deactivation_reason = self.cleaned_data.get(
+                    "deactivation_reason", ""
+                )
+            else:
+                # If reactivating, clear the reason
+                customer.user.deactivation_reason = None
+
             if commit:
                 customer.user.save()
         if commit:

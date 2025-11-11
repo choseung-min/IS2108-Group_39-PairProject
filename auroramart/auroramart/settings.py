@@ -49,6 +49,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "storefront.middleware.RoleBasedSessionTimeoutMiddleware",  # Custom middleware for role-based session timeout
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -130,3 +131,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# Session settings for security
+SESSION_COOKIE_AGE = 604800  # Default: 1 week for customers (in seconds)
+SESSION_SAVE_EVERY_REQUEST = True  # Update session on every request
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Keep session active even after browser close
+
+# Custom session timeout durations (in seconds)
+ADMIN_SESSION_TIMEOUT = 7200  # 2 hours for admin users
+CUSTOMER_SESSION_TIMEOUT = (
+    604800  # 1 week for customers (7 days * 24 hours * 60 minutes * 60 seconds)
+)

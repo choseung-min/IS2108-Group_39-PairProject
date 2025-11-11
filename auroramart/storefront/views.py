@@ -95,6 +95,9 @@ def login_view(request):
                 request.session["deactivated_email"] = form.cleaned_data[
                     "deactivated_email"
                 ]
+                request.session["deactivation_reason"] = form.cleaned_data.get(
+                    "deactivation_reason", ""
+                )
                 return redirect("account_deactivated")
 
             login(request, user)
@@ -126,12 +129,17 @@ def logout_view(request):
 def account_deactivated_view(request):
     """Display page for deactivated accounts"""
     email = request.session.get("deactivated_email", "")
+    reason = request.session.get("deactivation_reason", "")
+
     # Clear the session data after retrieving it
     if "deactivated_email" in request.session:
         del request.session["deactivated_email"]
+    if "deactivation_reason" in request.session:
+        del request.session["deactivation_reason"]
 
     context = {
         "email": email,
+        "reason": reason,
     }
     return render(request, "storefront/account_deactivated.html", context)
 
