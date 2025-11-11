@@ -22,7 +22,8 @@ from .models import Product, Category, Cart, CartItem, Customer, Order, OrderIte
 
 # Home / Product Listing View
 def home(request, slug=None):
-    products = Product.objects.select_related("category").all()
+    # Only show active products in storefront
+    products = Product.objects.select_related("category").filter(is_active=True)
 
     # PARENTS ONLY (the 12 main categories)
     categories = Category.objects.filter(parent__isnull=True).order_by("name")[:12]
@@ -195,12 +196,41 @@ def cart_view(request):
 
     cart = _get_cart_for(request.user)
     items = cart.items.select_related("product").all()
+
+    # Check for and remove deactivated products from cart
+    deactivated_items = []
+    for item in items:
+        if not item.product.is_active:
+            deactivated_items.append(item.product.name)
+            item.delete()
+
+    if deactivated_items:
+        messages.warning(
+            request,
+            f"The following products have been removed from your cart as they are no longer available: {', '.join(deactivated_items)}",
+        )
+        # Refresh items after deletion
+        items = cart.items.select_related("product").all()
+        request.session["cart_count"] = cart.count
+
     return render(request, "storefront/cart.html", {"cart": cart, "items": items})
 
 
 @login_required
 def cart_update(request, item_id):
     item = get_object_or_404(CartItem, pk=item_id, cart__customer__user=request.user)
+
+    # Check if product is still active
+    if not item.product.is_active:
+        messages.error(
+            request,
+            f"{item.product.name} is no longer available and has been removed from your cart.",
+        )
+        cart = item.cart
+        item.delete()
+        request.session["cart_count"] = cart.count
+        return redirect("cart")
+
     action = request.POST.get("action")
     if action == "inc":
         item.quantity += 1
@@ -232,6 +262,12 @@ def _reprice_and_check_stock(cart_items) -> Tuple[bool, List[str], list, Decimal
     # Pull product inline, avoid repeated queries
     for ci in cart_items.select_related("product"):
         p, q = ci.product, ci.quantity
+
+        # Check if product is still active
+        if not p.is_active:
+            ok = False
+            errs.append(f"{p.name}: This product is no longer available.")
+            continue
 
         # Stock check
         if p.stock < q:
@@ -457,7 +493,15 @@ def reorder_order_view(request, order_id):
     order = get_object_or_404(Order, id=order_id, customer=request.user.customer)
     cart = _get_cart_for(request.user)
 
+    skipped_products = []
+    added_count = 0
+
     for oi in OrderItem.objects.filter(order=order).select_related("product"):
+        # Skip deactivated products
+        if not oi.product.is_active:
+            skipped_products.append(oi.product.name)
+            continue
+
         ci, created = CartItem.objects.get_or_create(
             cart=cart,
             product=oi.product,
@@ -468,5 +512,17 @@ def reorder_order_view(request, order_id):
             if ci.price_snapshot is None:
                 ci.price_snapshot = oi.price_at_purchase
             ci.save(update_fields=["quantity", "price_snapshot"])
+        added_count += 1
+
+    # Notify user about skipped products
+    if skipped_products:
+        messages.warning(
+            request,
+            f"The following products are no longer available and were not added to your cart: {', '.join(skipped_products)}",
+        )
+
+    if added_count > 0:
+        messages.success(request, f"{added_count} item(s) added to your cart.")
+
     request.session["cart_count"] = cart.count
     return redirect("cart")
