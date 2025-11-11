@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from storefront.models import Product, Category, Customer, Order, OrderItem
 from django.db.models import Q, F, ExpressionWrapper, FloatField
 from django.core.paginator import Paginator
@@ -164,18 +165,28 @@ def product_detail(request, pk):
 
     if editing:
         if request.method == "POST":
-
             form = ProductForm(request.POST, request.FILES, instance=product)
+            # Disable stock field and preserve its value
+            form.fields["stock"].disabled = True
+            # Remove is_active field from edit form
+            form.fields.pop("is_active", None)
 
             if form.is_valid():
-                form.save()
+                # Preserve the original stock value since it's disabled
+                updated_product = form.save(commit=False)
+                updated_product.stock = product.stock
+                updated_product.save()
+
                 messages.success(
                     request,
                     'Product "{name}" updated successfully!'.format(
                         name=form.cleaned_data["name"]
                     ),
                 )
-                return redirect("product_detail", pk=product.pk)
+                # Redirect with updated=true to show preview link
+                return redirect(
+                    f"{reverse('product_detail', kwargs={'pk': product.pk})}?updated=true"
+                )
 
             else:
                 messages.error(
@@ -185,11 +196,21 @@ def product_detail(request, pk):
         else:
             form = ProductForm(instance=product)
             form.fields["stock"].disabled = True
+            # Remove is_active field from edit form
+            form.fields.pop("is_active", None)
+
+    # Check if product was just updated
+    just_updated = request.GET.get("updated") == "true"
 
     return render(
         request,
         "adminpanel/products/product_detail.html",
-        {"product": product, "editing": editing, "form": form},
+        {
+            "product": product,
+            "editing": editing,
+            "form": form,
+            "just_updated": just_updated,
+        },
     )
 
 
@@ -420,6 +441,9 @@ def customer_detail(request, pk):
     if editing:
         if request.method == "POST":
             form = CustomerForm(request.POST, instance=customer)
+            # Remove is_active and deactivation_reason from editable fields
+            form.fields.pop("is_active", None)
+            form.fields.pop("deactivation_reason", None)
 
             if form.is_valid():
                 form.save()
@@ -436,6 +460,9 @@ def customer_detail(request, pk):
                 )
         else:
             form = CustomerForm(instance=customer)
+            # Remove is_active and deactivation_reason from editable fields
+            form.fields.pop("is_active", None)
+            form.fields.pop("deactivation_reason", None)
 
     return render(
         request,

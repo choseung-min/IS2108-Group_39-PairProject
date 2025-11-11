@@ -27,6 +27,31 @@
                 {% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}
             </ul>
         {% endif %}
+        {% if just_updated %}
+            <div style="background-color: #e3f2fd;
+                        border: 2px solid #2196F3;
+                        border-radius: 8px;
+                        padding: 15px;
+                        margin: 20px auto;
+                        width: 80%;
+                        text-align: center">
+                <p style="margin: 0 0 10px 0;
+                          font-weight: bold;
+                          color: #1976D2">Product Updated Successfully!</p>
+                <a href="{% url 'product' slug=product.slug %}"
+                   target="_blank"
+                   style="background-color: #2196F3;
+                          color: white;
+                          padding: 10px 20px;
+                          text-decoration: none;
+                          border-radius: 5px;
+                          display: inline-block;
+                          font-weight: bold">🔍 Preview Product on Storefront (Opens in New Tab)</a>
+                <p style="margin: 10px 0 0 0;
+                          font-size: 0.9em;
+                          color: #666">Verify that changes to price, name, description, image, and status are reflected correctly.</p>
+            </div>
+        {% endif %}
         {% if editing %}
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}

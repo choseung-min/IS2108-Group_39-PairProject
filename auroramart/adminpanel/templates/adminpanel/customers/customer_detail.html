@@ -226,6 +226,12 @@
                             {% endif %}
                         </td>
                     </tr>
+                    <tr>
+                        <td>
+                            <b>Date Joined</b>
+                        </td>
+                        <td>{{ customer.user.date_joined|date:"DATETIME_FORMAT" }}</td>
+                    </tr>
                     {% if not customer.user.is_active and customer.user.deactivation_reason %}
                         <tr>
                             <td>
@@ -279,7 +285,7 @@
             </p>
         </div>
         {% if customer.user.is_active %}
-            <div style="border: 1px solid #ddd;
+            <div id="deactivate-section" style="border: 1px solid #ddd;
                         padding: 20px;
                         margin: 20px auto;
                         width: 60%;

@@ -69,14 +69,7 @@
                 <a href="{% url 'customer_detail' customer.pk %}">View</a> |
                 <a href="{% url 'customer_detail' customer.pk %}?edit=true">Edit</a> |
                 {% if customer.user.is_active %}
-                    <form method="post"
-                          action="{% url 'deactivate_customer' pk=customer.pk %}"
-                          style="display: inline"
-                          onsubmit="return confirm('Deactivate this customer?');">
-                        {% csrf_token %}
-                        <button type="submit"
-                                style="background: none; border: none; color: blue; text-decoration: underline; cursor: pointer; padding: 0; font: inherit;">Deactivate</button>
-                    </form>
+                    <a href="{% url 'customer_detail' customer.pk %}#deactivate-section">Deactivate</a>
                 {% else %}
                     <form method="post"
                           action="{% url 'activate_customer' pk=customer.pk %}"
