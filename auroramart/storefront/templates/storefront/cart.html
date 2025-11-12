@@ -41,12 +41,12 @@
 <body>
   <header class="topbar">
     <div class="topbar-inner">
-      <a href="{% url 'home2' %}" class="logo-link">
-        <img src="{% static 'img/AuroraMart Logo.png' %}" alt="Aurora Mart" class="logo" />
-        <span class="brand-name">Aurora Mart</span>
-      </a>
+        <a href="{% url 'category' request.user.customer.preferred_category|slugify %}" class="logo-link">
+          <img src="{% static 'img/AuroraMart Logo.png' %}" alt="Aurora Mart" class="logo" />
+          <span class="brand-name">Aurora Mart</span>
+        </a>
       <nav>
-        <a href="{% url 'home2' %}">Home</a>
+        <a href="{% url 'category' request.user.customer.preferred_category|slugify %}">Home</a>
         <a href="{% url 'cart' %}">Cart</a>
         <a href="{% url 'orders_list' %}">Past Orders</a>
         <a href="{% url 'logout' %}">Logout</a>
@@ -95,8 +95,10 @@
       </table>
 
       <div class="actions">
-        <a class="btn" href="{% url 'home2' %}">← Continue shopping</a>
-        <a class="btn p" href="{% url 'checkout_address' %}">Continue to checkout</a>
+        <a class="btn" href="{% url 'category' request.user.customer.preferred_category|slugify %}">← Continue shopping</a>
+        <form action="{% url 'cart_recommendations' %}" method="get" style="display:inline">
+          <button type="submit" class="btn btn-dark">Continue to checkout</button>
+        </form>
       </div>
     {% else %}
       <!-- Empty-state TABLE keeping the same layout -->
@@ -113,7 +115,7 @@
                 <div class="empty-icon">🛒</div>
                 <h3>No items in your cart</h3>
                 <p>Your cart looks a little light. Start adding products to see them here.</p>
-                <a class="btn p" href="{% url 'home2' %}">Browse products</a>
+                <a class="btn p" href="{% url 'category' request.user.customer.preferred_category|slugify %}">Browse products</a>
               </div>
             </td>
           </tr>

@@ -6,7 +6,7 @@ from .models import Customer
 User = get_user_model()
 
 class UserSignupForm(UserCreationForm):
-    # AbstractUser already has an email field; we expose it and enforce uniqueness
+    #AbstractUser already has an email field; we expose it and enforce uniqueness
     email = forms.EmailField(required=True)
 
     class Meta(UserCreationForm.Meta):
@@ -29,11 +29,11 @@ class UserSignupForm(UserCreationForm):
         return user
     
 class ProfileForm(forms.Form):
-    # --- User fields (from signup, minus password) ---
+    #User fields (from signup, minus password)
     username = forms.CharField(max_length=150)
     email = forms.EmailField()
 
-    # --- Customer fields (same as your signup page) ---
+    #Customer fields (same as your signup page)
     name = forms.CharField(label="Full Name", max_length=120, required=False)
     phone = forms.CharField(required=False)
     age = forms.IntegerField(min_value=0, required=False)
@@ -41,7 +41,6 @@ class ProfileForm(forms.Form):
     has_children = forms.BooleanField(required=False)
     monthly_income = forms.DecimalField(max_digits=10, decimal_places=2, min_value=0, required=False)
 
-    # If your model defines choices, we'll use them; else these render as text.
     gender = forms.ChoiceField(required=False, choices=())
     employment_status = forms.ChoiceField(required=False, choices=())
     occupation = forms.ChoiceField(required=False, choices=())
@@ -96,7 +95,7 @@ class ProfileForm(forms.Form):
         self.fields["occupation"].choices = [("", "---------")] + list(get_choices("occupation"))
         self.fields["education"].choices = [("", "---------")] + list(get_choices("education"))
 
-    # --- Validation (simple & safe) ---
+    #Validation (simple & safe)
     def clean_username(self):
         username = (self.cleaned_data.get("username") or "").strip()
         qs = User.objects.filter(username__iexact=username).exclude(pk=self.user.pk)
@@ -119,7 +118,7 @@ class ProfileForm(forms.Form):
                 raise forms.ValidationError("Enter a valid phone number.")
         return phone
 
-    # --- Save both models in one go ---
+    #Save both models in one go
     def save(self):
         u = self.user
         c = self.customer

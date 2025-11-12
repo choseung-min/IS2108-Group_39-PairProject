@@ -6,13 +6,43 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.urls import reverse
+from django.http import JsonResponse
 from .forms import UserSignupForm, CustomerForm, EmailLoginForm, AddressForm, PaymentForm, ProfileForm
 from .models import Product, Category, Cart, CartItem, Customer, Order, OrderItem
 from .ml.category_predictor import predict_preferred_category
+#from .ml.association_rules import get_recommendations
+import joblib
+import os
+from django.apps import apps
+
+app_path = apps.get_app_config('storefront').path
+model_path = os.path.join(app_path, 'mlmodels', 'b2c_products_500_transactions_50k.joblib')
+loaded_rules = joblib.load(model_path)
 
 # Create your views here.
+#Association rules recommendation function
+def get_recommendations(loaded_rules, items, metric='confidence', top_n=5):
+    recommendations = set()
+
+    for item in items:
+        # Find rules where the item is in the antecedents
+        matched_rules = loaded_rules[loaded_rules['antecedents'].apply(lambda x: item in x)]
+        
+        if len(matched_rules) > 0:
+            # Sort by the specified metric and get the top N
+            if metric in loaded_rules.columns:
+                top_rules = matched_rules.sort_values(by=metric, ascending=False).head(top_n)
+                
+                for idx, row in top_rules.iterrows():
+                    recommendations.update(row['consequents'])
+
+    # Remove items that are already in the input list
+    recommendations.difference_update(items)
+    
+    return list(recommendations)[:top_n]
 
 #Home / Product Listing View
 def home(request, slug=None):
@@ -180,14 +210,42 @@ def product_detail(request, slug):
 @login_required
 def cart_add(request, product_id):
     p = get_object_or_404(Product, pk=product_id, is_active=True)
+    
+    # Get quantity from request or default to 1
+    if request.method == 'POST':
+        quantity_str = request.POST.get('quantity', '').strip()
+        if not quantity_str:
+            messages.error(request, 'Please select a quantity before adding to cart.')
+            referer = request.META.get('HTTP_REFERER', '')
+            if '/cart/recommendations/' in referer:
+                return redirect('cart_recommendations')
+            return redirect('product_detail', product_id=product_id)
+        qty = max(1, int(quantity_str))
+    else:
+        qty = 1
+    
     cart = _get_cart_for(request.user)
-    item, created = CartItem.objects.get_or_create(cart=cart, product=p, defaults={'price_snapshot': p.price})
-    if not created:
-        item.quantity += 1
-        if item.price_snapshot is None:
-            item.price_snapshot = p.price
-        item.save(update_fields=['quantity', 'price_snapshot'])
+    
+    with transaction.atomic():
+        item, created = CartItem.objects.select_for_update().get_or_create(
+            cart=cart, product=p, defaults={'quantity': qty, 'price_snapshot': p.price}
+        )
+        if not created:
+            item.quantity += qty
+            if item.price_snapshot is None:
+                item.price_snapshot = p.price
+            item.save(update_fields=['quantity', 'price_snapshot'])
+    
     request.session['cart_count'] = cart.count
+    
+    # Add success message
+    messages.success(request, f'Added {qty} × {p.name} to cart!')
+    
+    # Check if the request came from cart recommendations page
+    referer = request.META.get('HTTP_REFERER', '')
+    if '/cart/recommendations/' in referer:
+        return redirect('cart_recommendations')
+    
     return redirect('cart')
 
 def cart_view(request):
@@ -218,6 +276,45 @@ def cart_remove(request, item_id):
     item.delete()
     request.session['cart_count'] = cart.count
     return redirect('cart')
+
+@login_required
+def recommend_addons_view(request):
+    """Interstitial page shown after 'Continue to checkout'."""
+    cart = _get_cart_for(request.user)
+    items = cart.items.select_related('product').all()
+
+    if not items:
+        return redirect('checkout_address')
+
+    # Collect the SKUs in the current cart
+    skus = [ci.product.sku for ci in items]
+    suggested_products = []
+    
+    try:
+        # Get ML recommendations
+        suggested_skus = get_recommendations(loaded_rules, skus, metric='confidence', top_n=5) or []
+        
+        if suggested_skus:
+            product_map = {p.sku: p for p in Product.objects.filter(sku__in=suggested_skus)}
+            suggested_products = [product_map[sku] for sku in suggested_skus if sku in product_map]
+    except Exception as e:
+        # Silent fallback on ML errors - leave suggested_products as empty list
+        pass
+
+    # Add fallback products if needed
+    if len(suggested_products) < 5:
+        fallback_count = 5 - len(suggested_products)
+        fallback_products = Product.objects.exclude(sku__in=skus).filter(
+            is_active=True, stock__gt=0
+        ).order_by('-rating')[:fallback_count]
+        
+        suggested_products.extend(list(fallback_products))
+
+    return render(request, 'storefront/cart_recommendations.html', {
+        'cart': cart,
+        'items': items,
+        'suggested_products': suggested_products,
+    })
 
 #checkout views
 SESSION_KEY = 'checkout'
@@ -432,7 +529,7 @@ def profile_view(request):
 
                 messages.success(
                     request,
-                    f"Profile updated. Preferred category automatically refreshed to '{category_str}'."
+                    f"Profile updated successfully."
                 )
             except Exception as e:
                 print("AI prediction error (profile update):", e)

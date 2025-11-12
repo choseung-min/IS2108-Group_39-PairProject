@@ -1,0 +1,182 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Complete your set • Aurora Mart</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin:0; padding:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,"Noto Sans"; color:#111; }
+    a { color: inherit; }
+
+    .topbar { background:#fff; border-bottom:1px solid #eee; }
+    .topbar-inner { display:flex; align-items:center; justify-content:space-between; padding:.75rem 1rem; }
+    .logo-link { display:flex; align-items:center; gap:.5rem; text-decoration:none; }
+    .logo { height:28px; width:auto; }
+    .brand-name { font-weight:700; font-size:1.3rem; letter-spacing:-0.02em; }
+    .nav { display:flex; gap:1rem; }
+    .nav a { text-decoration:none; color:#111; padding:.25rem .5rem; border-radius:.5rem; }
+    .nav a:hover { background:#f4f4f4; }
+
+    .container { max-width:1000px; margin:0 auto; padding:28px 16px 40px; }
+    .title { margin:0 0 6px; font-size:1.6rem; font-weight:700; }
+    .subtitle { margin:0 0 18px; color:#555; }
+
+    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:20px; margin-top:24px; }
+    .card { border:1px solid #e5e7eb; border-radius:16px; padding:16px; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.1); transition:all 0.2s ease; }
+    .card:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.15); border-color:#d1d5db; }
+    .img { width:100%; height:200px; object-fit:contain; background:#f9fafb; border-radius:12px; margin-bottom:12px; }
+    .name { font-weight:600; margin:0 0 8px; min-height:2.4em; font-size:1rem; line-height:1.2; }
+    .price { color:#111827; margin-bottom:12px; font-size:1.1rem; font-weight:600; }
+    
+    .quantity-controls { display:flex; align-items:center; gap:4px; margin-bottom:12px; }
+    .qty-btn { width:32px; height:32px; border:1px solid #d1d5db; background:#fff; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:600; color:#374151; transition:all 0.1s; text-decoration:none; font-size:18px; }
+    .qty-btn:hover { background:#f3f4f6; border-color:#9ca3af; }
+    .qty-btn:active { background:#3b82f6; color:#fff; border-color:#3b82f6; transform:scale(0.95); }
+    .qty-btn:focus { outline:none; box-shadow:0 0 0 3px rgba(59,130,246,0.3); }
+    .qty-input { 
+      width: 120px; 
+      height: 36px; 
+      padding: 8px 12px;
+      border: 2px solid #d1d5db; 
+      border-radius: 6px; 
+      font-weight: 500; 
+      background: #fff; 
+      margin: 0 4px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .qty-input:focus { 
+      outline: none; 
+      border-color: #3b82f6; 
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.1); 
+    }
+    .qty-label { font-size:0.9rem; color:#6b7280; margin-right:8px; }
+    
+    .add-to-cart-btn { 
+      width: 100%; 
+      padding: 12px 16px; 
+      background: #3b82f6; 
+      color: #fff; 
+      border: 0; 
+      border-radius: 8px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      transition: all 0.2s; 
+      font-size: 14px;
+    }
+    .add-to-cart-btn:hover { 
+      background: #2563eb; 
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    .add-to-cart-btn:active { 
+      background: #1d4ed8; 
+      transform: translateY(0);
+    }
+
+    .actions { margin-top:32px; display:flex; gap:16px; justify-content:center; }
+    .btn { padding:12px 24px; border-radius:12px; border:0; cursor:pointer; text-decoration:none; display:inline-block; font-weight:600; transition:all 0.2s; }
+    .btn-dark { background:#111827; color:#fff; }
+    .btn-dark:hover { background:#374151; }
+    .btn-link { background:transparent; color:#6b7280; text-decoration:underline; }
+    .btn-link:hover { color:#374151; }
+
+    /* Empty state */
+    .empty { text-align:center; background:#fafafa; border:1px dashed #ddd; border-radius:12px; padding:28px; margin-top:18px; }
+    .empty h3 { margin:0 0 8px; font-size:1.2rem; }
+    .empty p { margin:0 0 16px; color:#666; }
+
+    .footer { margin-top:36px; text-align:center; color:#777; font-size:.9rem; }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="{% url 'category' request.user.customer.preferred_category|slugify %}" class="logo-link">
+        <img src="{% static 'img/AuroraMart Logo.png' %}" alt="Aurora Mart" class="logo" />
+        <span class="brand-name">Aurora Mart</span>
+      </a>
+      <nav class="nav">
+        <a href="{% url 'cart' %}">Cart</a>
+        <a href="{% url 'orders_list' %}">Past Orders</a>
+        <a href="{% url 'logout' %}">Logout</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <h2 class="title">Complete your set!</h2>
+    
+    <!-- Success Messages -->
+    {% if messages %}
+      <div style="margin-bottom: 20px;">
+        {% for message in messages %}
+          <div style="background: #d1fae5; border: 1px solid #10b981; color: #065f46; padding: 12px 16px; border-radius: 8px; margin-bottom: 8px;">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    
+    {% if items|length == 1 %}
+      <p class="subtitle">Customers who bought "{{ items.0.product.name }}" also get:</p>
+    {% else %}
+      <p class="subtitle">Customers with items like yours also get:</p>
+    {% endif %}
+
+    {% if suggested_products %}
+      <div class="grid">
+        {% for p in suggested_products %}
+          <div class="card">
+            {% if p.image %}<img src="{{ p.image.url }}" alt="{{ p.name }}" class="img">{% else %}<div class="img"></div>{% endif %}
+            <div class="name">{{ p.name }}</div>
+            <div class="price">${{ p.price }}</div>
+            
+            <form method="post" action="{% url 'cart_add' p.id %}">
+              {% csrf_token %}
+              <div class="quantity-controls">
+                <span class="qty-label">Qty:</span>
+                <select name="quantity" class="qty-input" required>
+                  <option value="">Choose...</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10">10</option>
+                </select>
+              </div>
+              
+              <button type="submit" class="add-to-cart-btn">
+                Add to Cart
+              </button>
+            </form>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="actions">
+        <a href="{% url 'checkout_address' %}" class="btn btn-dark">Continue to Checkout</a>
+        <a href="{% url 'cart' %}" class="btn btn-link">Back to Cart</a>
+      </div>
+    {% else %}
+      <div class="empty">
+        <h3>No suggestions right now</h3>
+        <p>We couldn’t find good add-ons for your cart. You can continue to checkout.</p>
+        <a href="{% url 'checkout_address' %}" class="btn btn-dark">Continue to checkout</a>
+        <a href="{% url 'cart' %}" class="btn btn-link">Back to cart</a>
+      </div>
+    {% endif %}
+
+    <div class="footer">You can review everything on the checkout page.</div>
+  </main>
+
+</body>
+</html>
