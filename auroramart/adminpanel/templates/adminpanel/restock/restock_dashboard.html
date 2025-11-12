@@ -7,6 +7,18 @@
     <a href="{% url 'admin_logout' %}" style="float: right;">Logout</a>
 {% endblock %}
 {% block filters %}
+    <!-- Restock Priority Stats -->
+    <div style="margin-bottom: 20px;">
+        <p style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">Restock Priorities:</p>
+        <p style="font-size: 16px;">
+            Critical: <strong>{{ critical_count }}</strong> | 
+            High: <strong>{{ high_count }}</strong> | 
+            Medium: <strong>{{ medium_count }}</strong> | 
+            Low: <strong>{{ low_count }}</strong>
+        </p>
+    </div>
+
+    <!-- Search and Filter Form -->
     <form method="get">
         <input type="text"
                name="q"

@@ -3,6 +3,14 @@
 {% block header %}Customer Records{% endblock %}
 {% block nav %}
     <a href="{% url 'home' %}">Home</a>
+    <a href="{% url 'appeals_list' %}">
+        Appeal Requests
+        {% if pending_appeals_count > 0 %}
+            <span style="background: #FFC107; color: #333; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-left: 3px;">
+                {{ pending_appeals_count }}
+            </span>
+        {% endif %}
+    </a>
     <a href="{% url 'admin_logout' %}" style="float: right;">Logout</a>
 {% endblock %}
 {% block filters %}

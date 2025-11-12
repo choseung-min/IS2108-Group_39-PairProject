@@ -316,32 +316,54 @@
                 </form>
             </div>
         {% else %}
-            <div style="border: 1px solid #ddd;
-                        padding: 20px;
-                        margin: 20px auto;
-                        width: 60%;
-                        background-color: #d4edda">
-                <h3 style="color: #155724">Reactivate Customer Account</h3>
-                {% if customer.user.deactivation_reason %}
-                    <p>
-                        <b>Previous Deactivation Reason:</b>
-                        <br />
-                        <i>{{ customer.user.deactivation_reason }}</i>
+            {% if not customer.can_appeal %}
+                <!-- Customer has been permanently blocked from appeals -->
+                <div style="border: 1px solid #ddd;
+                            padding: 20px;
+                            margin: 20px auto;
+                            width: 60%;
+                            background-color: #ffebee">
+                    <h3 style="color: #c62828">⚠️ Account Permanently Deactivated</h3>
+                    {% if customer.user.deactivation_reason %}
+                        <p>
+                            <b>Deactivation Reason:</b>
+                            <br />
+                            <i>{{ customer.user.deactivation_reason }}</i>
+                        </p>
+                    {% endif %}
+                    <p style="color: #c62828; font-weight: bold; margin-top: 12px;">
+                        This customer's appeal was declined and they are permanently blocked from reactivation. 
+                        Admin reactivation is no longer available for this account.
                     </p>
-                {% endif %}
-                <form method="post"
-                      action="{% url 'activate_customer' pk=customer.pk %}"
-                      style="display: inline">
-                    {% csrf_token %}
-                    <button type="submit"
-                            style="background-color: #28a745;
-                                   color: white;
-                                   padding: 10px 20px;
-                                   border: none;
-                                   cursor: pointer"
-                            onclick="return confirm('Are you sure you want to reactivate this customer account?');">Activate Customer</button>
-                </form>
-            </div>
+                </div>
+            {% else %}
+                <div style="border: 1px solid #ddd;
+                            padding: 20px;
+                            margin: 20px auto;
+                            width: 60%;
+                            background-color: #d4edda">
+                    <h3 style="color: #155724">Reactivate Customer Account</h3>
+                    {% if customer.user.deactivation_reason %}
+                        <p>
+                            <b>Previous Deactivation Reason:</b>
+                            <br />
+                            <i>{{ customer.user.deactivation_reason }}</i>
+                        </p>
+                    {% endif %}
+                    <form method="post"
+                          action="{% url 'activate_customer' pk=customer.pk %}"
+                          style="display: inline">
+                        {% csrf_token %}
+                        <button type="submit"
+                                style="background-color: #28a745;
+                                       color: white;
+                                       padding: 10px 20px;
+                                       border: none;
+                                       cursor: pointer"
+                                onclick="return confirm('Are you sure you want to reactivate this customer account?');">Activate Customer</button>
+                    </form>
+                </div>
+            {% endif %}
         {% endif %}
     </body>
 </html>

@@ -4,7 +4,17 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from storefront.models import Product, Category, Customer, Order, OrderItem
+from django.utils import timezone
+from django.db import transaction
+from storefront.models import (
+    Product,
+    Category,
+    Customer,
+    Order,
+    OrderItem,
+    Appeal,
+    AppealDocument,
+)
 from django.db.models import Q, F, ExpressionWrapper, FloatField
 from django.core.paginator import Paginator
 from .forms import ProductForm, CustomerForm
@@ -20,7 +30,66 @@ def is_admin_or_staff(user):
 @login_required(login_url="/login")
 @user_passes_test(is_admin_or_staff, login_url="/login")
 def home(request):
-    return render(request, "adminpanel/home_page.html")
+    from datetime import timedelta
+    from django.db.models import Sum
+    from django.utils import timezone
+
+    # Product metrics
+    total_products = Product.objects.count()
+    active_products = Product.objects.filter(is_active=True).count()
+    inactive_products = Product.objects.filter(is_active=False).count()
+    low_stock_products = Product.objects.filter(
+        stock__lte=F("reorder_threshold"), stock__gt=0
+    ).count()
+    out_of_stock_products = Product.objects.filter(stock=0).count()
+
+    # Customer metrics
+    total_customers = Customer.objects.count()
+    active_customers = Customer.objects.filter(user__is_active=True).count()
+    inactive_customers = Customer.objects.filter(user__is_active=False).count()
+
+    # Appeal metrics
+    pending_appeals_count = Appeal.objects.filter(status="pending").count()
+    total_appeals = Appeal.objects.count()
+
+    # Sales Analytics: Last 7 days
+    seven_days_ago = timezone.now() - timedelta(days=7)
+
+    # Top 10 most purchased products by quantity in last 7 days
+    top_products = (
+        OrderItem.objects.filter(order__order_date__gte=seven_days_ago)
+        .values("product__name", "product__id")
+        .annotate(total_quantity=Sum("quantity"))
+        .order_by("-total_quantity")[:10]
+    )
+
+    # Top 5 most purchased categories
+    top_categories = (
+        OrderItem.objects.filter(order__order_date__gte=seven_days_ago)
+        .values("product__category__name")
+        .annotate(total_quantity=Sum("quantity"))
+        .order_by("-total_quantity")[:5]
+    )
+
+    context = {
+        # Products
+        "total_products": total_products,
+        "active_products": active_products,
+        "inactive_products": inactive_products,
+        "low_stock_products": low_stock_products,
+        "out_of_stock_products": out_of_stock_products,
+        # Customers
+        "total_customers": total_customers,
+        "active_customers": active_customers,
+        "inactive_customers": inactive_customers,
+        # Appeals
+        "pending_appeals_count": pending_appeals_count,
+        "total_appeals": total_appeals,
+        # Sales Analytics
+        "top_products": top_products,
+        "top_categories": top_categories,
+    }
+    return render(request, "adminpanel/home_page.html", context)
 
 
 @login_required(login_url="/login")
@@ -296,6 +365,16 @@ def restock(request):
     page_num = request.GET.get("page")
     page_obj = paginator.get_page(page_num)
 
+    # Restock priority breakdown
+    critical_count = products_to_restock.filter(restock_ratio__lte=0.25).count()
+    high_count = products_to_restock.filter(
+        restock_ratio__gt=0.25, restock_ratio__lte=0.5
+    ).count()
+    medium_count = products_to_restock.filter(
+        restock_ratio__gt=0.5, restock_ratio__lte=0.75
+    ).count()
+    low_count = products_to_restock.filter(restock_ratio__gt=0.75).count()
+
     return render(
         request,
         "adminpanel/restock/restock_dashboard.html",
@@ -307,6 +386,10 @@ def restock(request):
             "query": query,
             "sort": sort,
             "query_string": query_string,
+            "critical_count": critical_count,
+            "high_count": high_count,
+            "medium_count": medium_count,
+            "low_count": low_count,
         },
     )
 
@@ -416,6 +499,9 @@ def customers(request):
     page_num = request.GET.get("page")
     page_obj = paginator.get_page(page_num)
 
+    # Count pending appeals
+    pending_appeals_count = Appeal.objects.filter(status="pending").count()
+
     context = {
         "page_obj": page_obj,
         "customers": page_obj.object_list,
@@ -423,6 +509,7 @@ def customers(request):
         "sort": sort,
         "query_string": query_string,
         "status_filter": status_filter,
+        "pending_appeals_count": pending_appeals_count,
     }
 
     return render(request, "adminpanel/customers/customer_records.html", context)
@@ -504,6 +591,14 @@ def activate_customer(request, pk):
     customer = get_object_or_404(Customer.objects.select_related("user"), pk=pk)
 
     if request.method == "POST":
+        # Check if customer is permanently blocked from reactivation
+        if not customer.can_appeal:
+            messages.error(
+                request,
+                "This customer's appeal was declined and they are permanently blocked from reactivation. Manual reactivation is not allowed.",
+            )
+            return redirect("customer_detail", pk=customer.pk)
+
         customer.user.is_active = True
         customer.user.deactivation_reason = None  # Clear the deactivation reason
         customer.user.save()
@@ -538,3 +633,148 @@ def order_detail(request, pk):
 def logout_view(request):
     logout(request)
     return redirect("home2")  # Redirect to storefront home
+
+
+@login_required(login_url="/login")
+@user_passes_test(is_admin_or_staff, login_url="/login")
+def appeals_list(request):
+    """View all appeal requests with filtering and sorting"""
+    appeals = Appeal.objects.select_related("customer__user").all()
+    query = request.GET.get("q")
+    status_filter = request.GET.get("status_filter")
+    sort = request.GET.get("sort")
+
+    query_params = request.GET.copy()
+    page = query_params.pop("page", [None])[0]
+    query_string = query_params.urlencode()
+
+    if query:
+        appeals = appeals.filter(
+            Q(customer__user__first_name__icontains=query)
+            | Q(customer__user__last_name__icontains=query)
+            | Q(customer__user__email__icontains=query)
+            | Q(appeal_statement__icontains=query)
+        )
+
+    if status_filter:
+        appeals = appeals.filter(status=status_filter)
+
+    # Always sort by pending first, then by submission time (newest first)
+    from django.db.models import Case, When, Value, IntegerField
+
+    appeals = appeals.annotate(
+        priority=Case(
+            When(status="pending", then=Value(1)),
+            default=Value(2),
+            output_field=IntegerField(),
+        )
+    ).order_by("priority", "-created_at")
+
+    paginator = Paginator(appeals, 15)
+    page_num = request.GET.get("page")
+    page_obj = paginator.get_page(page_num)
+
+    # Count pending appeals for the badge
+    pending_count = Appeal.objects.filter(status="pending").count()
+
+    context = {
+        "page_obj": page_obj,
+        "appeals": page_obj.object_list,
+        "query": query,
+        "status_filter": status_filter,
+        "sort": sort,
+        "query_string": query_string,
+        "pending_count": pending_count,
+    }
+
+    return render(request, "adminpanel/appeals/appeals_list.html", context)
+
+
+@login_required(login_url="/login")
+@user_passes_test(is_admin_or_staff, login_url="/login")
+def appeal_detail(request, pk):
+    """View individual appeal request details"""
+    appeal = get_object_or_404(
+        Appeal.objects.select_related("customer__user", "reviewed_by"), pk=pk
+    )
+    documents = AppealDocument.objects.filter(appeal=appeal).order_by("uploaded_at")
+
+    context = {
+        "appeal": appeal,
+        "documents": documents,
+    }
+
+    return render(request, "adminpanel/appeals/appeal_detail.html", context)
+
+
+@login_required(login_url="/login")
+@user_passes_test(is_admin_or_staff, login_url="/login")
+@transaction.atomic
+def approve_appeal(request, pk):
+    """Approve an appeal and reactivate the customer account"""
+    if request.method != "POST":
+        return redirect("appeal_detail", pk=pk)
+
+    appeal = get_object_or_404(Appeal, pk=pk)
+
+    if appeal.status != "pending":
+        messages.error(request, "This appeal has already been reviewed.")
+        return redirect("appeal_detail", pk=pk)
+
+    # Update appeal status
+    appeal.status = "approved"
+    appeal.reviewed_at = timezone.now()
+    appeal.reviewed_by = request.user
+    appeal.save()
+
+    # Reactivate the customer account
+    customer_user = appeal.customer.user
+    customer_user.is_active = True
+    customer_user.deactivation_reason = None
+    customer_user.save()
+
+    messages.success(
+        request,
+        f"Appeal approved successfully. Customer account for {customer_user.get_full_name() or customer_user.username} has been reactivated.",
+    )
+
+    return redirect("appeal_detail", pk=pk)
+
+
+@login_required(login_url="/login")
+@user_passes_test(is_admin_or_staff, login_url="/login")
+@transaction.atomic
+def decline_appeal(request, pk):
+    """Decline an appeal with a reason"""
+    if request.method != "POST":
+        return redirect("appeal_detail", pk=pk)
+
+    appeal = get_object_or_404(Appeal, pk=pk)
+
+    if appeal.status != "pending":
+        messages.error(request, "This appeal has already been reviewed.")
+        return redirect("appeal_detail", pk=pk)
+
+    decline_reason = request.POST.get("decline_reason", "").strip()
+
+    if not decline_reason:
+        messages.error(request, "Please provide a reason for declining the appeal.")
+        return redirect("appeal_detail", pk=pk)
+
+    # Update appeal status
+    appeal.status = "declined"
+    appeal.reviewed_at = timezone.now()
+    appeal.reviewed_by = request.user
+    appeal.decline_reason = decline_reason
+    appeal.save()
+
+    # Permanently block future appeals for this customer
+    appeal.customer.can_appeal = False
+    appeal.customer.save()
+
+    messages.success(
+        request,
+        f"Appeal declined. The customer is permanently blocked from submitting future appeals.",
+    )
+
+    return redirect("appeal_detail", pk=pk)

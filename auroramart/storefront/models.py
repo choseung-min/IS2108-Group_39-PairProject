@@ -76,6 +76,10 @@ class Customer(models.Model):
     )
     household_size = models.IntegerField(choices=HOUSEHOLD_SIZE)
     has_children = models.BooleanField(default=False)
+    can_appeal = models.BooleanField(
+        default=True,
+        help_text="Whether this customer can submit appeals (set to False after appeal denial)",
+    )
     monthly_income = models.DecimalField(max_digits=10, decimal_places=2)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
     employment_status = models.CharField(max_length=15, choices=EMPLOYMENT_STATUS)
@@ -193,3 +197,53 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} of {self.product.name} in Order {self.order.id}"
+
+
+class Appeal(models.Model):
+    STATUS_CHOICES = (
+        ("pending", "Pending Review"),
+        ("approved", "Approved"),
+        ("declined", "Declined"),
+    )
+
+    customer = models.ForeignKey(
+        "Customer", on_delete=models.CASCADE, related_name="appeals"
+    )
+    appeal_statement = models.TextField(
+        help_text="Customer's statement explaining why they want their account reactivated"
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    created_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_appeals",
+    )
+    decline_reason = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Admin's reason for declining the appeal (shown to customer)",
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Appeal by {self.customer.user.get_full_name() or self.customer.user.username} - {self.status}"
+
+
+class AppealDocument(models.Model):
+    appeal = models.ForeignKey(
+        "Appeal", on_delete=models.CASCADE, related_name="documents"
+    )
+    document = models.ImageField(
+        upload_to="appeal_documents/",
+        help_text="Supporting document image (e.g., ID, proof of purchase, etc.)",
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Document for {self.appeal}"

@@ -77,6 +77,95 @@
     .btn:hover {
       background: #333;
     }
+    .appeal-section {
+      margin-top: 32px;
+      padding-top: 32px;
+      border-top: 2px solid #eee;
+    }
+    .appeal-section h3 {
+      color: #333;
+      margin-bottom: 16px;
+      font-size: 18px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 600;
+    }
+    .appeal-textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+    .appeal-textarea:focus {
+      outline: none;
+      border-color: #333;
+    }
+    .file-input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      cursor: pointer;
+      box-sizing: border-box;
+    }
+    .help-text {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+    .btn-primary {
+      background: #2196F3;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+      margin-top: 16px;
+    }
+    .btn-primary:hover {
+      background: #1976D2;
+    }
+    .success-message {
+      background: #4CAF50;
+      color: white;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+    .error-message {
+      background: #f44336;
+      color: white;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+    .pending-appeal {
+      background: #FFF3CD;
+      border: 1px solid #FFC107;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 24px;
+    }
+    .pending-appeal h3 {
+      margin-top: 0;
+      color: #856404;
+    }
+    .pending-appeal p {
+      color: #856404;
+    }
   </style>
 </head>
 <body>
@@ -99,16 +188,82 @@
 
     <p>You cannot log in to this account at this time.</p>
 
-    {% if reason %}
+    {% if appeal_declined %}
+    <div class="contact-info" style="background: #ffebee; border: 1px solid #f44336;">
+      <h3 style="color: #c62828;">Appeal Request Declined</h3>
+      <p style="color: #c62828;">Your appeal request has been reviewed and declined.</p>
+      {% if decline_reason %}
+      <p style="color: #c62828;"><strong>Reason:</strong> {{ decline_reason }}</p>
+      {% endif %}
+      {% if appeal_blocked %}
+      <p style="color: #c62828; font-weight: bold; margin-top: 12px;">⚠️ Your account is permanently deactivated and you are no longer eligible to submit further appeals.</p>
+      {% endif %}
+    </div>
+    {% elif reason %}
     <div class="contact-info">
       <h3>Reason for Deactivation</h3>
       <p>{{ reason }}</p>
     </div>
     {% endif %}
 
+    {% if messages %}
+      {% for message in messages %}
+        <div class="{% if message.tags == 'success' %}success-message{% else %}error-message{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    {% if has_pending_appeal %}
+    <div class="pending-appeal">
+      <h3>⏳ Appeal Pending Review</h3>
+      <p>Your appeal request has been submitted and is currently under review by our admin team. You will be notified once a decision has been made.</p>
+      <p><small>Submitted on: {{ pending_appeal_date|date:"F d, Y" }}</small></p>
+    </div>
+    {% elif not appeal_declined and not appeal_blocked %}
+    <!-- Appeal Form Section -->
+    <div class="appeal-section">
+      <h3>Submit an Appeal</h3>
+      <p style="font-size: 14px; margin-bottom: 20px;">If you believe your account was deactivated in error or would like to request reactivation, you can submit an appeal below.</p>
+      
+      <form method="post" enctype="multipart/form-data" action="{% url 'submit_appeal' %}">
+        {% csrf_token %}
+        <input type="hidden" name="email" value="{{ email }}">
+        
+        <div class="form-group">
+          <label for="id_appeal_statement">Appeal Statement *</label>
+          <textarea 
+            name="appeal_statement" 
+            id="id_appeal_statement" 
+            rows="6" 
+            class="appeal-textarea" 
+            placeholder="Please explain why you believe your account should be reactivated..."
+            required
+          ></textarea>
+          <div class="help-text">Provide a detailed explanation for your appeal request.</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="id_documents">Supporting Documents (Optional)</label>
+          <input 
+            type="file" 
+            name="documents" 
+            id="id_documents" 
+            class="file-input" 
+            accept="image/*"
+            multiple
+          >
+          <div class="help-text">You can upload multiple images (e.g., ID, proof of purchase, etc.) to support your appeal.</div>
+        </div>
+        
+        <button type="submit" class="btn-primary">Submit Appeal</button>
+      </form>
+    </div>
+    {% endif %}
+
     <div class="contact-info">
       <h3>Need help?</h3>
-      <p>If you believe this is an error or would like to reactivate your account, please contact our support team:</p>
+      <p>If you have questions about your account status, please contact our support team:</p>
       <p><strong>Email:</strong> support@auroramart.com</p>
       <p><strong>Phone:</strong> +65 9876 5432</p>
     </div>

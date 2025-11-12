@@ -7,6 +7,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 from .forms import (
     UserSignupForm,
     CustomerForm,
@@ -15,7 +18,17 @@ from .forms import (
     PaymentForm,
     ProfileForm,
 )
-from .models import Product, Category, Cart, CartItem, Customer, Order, OrderItem
+from .models import (
+    Product,
+    Category,
+    Cart,
+    CartItem,
+    Customer,
+    Order,
+    OrderItem,
+    Appeal,
+    AppealDocument,
+)
 
 # Create your views here.
 
@@ -98,6 +111,14 @@ def login_view(request):
                 request.session["deactivation_reason"] = form.cleaned_data.get(
                     "deactivation_reason", ""
                 )
+                # Store user ID for appeal checking
+                try:
+                    deactivated_user = User.objects.get(
+                        email__iexact=form.cleaned_data["deactivated_email"]
+                    )
+                    request.session["deactivated_user_id"] = deactivated_user.id
+                except User.DoesNotExist:
+                    pass
                 return redirect("account_deactivated")
 
             login(request, user)
@@ -127,19 +148,61 @@ def logout_view(request):
 
 
 def account_deactivated_view(request):
-    """Display page for deactivated accounts"""
+    """Display page for deactivated accounts with appeal information"""
     email = request.session.get("deactivated_email", "")
     reason = request.session.get("deactivation_reason", "")
+    user_id = request.session.get("deactivated_user_id", None)
+    appeal_blocked = request.session.get("appeal_blocked", False)
 
-    # Clear the session data after retrieving it
+    # Check for pending or declined appeals
+    has_pending_appeal = False
+    appeal_declined = False
+    decline_reason = ""
+    pending_appeal_date = None
+
+    if user_id:
+        try:
+            user = User.objects.get(id=user_id)
+            customer = Customer.objects.get(user=user)
+
+            # Check if appeals are permanently blocked
+            if not customer.can_appeal:
+                appeal_blocked = True
+
+            # Check for latest appeal
+            latest_appeal = (
+                Appeal.objects.filter(customer=customer).order_by("-created_at").first()
+            )
+
+            if latest_appeal:
+                if latest_appeal.status == "pending":
+                    has_pending_appeal = True
+                    pending_appeal_date = latest_appeal.created_at
+                elif latest_appeal.status == "declined":
+                    appeal_declined = True
+                    decline_reason = (
+                        latest_appeal.decline_reason
+                        or "Your appeal was reviewed and declined."
+                    )
+        except (User.DoesNotExist, Customer.DoesNotExist):
+            pass
+
+    # Clear the session data after retrieving it (except user_id for appeal submission)
     if "deactivated_email" in request.session:
         del request.session["deactivated_email"]
     if "deactivation_reason" in request.session:
         del request.session["deactivation_reason"]
+    if "appeal_blocked" in request.session:
+        del request.session["appeal_blocked"]
 
     context = {
         "email": email,
         "reason": reason,
+        "has_pending_appeal": has_pending_appeal,
+        "appeal_declined": appeal_declined,
+        "decline_reason": decline_reason,
+        "pending_appeal_date": pending_appeal_date,
+        "appeal_blocked": appeal_blocked,
     }
     return render(request, "storefront/account_deactivated.html", context)
 
@@ -534,3 +597,84 @@ def reorder_order_view(request, order_id):
 
     request.session["cart_count"] = cart.count
     return redirect("cart")
+
+
+@transaction.atomic
+def submit_appeal_view(request):
+    """Handle appeal submission from deactivated customers"""
+    if request.method != "POST":
+        return redirect("login")
+
+    email = request.POST.get("email", "").strip().lower()
+    appeal_statement = request.POST.get("appeal_statement", "").strip()
+
+    if not email or not appeal_statement:
+        messages.error(request, "Please provide both your email and appeal statement.")
+        return redirect("account_deactivated")
+
+    try:
+        # Find the user and customer
+        user = User.objects.get(email__iexact=email)
+        customer = Customer.objects.get(user=user)
+
+        # Check if user is actually deactivated
+        if user.is_active:
+            messages.error(request, "This account is not deactivated.")
+            return redirect("login")
+
+        # Check if customer is permanently blocked from appeals
+        if not customer.can_appeal:
+            messages.error(
+                request,
+                "Your account is permanently deactivated and you are no longer eligible to submit appeals.",
+            )
+            request.session["deactivated_email"] = email
+            request.session["deactivated_user_id"] = user.id
+            request.session["appeal_blocked"] = True
+            return redirect("account_deactivated")
+
+        # Check if there's already a pending appeal
+        existing_pending = Appeal.objects.filter(
+            customer=customer, status="pending"
+        ).exists()
+
+        if existing_pending:
+            messages.warning(
+                request,
+                "You already have a pending appeal. Please wait for it to be reviewed.",
+            )
+            request.session["deactivated_email"] = email
+            request.session["deactivated_user_id"] = user.id
+            return redirect("account_deactivated")
+
+        # Create the appeal
+        appeal = Appeal.objects.create(
+            customer=customer, appeal_statement=appeal_statement, status="pending"
+        )
+
+        # Handle multiple file uploads
+        files = request.FILES.getlist("documents")
+        for file in files:
+            if file:
+                AppealDocument.objects.create(appeal=appeal, document=file)
+
+        messages.success(
+            request,
+            "Your appeal has been submitted successfully and is pending review by our admin team.",
+        )
+
+        # Set session variables to show pending appeal status
+        request.session["deactivated_email"] = email
+        request.session["deactivated_user_id"] = user.id
+
+    except User.DoesNotExist:
+        messages.error(request, "No account found with that email address.")
+    except Customer.DoesNotExist:
+        messages.error(request, "Customer profile not found.")
+    except Exception as e:
+        messages.error(
+            request,
+            f"An error occurred while submitting your appeal. Please try again.",
+        )
+
+    return redirect("account_deactivated")

@@ -18,6 +18,7 @@ urlpatterns = [
         views.account_deactivated_view,
         name="account_deactivated",
     ),
+    path("account/appeal/submit", views.submit_appeal_view, name="submit_appeal"),
     path("account", views.profile_view, name="account"),
     path("account/orders", views.orders_list_view, name="orders_list"),
     path(

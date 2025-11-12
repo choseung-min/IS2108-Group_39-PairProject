@@ -31,5 +31,9 @@ urlpatterns = [
         name="deactivate_customer",
     ),
     path("orders/<int:pk>/", views.order_detail, name="order_detail"),
+    path("appeals/", views.appeals_list, name="appeals_list"),
+    path("appeals/<int:pk>/", views.appeal_detail, name="appeal_detail"),
+    path("appeals/<int:pk>/approve/", views.approve_appeal, name="approve_appeal"),
+    path("appeals/<int:pk>/decline/", views.decline_appeal, name="decline_appeal"),
     path("logout/", views.logout_view, name="admin_logout"),
 ]
