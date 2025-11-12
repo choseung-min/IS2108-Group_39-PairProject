@@ -1,301 +1,220 @@
-<html>
-    <head>
-        <style>
-      body {
-        font-family: "Arial";
-        margin: 20px;
-      }
-      .messages {
-        list-style: none;
-        padding: 0;
-      }
-      .messages li {
-        padding: 10px;
-        margin-bottom: 10px;
-        border-radius: 4px;
-      }
-      .messages li.success {
-        background-color: #e8f5e9;
-        color: #2e7d32;
-      }
-      .messages li.error {
-        background-color: #ffebee;
-        color: #c62828;
-      }
-      .appeal-header {
-        background: #f5f5f5;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-      }
-      .appeal-section {
-        background: #fff;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 20px;
-      }
-      .appeal-section h3 {
-        margin-top: 0;
-        color: #333;
-        border-bottom: 2px solid #333;
-        padding-bottom: 10px;
-      }
-      .info-grid {
-        display: grid;
-        grid-template-columns: 150px 1fr;
-        gap: 10px;
-        margin-bottom: 10px;
-      }
-      .info-label {
-        font-weight: bold;
-        color: #555;
-      }
-      .status-badge {
-        display: inline-block;
-        padding: 5px 15px;
-        border-radius: 20px;
-        font-weight: bold;
-      }
-      .status-pending {
-        background: #FFF3CD;
-        color: #856404;
-      }
-      .status-approved {
-        background: #D4EDDA;
-        color: #155724;
-      }
-      .status-declined {
-        background: #F8D7DA;
-        color: #721C24;
-      }
-      .statement-box {
-        background: #f9f9f9;
-        border-left: 4px solid #333;
-        padding: 15px;
-        margin: 15px 0;
-        line-height: 1.6;
-        white-space: pre-wrap;
-      }
-      .documents-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 15px;
-        margin-top: 15px;
-      }
-      .document-item {
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        overflow: hidden;
-      }
-      .document-item img {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-        cursor: pointer;
-      }
-      .action-buttons {
-        display: flex;
-        gap: 15px;
-        margin-top: 30px;
-      }
-      .btn {
-        padding: 12px 24px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 16px;
-        font-weight: bold;
-        text-decoration: none;
-        display: inline-block;
-      }
-      .btn-approve {
-        background: #4CAF50;
-        color: white;
-      }
-      .btn-approve:hover {
-        background: #45a049;
-      }
-      .btn-decline {
-        background: #f44336;
-        color: white;
-      }
-      .btn-decline:hover {
-        background: #da190b;
-      }
-      .btn-back {
-        background: #757575;
-        color: white;
-      }
-      .btn-back:hover {
-        background: #616161;
-      }
-      .decline-form {
-        display: none;
-        background: #fff3cd;
-        border: 2px solid #ffc107;
-        padding: 20px;
-        border-radius: 8px;
-        margin-top: 20px;
-      }
-      .decline-form textarea {
-        width: 100%;
-        min-height: 100px;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-family: Arial;
-        font-size: 14px;
-      }
-      .decline-form label {
-        display: block;
-        margin-bottom: 10px;
-        font-weight: bold;
-      }
-      .decline-form-buttons {
-        margin-top: 15px;
-        display: flex;
-        gap: 10px;
-      }
-        </style>
-        <title>Appeal Request - {{ appeal.customer.user.get_full_name }}</title>
-        <script>
-        function showDeclineForm() {
-            document.getElementById('decline-form').style.display = 'block';
-            document.getElementById('btn-decline-show').style.display = 'none';
-        }
-        function hideDeclineForm() {
-            document.getElementById('decline-form').style.display = 'none';
-            document.getElementById('btn-decline-show').style.display = 'inline-block';
-        }
-        function confirmApprove() {
-            return confirm('Are you sure you want to approve this appeal and reactivate the customer account?');
-        }
-        </script>
-    </head>
-    <body>
-        <h2>Appeal Request Details</h2>
-        <a href="{% url 'appeals_list' %}">Back to Appeals List</a> | 
-        <a href="{% url 'customer_detail' appeal.customer.pk %}">View Customer Profile</a>
-        <br />
-        <br />
-        {% if messages %}
-            <ul class="messages">
-                {% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}
-            </ul>
-        {% endif %}
+{% extends 'adminpanel/base/detail_view.html' %}
 
-        <div class="appeal-header">
-            <h1 style="margin: 0 0 10px 0;">
-                Appeal by 
-                {% if appeal.customer.user.first_name or appeal.customer.user.last_name %}
-                    {{ appeal.customer.user.first_name }} {{ appeal.customer.user.last_name }}
-                {% else %}
-                    {{ appeal.customer.user.username }}
-                {% endif %}
-            </h1>
-            <div class="info-grid">
-                <div class="info-label">Status:</div>
-                <div>
-                    {% if appeal.status == 'pending' %}
-                        <span class="status-badge status-pending">⏳ Pending Review</span>
-                    {% elif appeal.status == 'approved' %}
-                        <span class="status-badge status-approved">✓ Approved</span>
-                    {% elif appeal.status == 'declined' %}
-                        <span class="status-badge status-declined">✗ Declined</span>
-                    {% endif %}
+{% block title %}Appeal Request{% endblock %}
+
+{% block page_title %}
+    Appeal Request by 
+    {% if appeal.customer.user.first_name or appeal.customer.user.last_name %}
+        {{ appeal.customer.user.first_name }} {{ appeal.customer.user.last_name }}
+    {% else %}
+        {{ appeal.customer.user.username }}
+    {% endif %}
+{% endblock %}
+
+{% block page_subtitle %}
+    <span class="badge {% if appeal.status == 'pending' %}badge-warning{% elif appeal.status == 'approved' %}badge-success{% else %}badge-danger{% endif %}" style="margin-top: 8px;">
+        {% if appeal.status == 'pending' %}
+            ⏳ Pending Review
+        {% elif appeal.status == 'approved' %}
+            ✓ Approved
+        {% else %}
+            ✗ Declined
+        {% endif %}
+    </span>
+{% endblock %}
+
+{% block back_url %}{% url 'appeals_list' %}{% endblock %}
+
+{% block header_actions %}
+    <a href="{% url 'appeals_list' %}" class="btn btn-ghost">← Back to Appeals</a>
+    <a href="{% url 'customer_detail' appeal.customer.pk %}" class="btn btn-secondary">View Customer Profile</a>
+{% endblock %}
+
+{% block detail_content %}
+
+<div class="detail-container">
+    <div class="detail-sidebar">
+        <!-- Appeal Info Card -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Appeal Info</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-item">
+                    <div class="info-label">Submitted</div>
+                    <div class="info-value" style="font-size: 14px;">{{ appeal.created_at|date:"M d, Y" }}<br><span class="text-muted" style="font-size: 12px;">{{ appeal.created_at|date:"H:i" }}</span></div>
                 </div>
-                <div class="info-label">Email:</div>
-                <div>{{ appeal.customer.user.email }}</div>
-                <div class="info-label">Submitted:</div>
-                <div>{{ appeal.created_at|date:"F d, Y H:i" }}</div>
                 {% if appeal.reviewed_at %}
-                <div class="info-label">Reviewed:</div>
-                <div>{{ appeal.reviewed_at|date:"F d, Y H:i" }}</div>
+                    <div class="info-item" style="margin-top: 12px;">
+                        <div class="info-label">Reviewed</div>
+                        <div class="info-value" style="font-size: 14px;">{{ appeal.reviewed_at|date:"M d, Y" }}</div>
+                    </div>
                 {% endif %}
                 {% if appeal.reviewed_by %}
-                <div class="info-label">Reviewed By:</div>
-                <div>{{ appeal.reviewed_by.get_full_name|default:appeal.reviewed_by.username }}</div>
+                    <div class="info-item" style="margin-top: 12px;">
+                        <div class="info-label">Reviewed By</div>
+                        <div class="info-value" style="font-size: 14px;">{{ appeal.reviewed_by.get_full_name|default:appeal.reviewed_by.username }}</div>
+                    </div>
                 {% endif %}
             </div>
         </div>
 
-        <div class="appeal-section">
-            <h3>Account Status</h3>
-            <div class="info-grid">
-                <div class="info-label">Current Status:</div>
-                <div>
-                    {% if appeal.customer.user.is_active %}
-                        <span style="color: green; font-weight: bold;">✓ Active</span>
-                    {% else %}
-                        <span style="color: red; font-weight: bold;">✗ Deactivated</span>
-                    {% endif %}
-                </div>
-                {% if appeal.customer.user.deactivation_reason %}
-                <div class="info-label">Deactivation Reason:</div>
-                <div>{{ appeal.customer.user.deactivation_reason }}</div>
-                {% endif %}
+        <!-- Customer Info Card -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Customer</h3>
             </div>
-        </div>
-
-        <div class="appeal-section">
-            <h3>Appeal Statement</h3>
-            <div class="statement-box">{{ appeal.appeal_statement }}</div>
-        </div>
-
-        {% if documents %}
-        <div class="appeal-section">
-            <h3>Supporting Documents ({{ documents|length }})</h3>
-            <div class="documents-grid">
-                {% for doc in documents %}
-                <div class="document-item">
-                    <a href="{{ doc.document.url }}" target="_blank">
-                        <img src="{{ doc.document.url }}" alt="Supporting Document">
-                    </a>
-                    <div style="padding: 10px; text-align: center; font-size: 12px; color: #666;">
-                        Uploaded: {{ doc.uploaded_at|date:"M d, Y" }}
+            <div class="card-body">
+                <div class="info-item">
+                    <div class="info-label">Name</div>
+                    <div class="info-value" style="font-size: 14px;">
+                        {% if appeal.customer.user.first_name or appeal.customer.user.last_name %}
+                            {{ appeal.customer.user.first_name }} {{ appeal.customer.user.last_name }}
+                        {% else %}
+                            {{ appeal.customer.user.username }}
+                        {% endif %}
                     </div>
                 </div>
-                {% endfor %}
+                <div class="info-item" style="margin-top: 12px;">
+                    <div class="info-label">Email</div>
+                    <div class="info-value" style="font-size: 13px;">{{ appeal.customer.user.email|default:"—" }}</div>
+                </div>
+                <div class="info-item" style="margin-top: 12px;">
+                    <div class="info-label">Status</div>
+                    <div class="info-value">
+                        {% if appeal.customer.user.is_active %}
+                            <span class="badge badge-success">Active</span>
+                        {% else %}
+                            <span class="badge badge-danger">Deactivated</span>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
-        {% endif %}
+    </div>
 
-        {% if appeal.status == 'declined' and appeal.decline_reason %}
-        <div class="appeal-section" style="background: #ffebee; border-color: #f44336;">
-            <h3 style="color: #c62828; border-bottom-color: #f44336;">Decline Reason</h3>
-            <div class="statement-box" style="background: white; border-left-color: #f44336;">{{ appeal.decline_reason }}</div>
-        </div>
-        {% endif %}
-
-        {% if appeal.status == 'pending' %}
-        <div class="action-buttons">
-            <form method="post" action="{% url 'approve_appeal' appeal.pk %}" onsubmit="return confirmApprove();" style="display: inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-approve">✓ Approve Appeal & Reactivate Account</button>
-            </form>
-            
-            <button type="button" class="btn btn-decline" id="btn-decline-show" onclick="showDeclineForm()">✗ Decline Appeal</button>
-            
-            <a href="{% url 'appeals_list' %}" class="btn btn-back">Back to List</a>
-        </div>
-
-        <div id="decline-form" class="decline-form">
-            <h3 style="margin-top: 0;">Decline Appeal</h3>
-            <form method="post" action="{% url 'decline_appeal' appeal.pk %}">
-                {% csrf_token %}
-                <label for="decline_reason">Reason for declining this appeal (will be shown to customer):</label>
-                <textarea name="decline_reason" id="decline_reason" required placeholder="Please provide a clear explanation for why this appeal is being declined..."></textarea>
-                <div class="decline-form-buttons">
-                    <button type="submit" class="btn btn-decline">Submit Decline Decision</button>
-                    <button type="button" class="btn btn-back" onclick="hideDeclineForm()">Cancel</button>
+    <div class="detail-main">
+        <!-- Account Status -->
+        {% if not appeal.customer.user.is_active %}
+            <div class="card" style="border-left: 4px solid var(--danger);">
+                <div class="card-header">
+                    <h2 class="card-title">Account Status</h2>
                 </div>
-            </form>
-        </div>
-        {% else %}
-        <div class="action-buttons">
-            <a href="{% url 'appeals_list' %}" class="btn btn-back">Back to Appeals List</a>
-        </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <strong>Account Deactivated</strong>
+                        {% if appeal.customer.user.deactivation_reason %}
+                            <br><br>
+                            <strong>Reason:</strong> {{ appeal.customer.user.deactivation_reason }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
         {% endif %}
-    </body>
-</html>
+
+        <!-- Appeal Statement -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Appeal Statement</h2>
+            </div>
+            <div class="card-body">
+                <div style="background: var(--neutral-100); border-left: 4px solid var(--aurora-primary); padding: 20px; border-radius: var(--radius-md); white-space: pre-wrap; line-height: 1.6;">{{ appeal.appeal_statement }}</div>
+            </div>
+        </div>
+
+        <!-- Supporting Documents -->
+        {% if documents %}
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Supporting Documents</h2>
+                    <span class="badge badge-info">{{ documents|length }} file{{ documents|pluralize }}</span>
+                </div>
+                <div class="card-body">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
+                        {% for doc in documents %}
+                            <div style="border: 1px solid var(--neutral-300); border-radius: var(--radius-md); overflow: hidden; transition: transform 0.2s;">
+                                <a href="{{ doc.document.url }}" target="_blank" style="display: block;">
+                                    <img src="{{ doc.document.url }}" 
+                                         alt="Supporting Document" 
+                                         style="width: 100%; height: 200px; object-fit: cover; display: block;">
+                                </a>
+                                <div style="padding: 12px; text-align: center; font-size: 12px; color: var(--neutral-600); background: var(--neutral-100);">
+                                    Uploaded: {{ doc.uploaded_at|date:"M d, Y" }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Decline Reason (if declined) -->
+        {% if appeal.status == 'declined' and appeal.decline_reason %}
+            <div class="card" style="border-left: 4px solid var(--danger);">
+                <div class="card-header">
+                    <h2 class="card-title text-danger">Decline Reason</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        {{ appeal.decline_reason }}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Action Buttons (if pending) -->
+        {% if appeal.status == 'pending' %}
+            <div class="card" style="border-left: 4px solid var(--warning);">
+                <div class="card-header">
+                    <h2 class="card-title">Review Appeal</h2>
+                </div>
+                <div class="card-body">
+                    <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                        <form method="post" action="{% url 'approve_appeal' appeal.pk %}" style="flex: 1;">
+                            {% csrf_token %}
+                            <button type="submit" 
+                                    class="btn btn-success" 
+                                    style="width: 100%;"
+                                    onclick="return confirm('Are you sure you want to approve this appeal and reactivate the customer account?');">
+                                ✓ Approve & Reactivate Account
+                            </button>
+                        </form>
+                        
+                        <button type="button" 
+                                class="btn btn-danger" 
+                                style="flex: 1;"
+                                onclick="document.getElementById('decline-form').style.display='block'; this.style.display='none';">
+                            ✗ Decline Appeal
+                        </button>
+                    </div>
+
+                    <!-- Decline Form (hidden by default) -->
+                    <div id="decline-form" style="display: none; background: var(--warning-light); border: 2px solid var(--warning); padding: 20px; border-radius: var(--radius-md); margin-top: 20px;">
+                        <h3 style="margin-top: 0; color: var(--warning-dark);">Decline Appeal</h3>
+                        <form method="post" action="{% url 'decline_appeal' appeal.pk %}">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label class="form-label">Reason for declining (will be shown to customer)</label>
+                                <textarea name="decline_reason" 
+                                          rows="4" 
+                                          class="form-textarea"
+                                          placeholder="Please provide a clear explanation for why this appeal is being declined..."
+                                          required></textarea>
+                            </div>
+                            <div style="display: flex; gap: 12px;">
+                                <button type="submit" class="btn btn-danger">Submit Decline Decision</button>
+                                <button type="button" 
+                                        class="btn btn-ghost" 
+                                        onclick="document.getElementById('decline-form').style.display='none'; document.querySelector('.btn-danger:not([type=submit])').style.display='inline-flex';">
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

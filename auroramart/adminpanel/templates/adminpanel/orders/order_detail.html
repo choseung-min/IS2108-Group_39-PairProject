@@ -1,119 +1,147 @@
-<html>
-    <head>
-        <style>
-      body {
-        font-family: "Arial";
-      }
-      .messages {
-        list-style: none;
-        padding: 0;
-      }
-      .messages li {
-        padding: 6px;
-        margin-bottom: 4px;
-      }
-      .messages li.success {
-        background-color: #e8f5e9;
-      }
-      .messages li.error {
-        background-color: #ffebee;
-      }
-        </style>
-        <title>Order #{{ order.id }}</title>
-    </head>
-    <body>
-        <h2>Order #{{ order.id }}</h2>
-        <a href="{% url 'customer_detail' pk=order.customer.pk %}">Back to Customer Details</a>
-        <br />
-        <br />
-        <h3>Order Information</h3>
-        <table border="1"
-               cellpadding="5"
-               cellspacing="0"
-               style="width: 80%;
-                      margin: 20px auto">
-            <tr>
-                <th>Field</th>
-                <th>Value</th>
-            </tr>
-            <tr>
-                <td>
-                    <b>Order ID</b>
-                </td>
-                <td>#{{ order.id }}</td>
-            </tr>
-            <tr>
-                <td>
-                    <b>Customer</b>
-                </td>
-                <td>
-                    <a href="{% url 'customer_detail' pk=order.customer.pk %}">
-                        {% if order.customer.user.first_name or order.customer.user.last_name %}
-                            {{ order.customer.user.first_name }} {{ order.customer.user.last_name }}
+{% extends 'adminpanel/base/detail_view.html' %}
+
+{% block title %}Order #{{ order.id }}{% endblock %}
+
+{% block page_title %}Order #{{ order.id }}{% endblock %}
+
+{% block back_url %}{% url 'customer_detail' pk=order.customer.pk %}{% endblock %}
+
+{% block header_actions %}
+    <a href="{% url 'customer_detail' pk=order.customer.pk %}" class="btn btn-ghost">← Back to Customer</a>
+{% endblock %}
+
+{% block alert_section %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endblock %}
+
+{% block detail_content %}
+
+<div class="detail-container">
+    <!-- Sidebar -->
+    <div class="detail-sidebar">
+        <!-- Order Summary -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Order Summary</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-item">
+                    <div class="info-label">Order ID</div>
+                    <div class="info-value"><code>#{{ order.id }}</code></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Status</div>
+                    <div class="info-value">
+                        {% if order.status == 'Completed' %}
+                            <span class="badge badge-success">{{ order.status }}</span>
+                        {% elif order.status == 'Processing' %}
+                            <span class="badge badge-warning">{{ order.status }}</span>
+                        {% elif order.status == 'Cancelled' %}
+                            <span class="badge badge-danger">{{ order.status }}</span>
                         {% else %}
-                            {{ order.customer.user.username }}
+                            <span class="badge badge-info">{{ order.status }}</span>
                         {% endif %}
-                    </a>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <b>Order Date</b>
-                </td>
-                <td>{{ order.order_date|date:"DATETIME_FORMAT" }}</td>
-            </tr>
-            <tr>
-                <td>
-                    <b>Status</b>
-                </td>
-                <td>{{ order.status }}</td>
-            </tr>
-            <tr>
-                <td>
-                    <b>Total Amount</b>
-                </td>
-                <td>${{ order.total_amount }}</td>
-            </tr>
-            <tr>
-                <td>
-                    <b>Delivery Address</b>
-                </td>
-                <td>{{ order.delivery_address }}</td>
-            </tr>
-        </table>
-        <br />
-        <h3>Order Items</h3>
-        {% if order_items %}
-            <table border="1"
-                   cellpadding="5"
-                   cellspacing="0"
-                   style="width: 80%;
-                          margin: 20px auto">
-                <tr>
-                    <th>Product</th>
-                    <th>SKU</th>
-                    <th>Quantity</th>
-                    <th>Price at Purchase</th>
-                    <th>Subtotal</th>
-                </tr>
-                {% for item in order_items %}
-                    <tr>
-                        <td>
-                            <a href="{% url 'product_detail' pk=item.product.pk %}">{{ item.product.name }}</a>
-                        </td>
-                        <td>{{ item.product.sku }}</td>
-                        <td style="text-align: center">{{ item.quantity }}</td>
-                        <td style="text-align: right">${{ item.price_at_purchase }}</td>
-                        <td style="text-align: right">${{ item.subtotal }}</td>
-                    </tr>
-                {% endfor %}
-                <tr style="font-weight: bold">
-                    <td colspan="4" style="text-align: right">Total:</td>
-                    <td style="text-align: right">${{ order.total_amount }}</td>
-                </tr>
-            </table>
-        {% else %}
-            <p style="text-align: center">No items in this order.</p>
-        {% endif %}
-    </body>
-</html>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Total Amount</div>
+                    <div class="info-value"><strong>${{ order.total_amount }}</strong></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Order Date</div>
+                    <div class="info-value text-muted">{{ order.order_date|date:"M d, Y" }}<br><small>{{ order.order_date|date:"h:i A" }}</small></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Info -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Customer</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-item">
+                    <div class="info-label">Name</div>
+                    <div class="info-value">
+                        <a href="{% url 'customer_detail' pk=order.customer.pk %}">
+                            {% if order.customer.user.first_name or order.customer.user.last_name %}
+                                {{ order.customer.user.first_name }} {{ order.customer.user.last_name }}
+                            {% else %}
+                                {{ order.customer.user.username }}
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delivery Address -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Delivery Address</h3>
+            </div>
+            <div class="card-body">
+                <p style="margin: 0; line-height: 1.6;">{{ order.delivery_address }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="detail-main">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Order Items</h2>
+            </div>
+            <div class="card-body">
+                {% if order_items %}
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>SKU</th>
+                                    <th style="text-align: center;">Quantity</th>
+                                    <th style="text-align: right;">Price</th>
+                                    <th style="text-align: right;">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order_items %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'product_detail' pk=item.product.pk %}">{{ item.product.name }}</a>
+                                        </td>
+                                        <td><code>{{ item.product.sku }}</code></td>
+                                        <td style="text-align: center;">{{ item.quantity }}</td>
+                                        <td style="text-align: right;">${{ item.price_at_purchase }}</td>
+                                        <td style="text-align: right;"><strong>${{ item.subtotal }}</strong></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr style="border-top: 2px solid var(--border-color);">
+                                    <td colspan="4" style="text-align: right; font-weight: 600;">Total:</td>
+                                    <td style="text-align: right; font-weight: 700; font-size: 16px; color: var(--aurora-primary);">
+                                        ${{ order.total_amount }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                {% else %}
+                    <div style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
+                        <p style="font-size: 16px; margin: 0;">No items in this order.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

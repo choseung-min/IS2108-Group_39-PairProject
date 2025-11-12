@@ -1,42 +1,60 @@
-{% extends "shared/base.html" %}
+{% extends 'adminpanel/base/list_view.html' %}
+
 {% block title %}Select Product to Restock{% endblock %}
-{% block header %}Select Product to Restock{% endblock %}
-{% block nav %}
-    <a href="{% url 'home' %}">Home</a>
-    <a href="{% url 'restock' %}">Restock Dashboard</a>
+
+{% block page_title %}Select Product to Restock{% endblock %}
+
+{% block header_actions %}
+    <a href="{% url 'restock' %}" class="btn btn-ghost">← Back to Restock Dashboard</a>
 {% endblock %}
-{% block filters %}
-    <form method="get">
-        <input type="text"
-               name="q"
-               value="{{ query|default:'' }}"
-               placeholder="Search by name..." />
-        <button type="submit">Search</button>
-    </form>
+
+{% block filter_fields %}
+    <div class="form-group">
+        <input type="text" 
+               name="q" 
+               value="{{ query|default:'' }}" 
+               placeholder="Search by product name..."
+               class="form-input">
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Search</button>
+    <a href="{% url 'add_stock_select' %}" class="btn btn-ghost">Clear</a>
 {% endblock %}
+
 {% block table_headers %}
-    <th>SKU</th>
-    <th>Name</th>
+    <th style="width: 100px;">SKU</th>
+    <th>Product Name</th>
     <th>Category</th>
-    <th>Current Stock</th>
-    <th>Threshold</th>
-    <th></th>
+    <th style="text-align: center;">Current Stock</th>
+    <th style="text-align: center;">Threshold</th>
+    <th style="text-align: center;">Actions</th>
 {% endblock %}
+
 {% block table_rows %}
     {% for p in page_obj %}
         <tr>
-            <td>{{ p.sku }}</td>
-            <td>{{ p.name }}</td>
+            <td><code>{{ p.sku }}</code></td>
+            <td><a href="{% url 'add_stock' p.pk %}" style="font-weight: 500;">{{ p.name }}</a></td>
             <td>{{ p.category }}</td>
-            <td>{{ p.stock }}</td>
-            <td>{{ p.reorder_threshold }}</td>
-            <td>
-                <a href="{% url 'add_stock' p.pk %}">Add Stock</a>
+            <td style="text-align: center;">
+                {% if p.stock == 0 %}
+                    <span class="badge badge-danger">{{ p.stock }}</span>
+                {% elif p.stock <= p.reorder_threshold %}
+                    <span class="badge badge-warning">{{ p.stock }}</span>
+                {% else %}
+                    <span class="badge badge-success">{{ p.stock }}</span>
+                {% endif %}
+            </td>
+            <td style="text-align: center;">{{ p.reorder_threshold }}</td>
+            <td style="text-align: center;">
+                <a href="{% url 'add_stock' p.pk %}" class="btn btn-sm btn-primary">Add Stock</a>
             </td>
         </tr>
     {% empty %}
         <tr>
-            <td colspan="6" style="text-align:center;">No products found.</td>
+            <td colspan="6" class="text-center text-muted" style="padding: 40px;">
+                No products found.
+            </td>
         </tr>
     {% endfor %}
 {% endblock %}

@@ -43,6 +43,15 @@ def home(request):
     ).count()
     out_of_stock_products = Product.objects.filter(stock=0).count()
 
+    # Critical restock priority (restock_ratio <= 0.25)
+    products_needing_restock = Product.objects.filter(stock__lt=F("reorder_threshold"))
+    products_with_ratio = products_needing_restock.annotate(
+        restock_ratio=ExpressionWrapper(
+            F("stock") * 1.0 / F("reorder_threshold"), output_field=FloatField()
+        )
+    )
+    critical_restock_count = products_with_ratio.filter(restock_ratio__lte=0.25).count()
+
     # Customer metrics
     total_customers = Customer.objects.count()
     active_customers = Customer.objects.filter(user__is_active=True).count()
@@ -78,6 +87,7 @@ def home(request):
         "inactive_products": inactive_products,
         "low_stock_products": low_stock_products,
         "out_of_stock_products": out_of_stock_products,
+        "critical_restock_count": critical_restock_count,
         # Customers
         "total_customers": total_customers,
         "active_customers": active_customers,
@@ -173,7 +183,7 @@ def products(request):
     if sort in sort_fields:
         products = products.order_by(sort)
 
-    paginator = Paginator(products, 15)
+    paginator = Paginator(products, 10)
     page_num = request.GET.get("page")
     page_obj = paginator.get_page(page_num)
 
@@ -246,13 +256,8 @@ def product_detail(request, pk):
                 updated_product.stock = product.stock
                 updated_product.save()
 
-                messages.success(
-                    request,
-                    'Product "{name}" updated successfully!'.format(
-                        name=form.cleaned_data["name"]
-                    ),
-                )
                 # Redirect with updated=true to show preview link
+                # No messages.success() needed - the template shows custom preview message
                 return redirect(
                     f"{reverse('product_detail', kwargs={'pk': product.pk})}?updated=true"
                 )
@@ -375,22 +380,25 @@ def restock(request):
     ).count()
     low_count = products_to_restock.filter(restock_ratio__gt=0.75).count()
 
+    # Pass critical_count to home view context
+    context = {
+        "products_to_restock": page_obj.object_list,
+        "page_obj": page_obj,
+        "main_categories": main_categories,
+        "selected_categories": selected_categories,
+        "query": query,
+        "sort": sort,
+        "query_string": query_string,
+        "critical_count": critical_count,
+        "high_count": high_count,
+        "medium_count": medium_count,
+        "low_count": low_count,
+    }
+
     return render(
         request,
         "adminpanel/restock/restock_dashboard.html",
-        {
-            "products_to_restock": page_obj.object_list,
-            "page_obj": page_obj,
-            "main_categories": main_categories,
-            "selected_categories": selected_categories,
-            "query": query,
-            "sort": sort,
-            "query_string": query_string,
-            "critical_count": critical_count,
-            "high_count": high_count,
-            "medium_count": medium_count,
-            "low_count": low_count,
-        },
+        context,
     )
 
 

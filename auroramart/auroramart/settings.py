@@ -67,6 +67,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "storefront.context_processors.cart_meta",
+                "adminpanel.context_processors.admin_context",
             ],
         },
     },

@@ -1,396 +1,177 @@
-<html>
-    <head>
-        <title>Admin Panel Dashboard - AuroraMart</title>
-        <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-                background: #f5f7fa;
-                padding: 20px;
-                color: #333;
-            }
-            .header {
-                background: white;
-                padding: 20px 30px;
-                border-radius: 10px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                margin-bottom: 30px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            .header h1 {
-                font-size: 28px;
-                color: #2c3e50;
-            }
-            .header-actions {
-                display: flex;
-                gap: 15px;
-            }
-            .btn {
-                padding: 10px 20px;
-                text-decoration: none;
-                border-radius: 6px;
-                font-weight: 500;
-                transition: all 0.3s;
-                display: inline-block;
-            }
-            .btn-primary {
-                background: #0070f3;
-                color: white;
-            }
-            .btn-primary:hover {
-                background: #0051cc;
-            }
-            .btn-secondary {
-                background: #e0e0e0;
-                color: #333;
-            }
-            .btn-secondary:hover {
-                background: #d0d0d0;
-            }
-            .dashboard-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 20px;
-                margin-bottom: 30px;
-            }
-            .card {
-                background: white;
-                border-radius: 10px;
-                padding: 25px;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-                transition: transform 0.2s, box-shadow 0.2s;
-            }
-            .card:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-            }
-            .card-header {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                margin-bottom: 20px;
-                padding-bottom: 15px;
-                border-bottom: 2px solid #f0f0f0;
-            }
-            .card-title {
-                font-size: 18px;
-                font-weight: 600;
-                color: #2c3e50;
-            }
-            .card-icon {
-                font-size: 32px;
-            }
-            .metric-main {
-                font-size: 42px;
-                font-weight: bold;
-                color: #2c3e50;
-                margin-bottom: 10px;
-            }
-            .metric-label {
-                font-size: 14px;
-                color: #7f8c8d;
-                margin-bottom: 20px;
-            }
-            .metric-details {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
-            .metric-row {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 8px 12px;
-                background: #f8f9fa;
-                border-radius: 6px;
-                font-size: 14px;
-            }
-            .metric-row-label {
-                color: #5a6c7d;
-            }
-            .metric-row-value {
-                font-weight: 600;
-                color: #2c3e50;
-            }
-            .alert-badge {
-                background: #ff4444;
-                color: white;
-                padding: 4px 12px;
-                border-radius: 20px;
-                font-size: 12px;
-                font-weight: bold;
-            }
-            .warning-badge {
-                background: #ffa726;
-                color: white;
-                padding: 4px 12px;
-                border-radius: 20px;
-                font-size: 12px;
-                font-weight: bold;
-            }
-            .success-badge {
-                background: #66bb6a;
-                color: white;
-                padding: 4px 12px;
-                border-radius: 20px;
-                font-size: 12px;
-                font-weight: bold;
-            }
-            .card-action {
-                margin-top: 20px;
-                padding-top: 15px;
-                border-top: 1px solid #f0f0f0;
-            }
-            .card-link {
-                color: #0070f3;
-                text-decoration: none;
-                font-weight: 500;
-                display: inline-flex;
-                align-items: center;
-                gap: 5px;
-            }
-            .card-link:hover {
-                text-decoration: underline;
-            }
-            .status-indicator {
-                width: 8px;
-                height: 8px;
-                border-radius: 50%;
-                display: inline-block;
-                margin-right: 8px;
-            }
-            .status-ok {
-                background: #66bb6a;
-            }
-            .status-warning {
-                background: #ffa726;
-            }
-            .status-critical {
-                background: #ff4444;
-            }
-            .attention-needed {
-                border-left: 4px solid #ff4444;
-            }
-            .needs-review {
-                border-left: 4px solid #ffa726;
-            }
-            .all-good {
-                border-left: 4px solid #66bb6a;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="header">
+{% extends 'adminpanel/base/admin_base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="admin-header">
+    <div>
+        <h1 class="admin-header-title">Welcome back, Admin!</h1>
+        <p class="admin-header-subtitle">Here's a quick overview of your AuroraMart store performance</p>
+    </div>
+</div>
+
+<!-- Main 4 Cards - Single Row -->
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px;">
+    <!-- Product Catalogue -->
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 12px;">📦</div>
+        <h3 style="font-size: 18px; font-weight: bold; margin-bottom: 15px;">Product Catalogue</h3>
+        <div style="font-size: 36px; font-weight: bold; margin-bottom: 8px;">{{ total_products }}</div>
+        <div style="font-size: 15px; color: var(--medium-gray); margin-bottom: 15px;">Total Products</div>
+        <div style="display: flex; justify-content: space-around; margin-bottom: 15px; padding-top: 15px; border-top: 1px solid var(--light-gray);">
             <div>
-                <h1>📊 Admin Panel Dashboard</h1>
-                <p style="color: #7f8c8d; margin-top: 5px;">Welcome back! Here's what's happening with AuroraMart</p>
+                <div style="font-size: 14px; color: var(--medium-gray); margin-bottom: 5px;">Active</div>
+                <div style="font-size: 22px; font-weight: bold; color: var(--success-color);">{{ active_products }}</div>
             </div>
-            <div class="header-actions">
-                <a href="{% url 'home2' %}" class="btn btn-primary">View Storefront</a>
-                <a href="{% url 'admin_logout' %}" class="btn btn-secondary">Logout</a>
-            </div>
-        </div>
-
-        <div class="dashboard-grid">
-            <!-- Products Card -->
-            <div class="card {% if out_of_stock_products > 0 %}attention-needed{% elif low_stock_products > 0 %}needs-review{% else %}all-good{% endif %}">
-                <div class="card-header">
-                    <h2 class="card-title">📦 Products</h2>
-                    <span class="card-icon">🏪</span>
-                </div>
-                <div class="metric-main">{{ total_products }}</div>
-                <div class="metric-label">Total Products</div>
-                <div class="metric-details">
-                    <div class="metric-row">
-                        <span class="metric-row-label">
-                            <span class="status-indicator status-ok"></span>Active Products
-                        </span>
-                        <span class="metric-row-value">{{ active_products }}</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-row-label">
-                            <span class="status-indicator" style="background: #bdbdbd;"></span>Inactive Products
-                        </span>
-                        <span class="metric-row-value">{{ inactive_products }}</span>
-                    </div>
-                    {% if low_stock_products > 0 %}
-                    <div class="metric-row" style="background: #fff3cd;">
-                        <span class="metric-row-label">
-                            <span class="status-indicator status-warning"></span>Low Stock
-                        </span>
-                        <span class="metric-row-value" style="color: #f57c00;">{{ low_stock_products }}</span>
-                    </div>
-                    {% endif %}
-                    {% if out_of_stock_products > 0 %}
-                    <div class="metric-row" style="background: #ffebee;">
-                        <span class="metric-row-label">
-                            <span class="status-indicator status-critical"></span>Out of Stock
-                        </span>
-                        <span class="metric-row-value" style="color: #d32f2f;">{{ out_of_stock_products }}</span>
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="card-action">
-                    <a href="{% url 'products' %}" class="card-link">View Product Catalogue →</a>
-                </div>
-            </div>
-
-            <!-- Inventory Card -->
-            <div class="card {% if out_of_stock_products > 0 or low_stock_products > 0 %}attention-needed{% else %}all-good{% endif %}">
-                <div class="card-header">
-                    <h2 class="card-title">📊 Inventory Status</h2>
-                    {% if out_of_stock_products > 0 %}
-                        <span class="alert-badge">{{ out_of_stock_products }} Critical</span>
-                    {% elif low_stock_products > 0 %}
-                        <span class="warning-badge">{{ low_stock_products }} Warning</span>
-                    {% else %}
-                        <span class="success-badge">All Good</span>
-                    {% endif %}
-                </div>
-                <div class="metric-main" style="{% if out_of_stock_products > 0 %}color: #d32f2f;{% elif low_stock_products > 0 %}color: #f57c00;{% else %}color: #43a047;{% endif %}">
-                    {{ low_stock_products|add:out_of_stock_products }}
-                </div>
-                <div class="metric-label">Products Needing Attention</div>
-                <div class="metric-details">
-                    <div class="metric-row">
-                        <span class="metric-row-label">
-                            <span class="status-indicator status-warning"></span>Low Stock (Below Threshold)
-                        </span>
-                        <span class="metric-row-value">{{ low_stock_products }}</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-row-label">
-                            <span class="status-indicator status-critical"></span>Out of Stock (0 units)
-                        </span>
-                        <span class="metric-row-value">{{ out_of_stock_products }}</span>
-                    </div>
-                </div>
-                <div class="card-action">
-                    <a href="{% url 'restock' %}" class="card-link">Go to Restock Dashboard →</a>
-                </div>
-            </div>
-
-            <!-- Customers Card -->
-            <div class="card {% if inactive_customers > 0 %}needs-review{% else %}all-good{% endif %}">
-                <div class="card-header">
-                    <h2 class="card-title">👥 Customers</h2>
-                    <span class="card-icon">👨‍👩‍👧‍👦</span>
-                </div>
-                <div class="metric-main">{{ total_customers }}</div>
-                <div class="metric-label">Total Customers</div>
-                <div class="metric-details">
-                    <div class="metric-row">
-                        <span class="metric-row-label">
-                            <span class="status-indicator status-ok"></span>Active Customers
-                        </span>
-                        <span class="metric-row-value">{{ active_customers }}</span>
-                    </div>
-                    {% if inactive_customers > 0 %}
-                    <div class="metric-row" style="background: #fff3cd;">
-                        <span class="metric-row-label">
-                            <span class="status-indicator status-warning"></span>Deactivated Customers
-                        </span>
-                        <span class="metric-row-value" style="color: #f57c00;">{{ inactive_customers }}</span>
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="card-action">
-                    <a href="{% url 'customers' %}" class="card-link">View Customer Records →</a>
-                </div>
-            </div>
-
-            <!-- Appeals Card -->
-            <div class="card {% if pending_appeals_count > 0 %}attention-needed{% else %}all-good{% endif %}">
-                <div class="card-header">
-                    <h2 class="card-title">📝 Appeal Requests</h2>
-                    {% if pending_appeals_count > 0 %}
-                        <span class="alert-badge">{{ pending_appeals_count }} Pending</span>
-                    {% else %}
-                        <span class="success-badge">Up to Date</span>
-                    {% endif %}
-                </div>
-                <div class="metric-main" style="{% if pending_appeals_count > 0 %}color: #d32f2f;{% else %}color: #43a047;{% endif %}">
-                    {{ pending_appeals_count }}
-                </div>
-                <div class="metric-label">Pending Review</div>
-                <div class="metric-details">
-                    <div class="metric-row">
-                        <span class="metric-row-label">
-                            <span class="status-indicator {% if pending_appeals_count > 0 %}status-critical{% else %}status-ok{% endif %}"></span>Awaiting Decision
-                        </span>
-                        <span class="metric-row-value">{{ pending_appeals_count }}</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-row-label">
-                            <span class="status-indicator" style="background: #90caf9;"></span>Total Appeals
-                        </span>
-                        <span class="metric-row-value">{{ total_appeals }}</span>
-                    </div>
-                </div>
-                <div class="card-action">
-                    <a href="{% url 'appeals_list' %}" class="card-link">Review Appeal Requests →</a>
-                </div>
-            </div>
-
-            <!-- Top Products (Last 7 Days) Card -->
-            <div class="card all-good">
-                <div class="card-header">
-                    <h2 class="card-title">🏆 Top Selling Products</h2>
-                    <span style="font-size: 12px; color: #7f8c8d;">Last 7 Days</span>
-                </div>
-                <div class="metric-label" style="margin-bottom: 15px;">Most Purchased by Quantity</div>
-                <div class="metric-details" style="max-height: 280px; overflow-y: auto;">
-                    {% for prod in top_products %}
-                    <div class="metric-row">
-                        <span class="metric-row-label" style="flex: 1;">
-                            <span style="color: #0070f3; font-weight: bold; margin-right: 8px;">{{ forloop.counter }}.</span>
-                            {{ prod.product__name|truncatechars:35 }}
-                        </span>
-                        <span class="metric-row-value" style="color: #28a745;">{{ prod.total_quantity }} sold</span>
-                    </div>
-                    {% empty %}
-                    <div style="text-align: center; color: #7f8c8d; padding: 20px; font-style: italic;">
-                        No sales data available for the last 7 days
-                    </div>
-                    {% endfor %}
-                </div>
-                <div class="card-action">
-                    <a href="{% url 'products' %}" class="card-link">View All Products →</a>
-                </div>
-            </div>
-
-            <!-- Top Categories (Last 7 Days) Card -->
-            <div class="card all-good">
-                <div class="card-header">
-                    <h2 class="card-title">📈 Top Categories</h2>
-                    <span style="font-size: 12px; color: #7f8c8d;">Last 7 Days</span>
-                </div>
-                <div class="metric-label" style="margin-bottom: 15px;">Most Popular by Sales Volume</div>
-                <div class="metric-details">
-                    {% for cat in top_categories %}
-                    <div class="metric-row" style="padding: 12px;">
-                        <span class="metric-row-label" style="flex: 1;">
-                            <span style="color: #0070f3; font-weight: bold; margin-right: 8px;">{{ forloop.counter }}.</span>
-                            {{ cat.product__category__name|default:"Uncategorized" }}
-                        </span>
-                        <span class="metric-row-value" style="color: #17a2b8; font-size: 16px;">{{ cat.total_quantity }}</span>
-                    </div>
-                    {% empty %}
-                    <div style="text-align: center; color: #7f8c8d; padding: 20px; font-style: italic;">
-                        No sales data available for the last 7 days
-                    </div>
-                    {% endfor %}
-                </div>
-                <div class="card-action">
-                    <a href="{% url 'products' %}" class="card-link">Browse by Category →</a>
-                </div>
+            <div>
+                <div style="font-size: 14px; color: var(--medium-gray); margin-bottom: 5px;">Inactive</div>
+                <div style="font-size: 22px; font-weight: bold;">{{ inactive_products }}</div>
             </div>
         </div>
-    </body>
-</html>
+        <a href="{% url 'products' %}" class="btn btn-primary" style="width: 100%; font-size: 15px;">View</a>
+    </div>
+
+    <!-- Restocking Dashboard -->
+    {% if out_of_stock_products > 0 %}
+        <div class="card" style="text-align: center; border: 2px solid var(--danger-color); background-color: rgba(245, 101, 101, 0.05);">
+    {% elif low_stock_products > 0 %}
+        <div class="card" style="text-align: center; border: 2px solid var(--warning-color); background-color: rgba(237, 137, 54, 0.05);">
+    {% elif critical_restock_count == 0 and low_stock_products == 0 %}
+        <div class="card" style="text-align: center; border: 2px solid var(--success-color); background-color: rgba(72, 187, 120, 0.05);">
+    {% elif critical_restock_count == 0 %}
+        <div class="card" style="text-align: center; border: 2px solid #ecc94b; background-color: rgba(236, 201, 75, 0.05);">
+    {% else %}
+        <div class="card" style="text-align: center; border: 2px solid var(--warning-color); background-color: rgba(237, 137, 54, 0.05);">
+    {% endif %}
+        <div style="font-size: 48px; margin-bottom: 12px;">
+            {% if out_of_stock_products > 0 %}🚨{% elif low_stock_products > 0 %}⚠️{% elif critical_restock_count == 0 and low_stock_products == 0 %}✅{% else %}⚠️{% endif %}
+        </div>
+        <h3 style="font-size: 18px; font-weight: bold; margin-bottom: 15px;">Restocking Dashboard</h3>
+        <div style="font-size: 36px; font-weight: bold; margin-bottom: 8px; {% if out_of_stock_products > 0 %}color: var(--danger-color);{% elif low_stock_products > 0 %}color: var(--warning-color);{% elif critical_restock_count == 0 and low_stock_products == 0 %}color: var(--success-color);{% endif %}">
+            {{ low_stock_products }}
+        </div>
+        <div style="font-size: 15px; color: var(--medium-gray); margin-bottom: 15px;">Need Restocking</div>
+        <div style="display: flex; justify-content: space-around; margin-bottom: 15px; padding-top: 15px; border-top: 1px solid var(--light-gray);">
+            <div>
+                <div style="font-size: 14px; color: var(--medium-gray); margin-bottom: 5px;">Out of Stock</div>
+                <div style="font-size: 22px; font-weight: bold; {% if out_of_stock_products > 0 %}color: var(--danger-color);{% endif %}">{{ out_of_stock_products }}</div>
+            </div>
+            <div>
+                <div style="font-size: 14px; color: var(--medium-gray); margin-bottom: 5px;">Critical</div>
+                <div style="font-size: 22px; font-weight: bold; {% if critical_restock_count > 0 %}color: var(--warning-color);{% endif %}">{{ critical_restock_count }}</div>
+            </div>
+        </div>
+        {% if out_of_stock_products > 0 %}
+            <a href="{% url 'restock' %}" class="btn btn-danger" style="width: 100%; font-size: 15px; background-color: var(--danger-color); border-color: var(--danger-color);">Restock Now</a>
+        {% elif low_stock_products > 0 %}
+            <a href="{% url 'restock' %}" class="btn" style="width: 100%; font-size: 15px; background-color: var(--warning-color); border-color: var(--warning-color); color: white;">Restock Now</a>
+        {% elif critical_restock_count == 0 and low_stock_products == 0 %}
+            <a href="{% url 'restock' %}" class="btn" style="width: 100%; font-size: 15px; background-color: var(--success-color); border-color: var(--success-color); color: white;">View</a>
+        {% else %}
+            <a href="{% url 'restock' %}" class="btn btn-primary" style="width: 100%; font-size: 15px;">View</a>
+        {% endif %}
+    </div>
+
+    <!-- Customer Records -->
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 12px;">👥</div>
+        <h3 style="font-size: 18px; font-weight: bold; margin-bottom: 15px;">Customer Records</h3>
+        <div style="font-size: 36px; font-weight: bold; margin-bottom: 8px;">{{ total_customers }}</div>
+        <div style="font-size: 15px; color: var(--medium-gray); margin-bottom: 15px;">Total Customers</div>
+        <div style="display: flex; justify-content: space-around; margin-bottom: 15px; padding-top: 15px; border-top: 1px solid var(--light-gray);">
+            <div>
+                <div style="font-size: 14px; color: var(--medium-gray); margin-bottom: 5px;">Active</div>
+                <div style="font-size: 22px; font-weight: bold; color: var(--success-color);">{{ active_customers }}</div>
+            </div>
+            <div>
+                <div style="font-size: 14px; color: var(--medium-gray); margin-bottom: 5px;">Deactivated</div>
+                <div style="font-size: 22px; font-weight: bold;">{{ inactive_customers }}</div>
+            </div>
+        </div>
+        <a href="{% url 'customers' %}" class="btn btn-primary" style="width: 100%; font-size: 15px;">View</a>
+    </div>
+
+    <!-- Appeals -->
+    {% if pending_appeals_count > 0 %}
+        <div class="card" style="text-align: center; border: 2px solid var(--danger-color); background-color: rgba(245, 101, 101, 0.05);">
+    {% else %}
+        <div class="card" style="text-align: center; border: 2px solid var(--success-color); background-color: rgba(72, 187, 120, 0.05);">
+    {% endif %}
+        <div style="font-size: 48px; margin-bottom: 12px;">📝</div>
+        <h3 style="font-size: 18px; font-weight: bold; margin-bottom: 15px;">Appeals</h3>
+        <div style="font-size: 36px; font-weight: bold; margin-bottom: 8px; {% if pending_appeals_count > 0 %}color: var(--danger-color);{% else %}color: var(--success-color);{% endif %}">
+            {{ pending_appeals_count }}
+        </div>
+        <div style="font-size: 15px; color: var(--medium-gray); margin-bottom: 15px;">Pending Appeals</div>
+        <div style="display: flex; justify-content: space-around; margin-bottom: 15px; padding-top: 15px; border-top: 1px solid var(--light-gray);">
+            <div>
+                <div style="font-size: 14px; color: var(--medium-gray); margin-bottom: 5px;">Pending</div>
+                <div style="font-size: 22px; font-weight: bold; {% if pending_appeals_count > 0 %}color: var(--danger-color);{% else %}color: var(--success-color);{% endif %}">{{ pending_appeals_count }}</div>
+            </div>
+            <div>
+                <div style="font-size: 14px; color: var(--medium-gray); margin-bottom: 5px;">Total</div>
+                <div style="font-size: 22px; font-weight: bold;">{{ total_appeals }}</div>
+            </div>
+        </div>
+        {% if pending_appeals_count > 0 %}
+            <a href="{% url 'appeals_list' %}" class="btn btn-danger" style="width: 100%; font-size: 15px; background-color: var(--danger-color); border-color: var(--danger-color);">Review Now</a>
+        {% else %}
+            <a href="{% url 'appeals_list' %}" class="btn" style="width: 100%; font-size: 15px; background-color: var(--success-color); border-color: var(--success-color); color: white;">View</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Top Products and Categories -->
+<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+    <!-- Top Products -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Top Selling Products</h3>
+            <span class="badge badge-info">Last 7 Days</span>
+        </div>
+        <div class="card-body">
+            {% if top_products %}
+                {% for prod in top_products %}
+                    <div style="padding: 10px 0; {% if not forloop.last %}border-bottom: 1px solid var(--light-gray);{% endif %}">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span style="color: var(--primary-color); font-weight: bold; margin-right: 8px;">{{ forloop.counter }}.</span>
+                                <span>{{ prod.product__name|truncatechars:35 }}</span>
+                            </div>
+                            <span class="badge badge-success">{{ prod.total_quantity }}</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted" style="text-align: center; padding: 20px;">No data available</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Top Categories -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Top Categories</h3>
+            <span class="badge badge-info">Last 7 Days</span>
+        </div>
+        <div class="card-body">
+            {% if top_categories %}
+                {% for cat in top_categories %}
+                    <div style="padding: 10px 0; {% if not forloop.last %}border-bottom: 1px solid var(--light-gray);{% endif %}">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span style="color: var(--primary-color); font-weight: bold; margin-right: 8px;">{{ forloop.counter }}.</span>
+                                <span>{{ cat.product__category__name|default:"Uncategorized" }}</span>
+                            </div>
+                            <span class="badge badge-info">{{ cat.total_quantity }}</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted" style="text-align: center; padding: 20px;">No data available</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

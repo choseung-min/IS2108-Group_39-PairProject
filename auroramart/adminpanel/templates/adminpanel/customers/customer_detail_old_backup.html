@@ -1,0 +1,369 @@
+<html>
+    <head>
+        <style>
+      body {
+        font-family: "Arial";
+      }
+      .messages {
+        list-style: none;
+        padding: 0;
+      }
+      .messages li {
+        padding: 6px;
+        margin-bottom: 4px;
+      }
+      .messages li.success {
+        background-color: #e8f5e9;
+      }
+      .messages li.error {
+        background-color: #ffebee;
+      }
+        </style>
+        <title>
+            {% if customer.user.first_name or customer.user.last_name %}
+                {{ customer.user.first_name }} {{ customer.user.last_name }}
+            {% else %}
+                {{ customer.user.username }}
+            {% endif %}
+        </title>
+    </head>
+    <body>
+        <h2>
+            {% if customer.user.first_name or customer.user.last_name %}
+                {{ customer.user.first_name }} {{ customer.user.last_name }}
+            {% else %}
+                {{ customer.user.username }}
+            {% endif %}
+        </h2>
+        <a href="{% url 'customers' %}">Back to Customer Records</a>
+        <br />
+        <br />
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}
+            </ul>
+        {% endif %}
+        {% if editing %}
+            <form method="post">
+                {% csrf_token %}
+                <table border="1"
+                       cellpadding="5"
+                       cellspacing="0"
+                       style="width: 80%;
+                              margin: 20px auto">
+                    <tr>
+                        <th>Field</th>
+                        <th>Value</th>
+                        <th>Remarks</th>
+                    </tr>
+                    {% for field in form %}
+                        <tr>
+                            <td style="width: 20%">
+                                <b>{{ field.label_tag }}</b>
+                            </td>
+                            <td style="width: 60%">{{ field }}</td>
+                            <td style="width: 20%">
+                                {% if field.errors %}{{ field.errors }}{% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+                <div style="text-align: center; margin-top: 10px">
+                    <button type="submit">Save Changes</button>
+                    <a href="{% url 'customer_detail' pk=customer.pk %}">Cancel</a>
+                </div>
+            </form>
+            <table border="1"
+                   cellpadding="5"
+                   cellspacing="0"
+                   style="width: 30%;
+                          margin: 20px auto">
+                <tr>
+                    <th>Field</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Username</b>
+                    </td>
+                    <td>{{ customer.user.username }}</td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Account Status</b>
+                    </td>
+                    <td>
+                        {% if customer.user.is_active %}
+                            Active
+                        {% else %}
+                            Inactive
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        {% else %}
+            <div>
+                <table border="1"
+                       cellpadding="5"
+                       cellspacing="0"
+                       style="width: 80%;
+                              margin: 20px auto">
+                    <tr>
+                        <th>Field</th>
+                        <th>Value</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Username</b>
+                        </td>
+                        <td>{{ customer.user.username }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>First Name</b>
+                        </td>
+                        <td>{{ customer.user.first_name|default:"Not set" }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Last Name</b>
+                        </td>
+                        <td>{{ customer.user.last_name|default:"Not set" }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Email</b>
+                        </td>
+                        <td>{{ customer.user.email|default:"Not set" }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Phone</b>
+                        </td>
+                        <td>{{ customer.phone }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Age</b>
+                        </td>
+                        <td>{{ customer.age }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Gender</b>
+                        </td>
+                        <td>{{ customer.gender }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Household Size</b>
+                        </td>
+                        <td>{{ customer.household_size }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Has Children</b>
+                        </td>
+                        <td>
+                            {% if customer.has_children %}
+                                Yes
+                            {% else %}
+                                No
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Monthly Income</b>
+                        </td>
+                        <td>${{ customer.monthly_income }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Employment Status</b>
+                        </td>
+                        <td>{{ customer.employment_status }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Occupation</b>
+                        </td>
+                        <td>{{ customer.occupation }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Education Level</b>
+                        </td>
+                        <td>{{ customer.education }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Address</b>
+                        </td>
+                        <td>{{ customer.address }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Postal Code</b>
+                        </td>
+                        <td>{{ customer.postal_code }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>City/State</b>
+                        </td>
+                        <td>{{ customer.city_state }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Account Status</b>
+                        </td>
+                        <td>
+                            {% if customer.user.is_active %}
+                                Active
+                            {% else %}
+                                Inactive
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Date Joined</b>
+                        </td>
+                        <td>{{ customer.user.date_joined|date:"DATETIME_FORMAT" }}</td>
+                    </tr>
+                    {% if not customer.user.is_active and customer.user.deactivation_reason %}
+                        <tr>
+                            <td>
+                                <b>Deactivation Reason</b>
+                            </td>
+                            <td>{{ customer.user.deactivation_reason }}</td>
+                        </tr>
+                    {% endif %}
+                </table>
+            </div>
+        {% endif %}
+        <br />
+        <br />
+        <h3>Order History</h3>
+        {% if orders %}
+            <table border="1"
+                   cellpadding="5"
+                   cellspacing="0"
+                   style="width: 80%;
+                          margin: 20px auto">
+                <tr>
+                    <th>Order ID</th>
+                    <th>Order Date</th>
+                    <th>Status</th>
+                    <th>Total Amount</th>
+                    <th>Delivery Address</th>
+                    <th>Actions</th>
+                </tr>
+                {% for order in orders %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'order_detail' pk=order.pk %}">#{{ order.id }}</a>
+                        </td>
+                        <td>{{ order.order_date|date:"SHORT_DATETIME_FORMAT" }}</td>
+                        <td>{{ order.status }}</td>
+                        <td>${{ order.total_amount }}</td>
+                        <td>{{ order.delivery_address }}</td>
+                        <td>
+                            <a href="{% url 'order_detail' pk=order.pk %}">View Details</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p style="text-align: center">No orders found for this customer.</p>
+        {% endif %}
+        <br />
+        <div>
+            <p>
+                <a href="?edit=true">Edit Customer</a>
+            </p>
+        </div>
+        {% if customer.user.is_active %}
+            <div id="deactivate-section" style="border: 1px solid #ddd;
+                        padding: 20px;
+                        margin: 20px auto;
+                        width: 60%;
+                        background-color: #fff3cd">
+                <h3 style="color: #856404">Deactivate Customer Account</h3>
+                <form method="post" action="{% url 'deactivate_customer' pk=customer.pk %}">
+                    {% csrf_token %}
+                    <p>
+                        <label for="deactivation_reason">
+                            <b>Reason for Deactivation:</b> (This will be shown to the customer)
+                        </label>
+                        <br />
+                        <textarea id="deactivation_reason"
+                                  name="deactivation_reason"
+                                  rows="4"
+                                  style="width: 100%;
+                                         margin-top: 5px"
+                                  placeholder="e.g., Account suspended due to violation of terms of service..."
+                                  required></textarea>
+                    </p>
+                    <button type="submit"
+                            style="background-color: #dc3545;
+                                   color: white;
+                                   padding: 10px 20px;
+                                   border: none;
+                                   cursor: pointer"
+                            onclick="return confirm('Are you sure you want to deactivate this customer account?');">Deactivate Customer</button>
+                </form>
+            </div>
+        {% else %}
+            {% if not customer.can_appeal %}
+                <!-- Customer has been permanently blocked from appeals -->
+                <div style="border: 1px solid #ddd;
+                            padding: 20px;
+                            margin: 20px auto;
+                            width: 60%;
+                            background-color: #ffebee">
+                    <h3 style="color: #c62828">⚠️ Account Permanently Deactivated</h3>
+                    {% if customer.user.deactivation_reason %}
+                        <p>
+                            <b>Deactivation Reason:</b>
+                            <br />
+                            <i>{{ customer.user.deactivation_reason }}</i>
+                        </p>
+                    {% endif %}
+                    <p style="color: #c62828; font-weight: bold; margin-top: 12px;">
+                        This customer's appeal was declined and they are permanently blocked from reactivation. 
+                        Admin reactivation is no longer available for this account.
+                    </p>
+                </div>
+            {% else %}
+                <div style="border: 1px solid #ddd;
+                            padding: 20px;
+                            margin: 20px auto;
+                            width: 60%;
+                            background-color: #d4edda">
+                    <h3 style="color: #155724">Reactivate Customer Account</h3>
+                    {% if customer.user.deactivation_reason %}
+                        <p>
+                            <b>Previous Deactivation Reason:</b>
+                            <br />
+                            <i>{{ customer.user.deactivation_reason }}</i>
+                        </p>
+                    {% endif %}
+                    <form method="post"
+                          action="{% url 'activate_customer' pk=customer.pk %}"
+                          style="display: inline">
+                        {% csrf_token %}
+                        <button type="submit"
+                                style="background-color: #28a745;
+                                       color: white;
+                                       padding: 10px 20px;
+                                       border: none;
+                                       cursor: pointer"
+                                onclick="return confirm('Are you sure you want to reactivate this customer account?');">Activate Customer</button>
+                    </form>
+                </div>
+            {% endif %}
+        {% endif %}
+    </body>
+</html>

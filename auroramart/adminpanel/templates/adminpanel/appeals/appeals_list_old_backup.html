@@ -1,0 +1,74 @@
+{% extends 'shared/base.html' %}
+{% block title %}Appeal Requests{% endblock %}
+{% block header %}Appeal Requests{% endblock %}
+{% block nav %}
+    <a href="{% url 'home' %}">Home</a>
+    <a href="{% url 'customers' %}">Customer Records</a>
+    <a href="{% url 'admin_logout' %}" style="float: right;">Logout</a>
+{% endblock %}
+{% block filters %}
+    <form method="get">
+        <input type="text"
+               name="q"
+               value="{{ query|default:'' }}"
+               placeholder="Search by customer name or email..." />
+        <button type="submit">Search</button>
+        <select name="status_filter">
+            <option value="">--All Statuses--</option>
+            <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending Only</option>
+            <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved Only</option>
+            <option value="declined" {% if status_filter == 'declined' %}selected{% endif %}>Declined Only</option>
+        </select>
+        <button type="submit">Filter</button>
+        <a href="{% url 'appeals_list' %}">Clear Filters</a>
+    </form>
+    {% if pending_count > 0 %}
+        <p style="color: #856404; background: #FFF3CD; padding: 10px; border-radius: 5px; margin-top: 10px;">
+            ⏳ <strong>{{ pending_count }}</strong> pending appeal{{ pending_count|pluralize }} awaiting review
+        </p>
+    {% endif %}
+{% endblock %}
+{% block table_headers %}
+    <th>Customer</th>
+    <th>Email</th>
+    <th>Submitted On</th>
+    <th>Status</th>
+    <th>Preview</th>
+    <th>Actions</th>
+{% endblock %}
+{% block table_rows %}
+    {% for appeal in appeals %}
+        <tr>
+            <td>
+                <a href="{% url 'customer_detail' appeal.customer.pk %}">
+                    {% if appeal.customer.user.first_name or appeal.customer.user.last_name %}
+                        {{ appeal.customer.user.first_name }} {{ appeal.customer.user.last_name }}
+                    {% else %}
+                        {{ appeal.customer.user.username }}
+                    {% endif %}
+                </a>
+            </td>
+            <td>{{ appeal.customer.user.email|default:"No email" }}</td>
+            <td>{{ appeal.created_at|date:"M d, Y H:i" }}</td>
+            <td>
+                {% if appeal.status == 'pending' %}
+                    <span style="color: orange; font-weight: bold;">⏳ Pending</span>
+                {% elif appeal.status == 'approved' %}
+                    <span style="color: green; font-weight: bold;">✓ Approved</span>
+                {% elif appeal.status == 'declined' %}
+                    <span style="color: red; font-weight: bold;">✗ Declined</span>
+                {% endif %}
+            </td>
+            <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                {{ appeal.appeal_statement|truncatewords:15 }}
+            </td>
+            <td>
+                <a href="{% url 'appeal_detail' appeal.pk %}">View Details</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td style="text-align: center" colspan="6">No appeal requests found.</td>
+        </tr>
+    {% endfor %}
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'adminpanel/base/admin_base.html' %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="admin-header">
+    <div>
+        <h1 class="admin-header-title">{% block page_title %}Detail View{% endblock %}</h1>
+        {% block page_subtitle %}{% endblock %}
+    </div>
+    <div class="admin-header-actions">
+        {% block header_actions %}
+            <a href="{% block back_url %}#{% endblock %}" class="btn btn-ghost">← Back</a>
+        {% endblock %}
+    </div>
+</div>
+
+<!-- Messages -->
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<!-- Alert/Notice (if needed) -->
+{% block alert_section %}{% endblock %}
+
+<!-- Main Content -->
+{% block detail_content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">{% block card_title %}Information{% endblock %}</h2>
+        {% block card_actions %}{% endblock %}
+    </div>
+    <div class="card-body">
+        {% block card_body %}
+            <p>No content available.</p>
+        {% endblock %}
+    </div>
+</div>
+{% endblock %}
+
+{% endblock %}

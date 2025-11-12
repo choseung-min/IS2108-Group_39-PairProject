@@ -1,0 +1,103 @@
+{% extends 'adminpanel/base/admin_base.html' %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="admin-header">
+    <div>
+        <h1 class="admin-header-title">{% block page_title %}List View{% endblock %}</h1>
+        {% block page_subtitle %}{% endblock %}
+    </div>
+    <div class="admin-header-actions">
+        {% block header_actions %}{% endblock %}
+    </div>
+</div>
+
+<!-- Messages -->
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<!-- Alert/Stats Bar (if needed) -->
+{% block alert_bar %}{% endblock %}
+
+<!-- Filters -->
+{% if show_filters|default:True %}
+<div class="filters-bar">
+    {% block filters %}
+        <form method="get" class="filters-form">
+            {% block filter_fields %}
+                <div class="form-group">
+                    <input type="text" 
+                           name="q" 
+                           value="{{ query|default:'' }}" 
+                           placeholder="Search..."
+                           class="form-input">
+                </div>
+                <button type="submit" class="btn btn-primary">Search</button>
+                <a href="{{ request.path }}" class="btn btn-ghost">Clear</a>
+            {% endblock %}
+        </form>
+    {% endblock %}
+</div>
+{% endif %}
+
+<!-- Table -->
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                {% block table_headers %}
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Actions</th>
+                {% endblock %}
+            </tr>
+        </thead>
+        <tbody>
+            {% block table_rows %}
+                <tr>
+                    <td colspan="100%" class="text-center">No data available.</td>
+                </tr>
+            {% endblock %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+{% if page_obj and page_obj.paginator.num_pages > 1 %}
+<div class="pagination-container">
+    <div class="pagination-info">
+        <strong>{{ page_obj.paginator.count }}</strong> total records • 
+        Page <strong>{{ page_obj.number }}</strong> of <strong>{{ page_obj.paginator.num_pages }}</strong>
+    </div>
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?{{ query_string }}&page={{ page_obj.previous_page_number }}">← Prev</a>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}
+                <span>{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?{{ query_string }}&page={{ num }}">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+            <a href="?{{ query_string }}&page={{ page_obj.next_page_number }}">Next →</a>
+        {% endif %}
+    </div>
+</div>
+{% elif page_obj %}
+<div class="pagination-container">
+    <div class="pagination-info">
+        <strong>{{ page_obj.paginator.count }}</strong> total records
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

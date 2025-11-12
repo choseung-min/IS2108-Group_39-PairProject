@@ -1,107 +1,124 @@
-{% extends 'shared/base.html' %}
-{% block title %}Restocking Dashboard{% endblock %}
-{% block header %}Restocking Dashboard{% endblock %}
-{% block nav %}
-    <a href="{% url 'home' %}">Home</a>
-    <a href="{% url 'products' %}">Product Catalogue</a>
-    <a href="{% url 'admin_logout' %}" style="float: right;">Logout</a>
-{% endblock %}
-{% block filters %}
-    <!-- Restock Priority Stats -->
-    <div style="margin-bottom: 20px;">
-        <p style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">Restock Priorities:</p>
-        <p style="font-size: 16px;">
-            Critical: <strong>{{ critical_count }}</strong> | 
-            High: <strong>{{ high_count }}</strong> | 
-            Medium: <strong>{{ medium_count }}</strong> | 
-            Low: <strong>{{ low_count }}</strong>
-        </p>
-    </div>
+{% extends 'adminpanel/base/list_view.html' %}
 
-    <!-- Search and Filter Form -->
-    <form method="get">
-        <input type="text"
-               name="q"
-               value="{{ query|default:'' }}"
-               placeholder="Search..." />
-        <button type="submit">Search</button>
-        <select name="category">
-            <option value="" {% if not selected_categories %}selected{% endif %}>-- All Categories --</option>
+{% block title %}Restocking Dashboard{% endblock %}
+
+{% block page_title %}Restocking Dashboard{% endblock %}
+
+{% block header_actions %}
+    <a href="{% url 'add_stock_select' %}" class="btn btn-primary">+ Add Stock</a>
+{% endblock %}
+
+{% block alert_bar %}
+    <!-- Priority Stats Bar -->
+    <div class="stats-bar">
+        <div class="stats-item">
+            <div class="stats-value">{{ critical_count }}</div>
+            <div class="stats-label">🔴 Critical</div>
+        </div>
+        <div class="stats-item">
+            <div class="stats-value">{{ high_count }}</div>
+            <div class="stats-label">🟠 High</div>
+        </div>
+        <div class="stats-item">
+            <div class="stats-value">{{ medium_count }}</div>
+            <div class="stats-label">🟡 Medium</div>
+        </div>
+        <div class="stats-item">
+            <div class="stats-value">{{ low_count }}</div>
+            <div class="stats-label">🟢 Low</div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block filter_fields %}
+    <div class="form-group">
+        <input type="text" 
+               name="q" 
+               value="{{ query|default:'' }}" 
+               placeholder="Search products..."
+               class="form-input">
+    </div>
+    
+    <div class="form-group">
+        <select name="category" class="form-select">
+            <option value="" {% if not selected_categories %}selected{% endif %}>All Categories</option>
             {% for main in main_categories %}
                 <optgroup label="{{ main.name }}">
-                    <option value="{{ main.id }}"
-                            {% if main.id|stringformat:"s" in selected_categories %}selected{% endif %}>
+                    <option value="{{ main.id }}" {% if main.id|stringformat:"s" in selected_categories %}selected{% endif %}>
                         All {{ main.name }}
                     </option>
                     {% for sub in main.category_set.all %}
-                        <option value="{{ sub.id }}"
-                                {% if sub.id|stringformat:"s" in selected_categories %}selected{% endif %}>
+                        <option value="{{ sub.id }}" {% if sub.id|stringformat:"s" in selected_categories %}selected{% endif %}>
                             &nbsp;&nbsp;{{ sub.name }}
                         </option>
                     {% endfor %}
                 </optgroup>
             {% endfor %}
         </select>
-        <button type="submit">Filter</button>
-        <a href="{% url 'restock' %}">Clear Filters</a>
-    </form>
-{% endblock %}
-{% block add_button %}
-    <div style="width: 11%; float: right;">
-        <a href="{% url 'add_stock_select' %}">+ Add Stock</a>
     </div>
+    
+    <button type="submit" class="btn btn-primary">Apply Filters</button>
+    <a href="{% url 'restock' %}" class="btn btn-ghost">Clear</a>
 {% endblock %}
+
 {% block table_headers %}
-    <th>SKU</th>
+    <th style="width: 100px;">SKU</th>
     <th>Product Name</th>
-    <th>
-        <a href="?{{ query_string }}&sort={% if sort == '-stock' %}stock{% else %}-stock{% endif %}">Current Stock
-            {% if sort == '-stock' %}
-                &darr;
-            {% else %}
-                &uarr;
-            {% endif %}
+    <th style="text-align: center;">
+        <a href="?{{ query_string }}&sort={% if sort == '-stock' %}stock{% else %}-stock{% endif %}">
+            Current Stock
+            {% if sort == '-stock' %}↓{% elif sort == 'stock' %}↑{% endif %}
         </a>
     </th>
-    <th>Reorder Threshold</th>
-    <th>
-        <a href="?{{ query_string }}&sort={% if sort == '-restock_ratio' %}restock_ratio{% else %}-restock_ratio{% endif %}">Restock Priority
-            {% if sort == '-restock_ratio' %}
-                &darr;
-            {% else %}
-                &uarr;
-            {% endif %}
+    <th style="text-align: center;">Threshold</th>
+    <th style="text-align: center;">
+        <a href="?{{ query_string }}&sort={% if sort == '-restock_ratio' %}restock_ratio{% else %}-restock_ratio{% endif %}">
+            Priority
+            {% if sort == '-restock_ratio' %}↓{% elif sort == 'restock_ratio' %}↑{% endif %}
         </a>
     </th>
-    <th>Actions</th>
+    <th style="text-align: center;">Actions</th>
 {% endblock %}
+
 {% block table_rows %}
     {% for product in products_to_restock %}
-        <tr class="{% if product.stock < product.reorder_threshold %}low-stock{% endif %}">
-            <td>{{ product.sku }}</td>
+        <tr class="{% if product.stock == 0 or product.restock_ratio <= 0.25 %}low-stock{% endif %}">
+            <td><code>{{ product.sku }}</code></td>
             <td>
-                <a href="{% url 'product_detail' pk=product.pk %}">{{ product.name }}</a>
+                <a href="{% url 'product_detail' pk=product.pk %}" style="font-weight: 500;">{{ product.name }}</a>
             </td>
-            <td style="text-align: center">{{ product.stock }}</td>
-            <td style="text-align: center">{{ product.reorder_threshold }}</td>
-            <td>
-                {% if product.restock_ratio <= 0.25 %}
-                    <span style="color: red; font-weight: bold;">Critical</span>
+            <td style="text-align: center;">
+                {% if product.stock == 0 %}
+                    <span class="badge badge-danger">{{ product.stock }}</span>
+                {% elif product.restock_ratio <= 0.25 %}
+                    <span class="badge badge-danger">{{ product.stock }}</span>
                 {% elif product.restock_ratio <= 0.5 %}
-                    <span style="color: #ed8a09; font-weight: bold;">High</span>
-                {% elif product.restock_ratio <= 0.75 %}
-                    <span style="color: #f0ce0c; font-weight: bold;">Medium</span>
+                    <span class="badge badge-warning">{{ product.stock }}</span>
                 {% else %}
-                    <span style="color: green; font-weight: bold;">Low</span>
+                    <span class="badge badge-neutral">{{ product.stock }}</span>
                 {% endif %}
             </td>
-            <td style="text-align: center">
-                <a href="{% url 'add_stock' pk=product.pk %}">Add Stock</a>
+            <td style="text-align: center;">{{ product.reorder_threshold }}</td>
+            <td style="text-align: center;">
+                {% if product.restock_ratio <= 0.25 %}
+                    <span class="badge badge-danger">🔴 Critical</span>
+                {% elif product.restock_ratio <= 0.5 %}
+                    <span class="badge badge-warning">🟠 High</span>
+                {% elif product.restock_ratio <= 0.75 %}
+                    <span style="background: var(--warning-light); color: #856404; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">🟡 Medium</span>
+                {% else %}
+                    <span class="badge badge-success">🟢 Low</span>
+                {% endif %}
+            </td>
+            <td style="text-align: center;">
+                <a href="{% url 'add_stock' pk=product.pk %}" class="btn btn-sm btn-primary">Add Stock</a>
             </td>
         </tr>
     {% empty %}
         <tr>
-            <td style="text-align: center" colspan="6">All products are sufficiently stocked!</td>
+            <td colspan="6" class="text-center text-muted" style="padding: 40px;">
+                ✅ All products are sufficiently stocked!
+            </td>
         </tr>
     {% endfor %}
 {% endblock %}

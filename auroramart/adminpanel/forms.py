@@ -9,17 +9,18 @@ class ProductForm(forms.ModelForm):
         fields = [
             "sku",
             "name",
-            "description",
+            "price",
             "category",
             "stock",
             "reorder_threshold",
-            "price",
+            "description",
             "image",
             "is_active",
         ]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 4}),
             "is_active": forms.CheckboxInput(),
+            "image": forms.FileInput(),  # Use FileInput instead of ClearableFileInput
         }
         labels = {
             "sku": "SKU Code",

@@ -1,0 +1,268 @@
+<html>
+    <head>
+        <style>
+      body {
+        font-family: "Arial";
+      }
+        </style>
+        <title>{{ product.name }}</title>
+    </head>
+    <body>
+        <h2>{{ product.name }}</h2>
+        <a href="{% url 'products' %}">Back to Product Catalogue</a>
+        <br />
+        <br />
+        {% if product.image %}
+            <div style="float: left">
+                <img src="{{ product.image.url }}"
+                     alt="{{ product.name }}"
+                     width="200"
+                     height="200"
+                     border="1"
+                     padding="4" />
+            </div>
+        {% endif %}
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}
+            </ul>
+        {% endif %}
+        {% if just_updated %}
+            <div style="background-color: #e3f2fd;
+                        border: 2px solid #2196F3;
+                        border-radius: 8px;
+                        padding: 15px;
+                        margin: 20px auto;
+                        width: 80%;
+                        text-align: center">
+                <p style="margin: 0 0 10px 0;
+                          font-weight: bold;
+                          color: #1976D2">Product Updated Successfully!</p>
+                <a href="{% url 'product' slug=product.slug %}"
+                   target="_blank"
+                   style="background-color: #2196F3;
+                          color: white;
+                          padding: 10px 20px;
+                          text-decoration: none;
+                          border-radius: 5px;
+                          display: inline-block;
+                          font-weight: bold">🔍 Preview Product on Storefront (Opens in New Tab)</a>
+                <p style="margin: 10px 0 0 0;
+                          font-size: 0.9em;
+                          color: #666">Verify that changes to price, name, description, image, and status are reflected correctly.</p>
+            </div>
+        {% endif %}
+        {% if editing %}
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <table border="1"
+                       cellpadding="5"
+                       cellspacing="0"
+                       style="width: 80%;
+                              margin: 20px auto">
+                    <tr>
+                        <th>Field</th>
+                        <th>Value</th>
+                        <th>Remarks</th>
+                    </tr>
+                    {% for field in form %}
+                        {% if field.name != 'category' %}
+                            <tr>
+                                <td style="width: 20%">
+                                    <b>{{ field.label_tag }}</b>
+                                </td>
+                                <td style="width: 60%">{{ field }}</td>
+                                <td style="width: 15%">
+                                    {% if field.errors %}{{ field.errors }}{% endif %}
+                                    {% if field == form.stock %}
+                                        Add new stock only in the <a href="{% url 'restock' %}">restock dashboard</a>.
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td style="width: 20%">
+                                    <b>{{ field.label_tag }}</b>
+                                </td>
+                                <td style="width: 60%">
+                                    <select name="{{ form.category.name }}">
+                                        <option value="">-- Select Category --</option>
+                                        {% for main in form.main_categories %}
+                                            <optgroup label="{{ main.name }}">
+                                                {% for sub in main.category_set.all %}
+                                                    <option {% if sub.id == form.category.value %}selected{% endif %}
+                                                            value="{{ sub.id }}">&nbsp;&nbsp;{{ sub.name }}</option>
+                                                {% endfor %}
+                                            </optgroup>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td style="width: 10%">
+                                    {% if field.errors %}{{ field.errors }}{% endif %}
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </table>
+                <div style="text-align: center; margin-top: 10px">
+                    <button type="submit">Save Changes</button>
+                    <a href="{% url 'product_detail' pk=product.pk %}">Cancel</a>
+                </div>
+            </form>
+            <table border="1"
+                   cellpadding="5"
+                   cellspacing="0"
+                   style="width: 30%;
+                          margin: 20px auto">
+                <tr>
+                    <th>Field</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Rating</b>
+                    </td>
+                    <td>
+                        {% if product.rating %}
+                            {{ product.rating }}
+                        {% else %}
+                            No ratings yet
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Created At</b>
+                    </td>
+                    <td>{{ product.created_at }}</td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Updated At</b>
+                    </td>
+                    <td>{{ product.updated_at }}</td>
+                </tr>
+            </table>
+        {% else %}
+            <div>
+                <table border="1"
+                       cellpadding="5"
+                       cellspacing="0"
+                       style="width: 80%;
+                              margin: 20px auto">
+                    <tr>
+                        <th>Field</th>
+                        <th>Value</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>SKU</b>
+                        </td>
+                        <td>{{ product.sku }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Name</b>
+                        </td>
+                        <td>{{ product.name }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Category</b>
+                        </td>
+                        <td>{{ product.category.parent }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Sub-category</b>
+                        </td>
+                        <td>{{ product.category }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Description</b>
+                        </td>
+                        <td>{{ product.description }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Stock</b>
+                        </td>
+                        <td>{{ product.stock }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Reorder Threshold</b>
+                        </td>
+                        <td>{{ product.reorder_threshold }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Price</b>
+                        </td>
+                        <td>${{ product.price }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Status</b>
+                        </td>
+                        <td>
+                            {% if product.is_active %}
+                                Active
+                            {% else %}
+                                Inactive
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Rating</b>
+                        </td>
+                        <td>
+                            {% if product.rating %}
+                                {{ product.rating }}
+                            {% else %}
+                                No ratings
+                                yet
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Created At</b>
+                        </td>
+                        <td>{{ product.created_at }}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Updated At</b>
+                        </td>
+                        <td>{{ product.updated_at }}</td>
+                    </tr>
+                </table>
+            </div>
+        {% endif %}
+        <div>
+            <p>
+                <a href="?edit=true">Edit Product</a>
+            </p>
+        </div>
+        {% if product.is_active %}
+            <form method="post"
+                  action="{% url 'deactivate_product' pk=product.pk %}"
+                  style="display: inline"
+                  onsubmit="return confirm('Are you sure you want to deactivate this product?');">
+                {% csrf_token %}
+                <button type="submit">Deactivate Product</button>
+            </form>
+        {% else %}
+            <form method="post"
+                  action="{% url 'activate_product' pk=product.pk %}"
+                  style="display: inline"
+                  onsubmit="return confirm('Are you sure you want to activate this product?');">
+                {% csrf_token %}
+                <button type="submit">Activate Product</button>
+            </form>
+        {% endif %}
+    </body>
+</html>
