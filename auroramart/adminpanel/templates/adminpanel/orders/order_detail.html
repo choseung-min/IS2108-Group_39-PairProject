@@ -345,11 +345,7 @@
     {% if order_items %}
         {% for item in order_items %}
             <div class="product-item">
-                {% if item.product.image %}
-                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="product-image">
-                {% else %}
-                    <div class="product-image-placeholder">📦</div>
-                {% endif %}
+                <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="product-image">
                 
                 <div class="product-info">
                     <a href="{% url 'product_detail' pk=item.product.pk %}" class="product-name">

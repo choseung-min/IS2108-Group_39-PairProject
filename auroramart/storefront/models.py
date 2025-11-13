@@ -129,6 +129,35 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def image_url(self):
+        """Return product image URL or default category image"""
+        if self.image:
+            return self.image.url
+        # Map parent category names to default image filenames
+        category_images = {
+            "Automotive": "Automotive.png",
+            "Beauty & Personal Care": "Beauty and Personal Care.png",
+            "Books": "Books.png",
+            "Electronics": "Electronics.png",
+            "Fashion - Men": "Fashion - Men.png",
+            "Fashion - Women": "Fashion - Women.png",
+            "Groceries & Gourmet": "Groceries and Gourmet.png",
+            "Health": "Health.png",
+            "Home & Kitchen": "Home and Kitchen.png",
+            "Pet Supplies": "Pet Supplies.png",
+            "Sports & Outdoors": "Sport and Outdoors.png",
+            "Toys & Games": "Toys and Games.png",
+        }
+        # Get parent category name (traverse up to root category)
+        category = self.category
+        while category.parent is not None:
+            category = category.parent
+
+        parent_category_name = category.name
+        default_image = category_images.get(parent_category_name, "Placeholder Img.png")
+        return f"/static/img/default_categories/{default_image}"
+
     def __str__(self):
         return self.name
 
