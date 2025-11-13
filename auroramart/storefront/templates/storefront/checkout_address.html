@@ -5,92 +5,148 @@
   <title>Checkout — Address</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root { --gap: 24px; --border:#e5e7eb; --text:#111827; --muted:#6b7280; }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin:0; color:var(--text); }
-    header, main { max-width: 1100px; margin:auto; padding: 16px; }
-    header a { text-decoration:none; color:var(--muted); }
-    h1 { margin: 12px 0 8px; }
-    .grid { display:grid; grid-template-columns: 2fr 1fr; gap: var(--gap); }
-    @media (max-width: 900px){ .grid{ grid-template-columns:1fr; } }
-    form { background:#fff; border:1px solid var(--border); border-radius:10px; padding:16px; }
-    label { display:block; font-size:14px; margin:12px 0 6px; color:#374151; }
-    textarea, input[type="text"] { width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:15px; }
-    .row { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
-    .save-line { margin: 12px 0; font-size:14px; color:#374151; display:flex; align-items:center; gap:8px; }
-    button { padding:12px 14px; border:0; border-radius:10px; font-weight:600; cursor:pointer; background:#111827; color:#fff; }
-    aside { border:1px solid var(--border); border-radius:10px; padding:16px; background:#fff; }
-    ul { padding-left:18px; }
-    .totals p { margin:6px 0; }
-    .muted { color:var(--muted); font-size:14px; }
-    .flash { margin: 10px 0; color: #b91c1c; }
+    :root{
+      --bg:#f7f8fa; --surface:#ffffff; --line:#e5e7eb; --text:#0f172a; --muted:#6b7280;
+      --accent:#111827; --accent-2:#1f2937; --radius:12px; --gap:24px;
+      --shadow:0 1px 2px rgba(0,0,0,.05), 0 10px 20px rgba(0,0,0,.03);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    header,main{max-width:1100px;margin:auto;padding:20px}
+    a.back-link{display:inline-flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-size:14px}
+    a.back-link:hover{color:var(--text)}
+    .title-wrap{margin-top:8px;margin-bottom:8px}
+    h1{margin:0 0 6px;font-size:32px;letter-spacing:-.02em}
+    .step{color:var(--muted);font-size:14px}
+    .progress{
+      height:6px;border-radius:999px;background:#eef2f7;margin-top:10px;overflow:hidden;
+    }
+    .progress > span{
+      height:100%;display:block;width:50%; /* step 1 of 2 = 50% */
+      background:var(--accent);
+    }
+
+    .grid{display:grid;grid-template-columns:2fr 1fr;gap:var(--gap)}
+    @media (max-width: 900px){ .grid{grid-template-columns:1fr} }
+
+    .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .card-body{padding:18px}
+    .card h3{margin:0 0 10px;font-size:20px}
+
+    form .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width: 640px){ form .row{grid-template-columns:1fr} }
+
+    label{display:block;font-size:14px;color:#374151;margin-bottom:6px;font-weight:600}
+    textarea,input[type="text"]{
+      width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:15px;background:#fff;
+      transition:border-color .15s, box-shadow .15s;
+    }
+    textarea:focus,input[type="text"]:focus{outline:none;border-color:#94a3b8;box-shadow:0 0 0 4px rgba(148,163,184,.15)}
+    .field{margin-bottom:14px}
+    .help{font-size:12px;color:var(--muted);margin-top:4px}
+
+    .errors{margin:8px 0 0;color:#b91c1c;font-size:13px}
+    .flash{margin:10px 0;color:#b91c1c}
+
+    .checkline{display:flex;align-items:center;gap:10px;margin:6px 0 4px}
+    .checkline input{width:18px;height:18px}
+
+    .actions{margin-top:16px;display:flex;justify-content:flex-end}
+    .btn{
+      appearance:none;border:0;border-radius:10px;background:var(--accent);color:#fff;
+      font-weight:700;padding:12px 16px;cursor:pointer;transition:.15s background;
+    }
+    .btn:hover{background:var(--accent-2)}
+
+    /* Order summary */
+    aside.card{position:relative}
+    @media (min-width: 901px){
+      aside.card{position:sticky;top:16px;align-self:start}
+    }
+    .summary-list{padding-left:18px;margin:10px 0 14px}
+    .totals p{margin:6px 0}
+    .totals .label{color:var(--muted)}
+    .totals .strong{font-weight:800}
+
+    /* Divider */
+    .divider{height:1px;background:var(--line);margin:14px 0}
   </style>
 </head>
 <body>
   <header>
-    <a href="{% url 'cart' %}">← Back to Cart</a>
-    <h1>Checkout — Address</h1>
-    <p class="muted">Step 1 of 2</p>
+    <a class="back-link" href="{% url 'cart' %}">← Back to Cart</a>
+
+    <div class="title-wrap">
+      <h1>Checkout — Address</h1>
+      <div class="step">Step 1 of 2</div>
+      <div class="progress" aria-hidden="true"><span></span></div>
+    </div>
   </header>
 
   <main class="grid">
-    <section>
-      {# Optional flash messages #}
-      {% if messages %}
-        <div class="flash">
-          {% for message in messages %}{{ message }}{% if not forloop.last %}<br/>{% endif %}{% endfor %}
-        </div>
-      {% endif %}
+    <!-- Address form -->
+    <section class="card">
+      <div class="card-body">
+        {% if messages %}
+          <div class="flash">
+            {% for message in messages %}
+              {{ message }}{% if not forloop.last %}<br>{% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
 
-    <form method="post" action="">
-        {% csrf_token %}
+        <form method="post" action="">
+          {% csrf_token %}
 
-        <!-- Address field -->
-        <div style="margin-bottom:16px;">
-            <label for="id_address" style="display:block; font-weight:600; margin-bottom:6px;">
-            Address
-            </label>
+          <div class="field">
+            <label for="id_address">Address</label>
             {{ form.address }}
-        </div>
+            {% if form.address.errors %}<div class="errors">{{ form.address.errors }}</div>{% endif %}
+          </div>
 
-        <!-- City/State and Postal Code -->
-        <div style="display:flex; gap:12px; margin-bottom:16px;">
-            <div style="flex:1;">
-            <label for="id_city_state" style="display:block; font-weight:600; margin-bottom:6px;">
-                {{ form.city_state.label }}
-            </label>
-            {{ form.city_state }}
+          <div class="row">
+            <div class="field">
+              <label for="id_city_state">{{ form.city_state.label }}</label>
+              {{ form.city_state }}
+              {% if form.city_state.errors %}<div class="errors">{{ form.city_state.errors }}</div>{% endif %}
             </div>
-            <div style="flex:1;">
-            <label for="id_postal_code" style="display:block; font-weight:600; margin-bottom:6px;">
-                {{ form.postal_code.label }}
-            </label>
-            {{ form.postal_code }}
+            <div class="field">
+              <label for="id_postal_code">{{ form.postal_code.label }}</label>
+              {{ form.postal_code }}
+              {% if form.postal_code.errors %}<div class="errors">{{ form.postal_code.errors }}</div>{% endif %}
             </div>
-        </div>
+          </div>
 
-        <!-- Save to profile -->
-        <div style="margin-bottom:16px;">
-            {{ form.save_to_profile }} <span>{{ form.save_to_profile.label }}</span>
-        </div>
+          <div class="checkline">
+            {{ form.save_to_profile }} <label for="{{ form.save_to_profile.id_for_label }}" style="margin:0">{{ form.save_to_profile.label }}</label>
+          </div>
+          {% if form.save_to_profile.errors %}<div class="errors">{{ form.save_to_profile.errors }}</div>{% endif %}
 
-        <!-- Button -->
-        <button type="submit" class="btn">Continue to payment</button>
-    </form>
+          <div class="divider"></div>
 
+          <div class="actions">
+            <button type="submit" class="btn">Continue to payment</button>
+          </div>
+        </form>
+      </div>
     </section>
 
-    <aside>
-      <h3>Order Summary</h3>
-      <ul>
-        {% for item in cart_items %}
-          <li>{{ item.product.name }} × {{ item.quantity }}</li>
-        {% endfor %}
-      </ul>
-      <div class="totals">
-        <p>Subtotal: ${{ subtotal|floatformat:2 }}</p>
-        <p>Shipping: ${{ shipping_fee|floatformat:2 }}</p>
-        <p>Tax: ${{ tax|floatformat:2 }}</p>
-        <p><strong>Total: ${{ total|floatformat:2 }}</strong></p>
+    <!-- Order summary -->
+    <aside class="card">
+      <div class="card-body">
+        <h3>Order Summary</h3>
+        <ul class="summary-list">
+          {% for item in cart_items %}
+            <li>{{ item.product.name }} × {{ item.quantity }}</li>
+          {% endfor %}
+        </ul>
+
+        <div class="totals">
+          <p><span class="label">Subtotal:</span> ${{ subtotal|floatformat:2 }}</p>
+          <p><span class="label">Shipping:</span> ${{ shipping_fee|floatformat:2 }}</p>
+          <p><span class="label">Tax:</span> ${{ tax|floatformat:2 }}</p>
+          <p class="strong"><span>Total:</span> ${{ total|floatformat:2 }}</p>
+        </div>
       </div>
     </aside>
   </main>

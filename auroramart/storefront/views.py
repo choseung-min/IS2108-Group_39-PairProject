@@ -6,14 +6,14 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
+from django.utils import timezone
+from urllib.parse import urlencode
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.urls import reverse
 from django.http import JsonResponse
 from .forms import UserSignupForm, CustomerForm, EmailLoginForm, AddressForm, PaymentForm, ProfileForm
 from .models import Product, Category, Cart, CartItem, Customer, Order, OrderItem
 from .ml.category_predictor import predict_preferred_category
-#from .ml.association_rules import get_recommendations
 import joblib
 import os
 from django.apps import apps
@@ -103,17 +103,17 @@ def preferred_category_url_for(user) -> str:
     return reverse("home2")
 
 def signup(request):
-    # Handle GET (empty form) vs POST (submitted form)
     if request.method == "POST":
         uform = UserSignupForm(request.POST)
         cform = CustomerForm(request.POST)
         if uform.is_valid() and cform.is_valid():
-            #Create the Django User
-            user = uform.save()  
-            
-            #Create the Customer linked to that User
+            # Create User
+            user = uform.save()
+
+            # Create Customer linked to that User
             customer = cform.save(user=user)
 
+            # Optional ML-based category prediction
             try:
                 payload = {
                     "age": customer.age,
@@ -126,26 +126,42 @@ def signup(request):
                     "education": customer.education,
                 }
                 category_pred = predict_preferred_category(payload)
-                # Ensure we extract the string from a numpy array or list
                 if isinstance(category_pred, (list, tuple)) or hasattr(category_pred, '__iter__'):
                     category_pred = category_pred[0]
                 category_str = str(category_pred).strip()
 
                 customer.preferred_category = category_str
                 customer.save(update_fields=["preferred_category"])
-                messages.success(request, f"Preferred category '{category_str}' predicted based on your profile.")
             except Exception as e:
                 print("AI prediction error:", e)
-                messages.info(request, "Could not predict preferred category at this time.")
-            
+
+            # Log in and send to Data Acknowledgement
             login(request, user)
-            return redirect(preferred_category_url_for(user))
+            next_url = preferred_category_url_for(user)  # e.g., your category/home
+            ack_url = f"{reverse('data_ack')}?{urlencode({'next': next_url})}"
+            return redirect(ack_url)
     else:
         uform = UserSignupForm()
         cform = CustomerForm()
 
-    # Render the signup page
     return render(request, "storefront/signup.html", {"uform": uform, "cform": cform})
+
+@login_required
+def data_acknowledgement(request):
+    next_url = request.GET.get("next") or request.POST.get("next") or reverse("account")
+
+    if request.method == "POST":
+        if request.POST.get("agree") == "on":
+            # Optional: persist a timestamp if your Customer model has this field
+            customer = getattr(request.user, "customer", None)
+            if customer and hasattr(customer, "privacy_ack_at"):
+                customer.privacy_ack_at = timezone.now()
+                customer.save(update_fields=["privacy_ack_at"])
+
+            return redirect(next_url)
+        messages.error(request, "Please check the acknowledgement box to continue.")
+
+    return render(request, "storefront/data_ack.html", {"next": next_url})
 
 def login_view(request):
     if request.method == "POST":
@@ -214,7 +230,6 @@ def cart_add(request, product_id):
     if request.method == 'POST':
         quantity_str = request.POST.get('quantity', '').strip()
         if not quantity_str:
-            messages.error(request, 'Please select a quantity before adding to cart.')
             referer = request.META.get('HTTP_REFERER', '')
             if '/cart/recommendations/' in referer:
                 return redirect('cart_recommendations')
@@ -278,7 +293,6 @@ def cart_remove(request, item_id):
 
 @login_required
 def recommend_addons_view(request):
-    """Interstitial page shown after 'Continue to checkout'."""
     cart = _get_cart_for(request.user)
     items = cart.items.select_related('product').all()
 
@@ -562,6 +576,24 @@ def order_detail_view(request, order_id):
     }
 
     return render(request, 'storefront/order_detail.html', context)
+
+@login_required
+@login_required
+def order_mark_received(request, order_id):
+    # Only allow POST
+    if request.method != "POST":
+        return redirect('order_detail', order_id=order_id)
+
+    # Order belongs to the current user via customer -> user
+    order = get_object_or_404(Order, pk=order_id, customer__user=request.user)
+
+    # Set to your “completed” value. If you use choices/consts, replace accordingly.
+    completed_value = 'Order Completed'   # e.g., Order.STATUS_COMPLETED if you have it
+    order.status = completed_value
+    order.save(update_fields=['status'])
+
+    messages.success(request, f'Order #{order.id} marked as Completed.')
+    return redirect('order_detail', order_id=order.id)
 
 @login_required
 @transaction.atomic

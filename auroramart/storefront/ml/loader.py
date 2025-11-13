@@ -9,6 +9,3 @@ BASE = Path(__file__).resolve().parent.parent / "mlmodels"
 def load_classifier():
     return joblib.load(BASE / "b2c_customers_100.joblib")
 
-@lru_cache(maxsize=1)
-def load_rules():
-    return joblib.load(BASE / "b2c_products_500_transactions_50k.joblib")
