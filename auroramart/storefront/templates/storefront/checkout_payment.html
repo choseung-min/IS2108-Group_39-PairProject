@@ -1,88 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <title>Checkout — Payment</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <style>
-    :root { --gap: 24px; --border:#e5e7eb; --text:#111827; --muted:#6b7280; }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin:0; color:var(--text); }
-    header, main { max-width: 1100px; margin:auto; padding: 16px; }
-    header a { text-decoration:none; color:var(--muted); }
-    h1 { margin: 12px 0 8px; }
-    .grid { display:grid; grid-template-columns: 2fr 1fr; gap: var(--gap); }
-    @media (max-width: 900px){ .grid{ grid-template-columns:1fr; } }
-    section, aside { border:1px solid var(--border); border-radius:10px; padding:16px; background:#fff; }
-    pre { white-space: pre-wrap; font: inherit; background:#fafafa; border:1px dashed var(--border); padding:10px; border-radius:8px; }
-    form { margin-top: 16px; }
-    .payment-options { display:flex; gap:10px; flex-wrap:wrap; }
-    /* Button-like radios */
-    .payment-options input[type="radio"] { display:none; }
-    .payment-options label {
-      display:inline-block; padding:10px 14px; border:1px solid var(--border);
-      border-radius:10px; cursor:pointer; user-select:none;
+<head>
+  <meta charset="UTF-8" />
+  <title>Checkout — Payment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --bg:#f7f8fa; --surface:#ffffff; --line:#e5e7eb; --text:#0f172a; --muted:#6b7280;
+      --accent:#111827; --accent-2:#1f2937; --radius:12px; --gap:24px;
+      --shadow:0 1px 2px rgba(0,0,0,.05), 0 10px 20px rgba(0,0,0,.03);
     }
-    .payment-options input[type="radio"]:checked + label {
-      border-color:#111827; box-shadow:0 0 0 2px inset #1118271a;
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    header,main{max-width:1100px;margin:auto;padding:20px}
+    a.back-link{display:inline-flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-size:14px}
+    a.back-link:hover{color:var(--text)}
+    .title-wrap{margin-top:8px;margin-bottom:8px}
+    h1{margin:0 0 6px;font-size:32px;letter-spacing:-.02em}
+    .step{color:var(--muted);font-size:14px}
+    .progress{height:6px;border-radius:999px;background:#eef2f7;margin-top:10px;overflow:hidden}
+    .progress > span{height:100%;display:block;width:100%;background:var(--accent)} /* step 2 of 2 = 100% */
+
+    .grid{display:grid;grid-template-columns:2fr 1fr;gap:var(--gap)}
+    @media (max-width: 900px){ .grid{grid-template-columns:1fr} }
+
+    .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .card-body{padding:18px}
+    .card h3{margin:0 0 10px;font-size:20px}
+
+    pre{
+      white-space:pre-wrap;background:#f8fafc;border:1px dashed var(--line);
+      padding:10px;border-radius:10px;margin-top:6px
     }
-    button { padding:12px 14px; border:0; border-radius:10px; font-weight:600; cursor:pointer; background:#111827; color:#fff; }
-    ul { padding-left:18px; }
-    .totals p { margin:6px 0; }
-    .muted { color:var(--muted); font-size:14px; }
-    .flash { margin: 10px 0; color: #b91c1c; }
-        </style>
-    </head>
-    <body>
-        <header>
-            <a href="{% url 'checkout_address' %}">← Change address</a>
-            <h1>Checkout — Payment</h1>
-            <p class="muted">Step 2 of 2</p>
-        </header>
-        <main class="grid">
-            <section>
-                {% if messages %}
-                    <div class="flash">
-                        {% for message in messages %}
-                            {{ message }}
-                            {% if not forloop.last %}<br />{% endif %}
-                        {% endfor %}
-                    </div>
-                {% endif %}
-                <h3>Shipping to</h3>
-                <pre>{{ addr_text }}</pre>
-                <form method="post">
-                    {% csrf_token %}
-                    <h3>Payment method</h3>
-                    {# Custom radio rendering (button-style) #}
-                    <div class="payment-options">
-                        {% for value,label in form.payment_method.field.choices %}
-                            <input type="radio"
-                                   id="pm_{{ value }}"
-                                   name="{{ form.payment_method.html_name }}"
-                                   value="{{ value }}"
-                                   {% if form.payment_method.value == value %}checked{% endif %} />
-                            <label for="pm_{{ value }}">{{ label }}</label>
-                        {% endfor %}
-                    </div>
-                    <div style="margin-top:12px;">
-                        <button type="submit">Place order</button>
-                    </div>
-                </form>
-            </section>
-            <aside>
-                <h3>Order Summary</h3>
-                <ul>
-                    {% for item in cart_items %}<li>{{ item.product.name }} × {{ item.quantity }}</li>{% endfor %}
-                </ul>
-                <div class="totals">
-                    <p>Subtotal: ${{ subtotal|floatformat:2 }}</p>
-                    <p>Shipping: ${{ shipping_fee|floatformat:2 }}</p>
-                    <p>Tax: ${{ tax|floatformat:2 }}</p>
-                    <p>
-                        <strong>Total: ${{ total|floatformat:2 }}</strong>
-                    </p>
-                </div>
-            </aside>
-        </main>
-    </body>
+
+    /* Messages & errors */
+    .flash{margin:10px 0;color:#b91c1c}
+    .errors{margin:8px 0 0;color:#b91c1c;font-size:13px}
+
+    /* Button + actions */
+    .actions{margin-top:16px;display:flex;justify-content:flex-end}
+    .btn{
+      appearance:none;border:0;border-radius:10px;background:var(--accent);color:#fff;
+      font-weight:700;padding:12px 16px;cursor:pointer;transition:.15s background;
+    }
+    .btn:hover{background:var(--accent-2)}
+
+    /* Payment option “button radios” */
+    .payment-options{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+    .payment-options input[type="radio"]{display:none}
+    .payment-options label{
+      display:inline-block;padding:12px 14px;border:1px solid var(--line);
+      border-radius:10px;cursor:pointer;user-select:none;font-weight:600
+    }
+    .payment-options input[type="radio"]:checked + label{
+      border-color:var(--accent);box-shadow:0 0 0 4px rgba(17,24,39,.12) inset
+    }
+
+    /* Order summary */
+    aside.card{position:relative}
+    @media (min-width: 901px){
+      aside.card{position:sticky;top:16px;align-self:start}
+    }
+    .summary-list{padding-left:18px;margin:10px 0 14px}
+    .totals p{margin:6px 0}
+    .totals .label{color:var(--muted)}
+    .totals .strong{font-weight:800}
+  </style>
+</head>
+<body>
+  <header>
+    <a class="back-link" href="{% url 'checkout_address' %}">← Change address</a>
+
+    <div class="title-wrap">
+      <h1>Checkout — Payment</h1>
+      <div class="step">Step 2 of 2</div>
+      <div class="progress" aria-hidden="true"><span></span></div>
+    </div>
+  </header>
+
+  <main class="grid">
+    <!-- Payment form -->
+    <section class="card">
+      <div class="card-body">
+        {% if messages %}
+          <div class="flash">
+            {% for message in messages %}
+              {{ message }}{% if not forloop.last %}<br>{% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <h3>Shipping to</h3>
+        <pre>{{ addr_text }}</pre>
+
+        <form method="post">
+          {% csrf_token %}
+          <h3 style="margin-top:12px;">Payment method</h3>
+
+          <div class="payment-options">
+            {% for value,label in form.payment_method.field.choices %}
+              <input
+                type="radio"
+                id="pm_{{ value }}"
+                name="{{ form.payment_method.html_name }}"
+                value="{{ value }}"
+                {% if form.payment_method.value == value %}checked{% endif %}
+              />
+              <label for="pm_{{ value }}">{{ label }}</label>
+            {% endfor %}
+          </div>
+          {% if form.payment_method.errors %}
+            <div class="errors">{{ form.payment_method.errors }}</div>
+          {% endif %}
+
+          <div class="actions">
+            <button type="submit" class="btn">Place order</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Order summary -->
+    <aside class="card">
+      <div class="card-body">
+        <h3>Order Summary</h3>
+        <ul class="summary-list">
+          {% for item in cart_items %}
+            <li>{{ item.product.name }} × {{ item.quantity }}</li>
+          {% endfor %}
+        </ul>
+
+        <div class="totals">
+          <p><span class="label">Subtotal:</span> ${{ subtotal|floatformat:2 }}</p>
+          <p><span class="label">Shipping:</span> ${{ shipping_fee|floatformat:2 }}</p>
+          <p><span class="label">Tax:</span> ${{ tax|floatformat:2 }}</p>
+          <p class="strong"><span>Total:</span> ${{ total|floatformat:2 }}</p>
+        </div>
+      </div>
+    </aside>
+  </main>
+</body>
 </html>

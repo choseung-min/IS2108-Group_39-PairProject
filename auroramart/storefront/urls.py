@@ -10,19 +10,24 @@ urlpatterns = [
     path("cart/add/<int:product_id>/", views.cart_add, name="cart_add"),
     path("cart/update/<int:item_id>/", views.cart_update, name="cart_update"),
     path("cart/remove/<int:item_id>/", views.cart_remove, name="cart_remove"),
+    path(
+        "cart/recommendations/",
+        views.recommend_addons_view,
+        name="cart_recommendations",
+    ),
     path("signup", views.signup, name="signup"),
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
-    path(
-        "account/deactivated",
-        views.account_deactivated_view,
-        name="account_deactivated",
-    ),
-    path("account/appeal/submit", views.submit_appeal_view, name="submit_appeal"),
     path("account", views.profile_view, name="account"),
+    path("account/data_ack/", views.data_acknowledgement, name="data_ack"),
     path("account/orders", views.orders_list_view, name="orders_list"),
     path(
         "account/orders/<int:order_id>/", views.order_detail_view, name="order_detail"
+    ),
+    path(
+        "account/orders/<int:order_id>/received/",
+        views.order_mark_received,
+        name="order_mark_received",
     ),
     path(
         "account/orders/<int:order_id>/reorder",

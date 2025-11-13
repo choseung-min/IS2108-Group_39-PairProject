@@ -42,13 +42,14 @@ class UserSignupForm(UserCreationForm):
 
 
 class ProfileForm(forms.Form):
-    # --- User fields (from signup, minus password) ---
+    # User fields (from signup, minus password)
     username = forms.CharField(max_length=150)
     email = forms.EmailField()
     first_name = forms.CharField(label="First Name", max_length=150, required=False)
     last_name = forms.CharField(label="Last Name", max_length=150, required=False)
 
-    # --- Customer fields (same as your signup page) ---
+    # Customer fields (same as your signup page)
+    name = forms.CharField(label="Full Name", max_length=120, required=False)
     phone = forms.CharField(required=False)
     age = forms.IntegerField(min_value=0, required=False)
     household_size = forms.IntegerField(min_value=1, required=False)
@@ -57,7 +58,6 @@ class ProfileForm(forms.Form):
         max_digits=10, decimal_places=2, min_value=0, required=False
     )
 
-    # If your model defines choices, we'll use them; else these render as text.
     gender = forms.ChoiceField(required=False, choices=())
     employment_status = forms.ChoiceField(required=False, choices=())
     occupation = forms.ChoiceField(required=False, choices=())
@@ -128,7 +128,7 @@ class ProfileForm(forms.Form):
             get_choices("education")
         )
 
-    # --- Validation (simple & safe) ---
+    # Validation (simple & safe)
     def clean_username(self):
         username = (self.cleaned_data.get("username") or "").strip()
         qs = User.objects.filter(username__iexact=username).exclude(pk=self.user.pk)
@@ -151,7 +151,7 @@ class ProfileForm(forms.Form):
                 raise forms.ValidationError("Enter a valid phone number.")
         return phone
 
-    # --- Save both models in one go ---
+    # Save both models in one go
     def save(self):
         u = self.user
         c = self.customer

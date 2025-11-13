@@ -88,18 +88,39 @@
       text-decoration:none;
       font-size:0.9em;
     }
+    button.btn-sm {
+      display:inline-block; padding:8px 10px; border-radius:8px;
+      background:#111827; color:#fff; border:0; font-size:0.9em; cursor:pointer;
+    }
+    button.btn-sm:hover { background:#1f2937; }
+    .badge-complete {
+      display:inline-block; padding:6px 8px; border-radius:8px;
+      background:#10b981; color:#fff; font-size:0.85em;
+    }
   </style>
 </head>
 
 <body>
   <header class="topbar">
     <div class="topbar-inner">
-      <a href="{% url 'home2' %}" class="logo-link">
-        <img src="{% static 'img/AuroraMart Logo.png' %}" alt="Aurora Mart" class="logo" />
-        <span class="brand-name">Aurora Mart</span>
-      </a>
+      {% if request.user.is_authenticated and request.user.customer.preferred_category %}
+        <a href="{% url 'category' request.user.customer.preferred_category|slugify %}" class="logo-link">
+          <img src="{% static 'img/AuroraMart Logo.png' %}" alt="Aurora Mart" class="logo" />
+          <span class="brand-name">Aurora Mart</span>
+        </a>
+      {% else %}
+        <a href="{% url 'home2' %}" class="logo-link">
+          <img src="{% static 'img/AuroraMart Logo.png' %}" alt="Aurora Mart" class="logo" />
+          <span class="brand-name">Aurora Mart</span>
+        </a>
+      {% endif %}
+
       <nav>
-        <a href="{% url 'home2' %}">Home</a>
+        {% if request.user.is_authenticated and request.user.customer.preferred_category %}
+          <a href="{% url 'category' request.user.customer.preferred_category|slugify %}">Home</a>
+        {% else %}
+          <a href="{% url 'home2' %}">Home</a>
+        {% endif %}
         <a href="{% url 'cart' %}">Cart</a>
         <a href="{% url 'orders_list' %}">Past Orders</a>
         <a href="{% url 'logout' %}">Logout</a>
@@ -180,7 +201,18 @@
                     <td>{{ o.order_date|date:"M j, Y, g:i a" }}</td>
                     <td>{{ o.status }}</td>
                     <td>${{ o.total_amount|floatformat:2 }}</td>
-                    <td><a class="btn-sm" href="{% url 'order_detail' o.id %}">View</a></td>
+                    <td>
+                      <a class="btn-sm" href="{% url 'order_detail' o.id %}">View</a>
+
+                      {% if 'complete' in o.status|lower %}
+                        <span class="badge-complete" style="margin-left:6px;">Completed</span>
+                      {% else %}
+                        <form action="{% url 'order_mark_received' order_id=o.id %}" method="post" style="display:inline; margin-left:6px;">
+                          {% csrf_token %}
+                          <button type="submit" class="btn-sm">Order received</button>
+                        </form>
+                      {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -191,7 +223,7 @@
             </p>
         {% else %}
             <p>No past orders found.</p>
-            <p><a class="btn-sm" href="{% url 'home2' %}">Shop now</a></p>
+            <p><a class="btn-sm" href="{% url 'category' request.user.customer.preferred_category|slugify %}">Shop now</a></p>
         {% endif %}
     </div>
 

@@ -56,18 +56,14 @@
 <body>
   <header class="topbar">
     <div class="topbar-inner">
-      <a href="{% url 'home2' %}" class="logo-link">
+      <a href="{% url 'category' request.user.customer.preferred_category|slugify %}" class="logo-link">
         <img src="{% static 'img/AuroraMart Logo.png' %}" alt="Aurora Mart" class="logo">
         <span class="brand-name">Aurora Mart</span>
       </a>
       <nav>
-        <a href="{% url 'home2' %}">Home</a>
-        {% if request.user.is_staff or request.user.is_superuser or request.user.role == 'admin' %}
-          <a href="/adminpanel/">Admin Panel</a>
-        {% else %}
-          <a href="{% url 'cart' %}">Cart</a>
-          <a href="{% url 'account' %}">My Profile</a>
-        {% endif %}
+        <a href="{% url 'category' request.user.customer.preferred_category|slugify %}">Home</a>
+        <a href="{% url 'cart' %}">Cart</a>
+        <a href="{% url 'account' %}">My Profile</a>
         <a href="{% url 'logout' %}">Logout</a>
       </nav>
     </div>
