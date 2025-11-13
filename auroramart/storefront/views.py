@@ -210,8 +210,7 @@ def product_detail(request, slug):
 @login_required
 def cart_add(request, product_id):
     p = get_object_or_404(Product, pk=product_id, is_active=True)
-    
-    # Get quantity from request or default to 1
+
     if request.method == 'POST':
         quantity_str = request.POST.get('quantity', '').strip()
         if not quantity_str:
@@ -219,13 +218,16 @@ def cart_add(request, product_id):
             referer = request.META.get('HTTP_REFERER', '')
             if '/cart/recommendations/' in referer:
                 return redirect('cart_recommendations')
-            return redirect('product_detail', product_id=product_id)
-        qty = max(1, int(quantity_str))
+            return redirect('product', slug=p.slug)   # <-- changed
+        try:
+            qty = max(1, int(quantity_str))
+        except ValueError:
+            messages.error(request, 'Quantity must be a whole number.')
+            return redirect('product', slug=p.slug)   # <-- robust fallback
     else:
         qty = 1
-    
+
     cart = _get_cart_for(request.user)
-    
     with transaction.atomic():
         item, created = CartItem.objects.select_for_update().get_or_create(
             cart=cart, product=p, defaults={'quantity': qty, 'price_snapshot': p.price}
@@ -235,17 +237,14 @@ def cart_add(request, product_id):
             if item.price_snapshot is None:
                 item.price_snapshot = p.price
             item.save(update_fields=['quantity', 'price_snapshot'])
-    
+
     request.session['cart_count'] = cart.count
-    
-    # Add success message
     messages.success(request, f'Added {qty} × {p.name} to cart!')
-    
-    # Check if the request came from cart recommendations page
+
     referer = request.META.get('HTTP_REFERER', '')
     if '/cart/recommendations/' in referer:
         return redirect('cart_recommendations')
-    
+
     return redirect('cart')
 
 def cart_view(request):
