@@ -183,7 +183,7 @@ def products(request):
     if sort in sort_fields:
         products = products.order_by(sort)
 
-    paginator = Paginator(products, 10)
+    paginator = Paginator(products, 12)
     page_num = request.GET.get("page")
     page_obj = paginator.get_page(page_num)
 
@@ -366,7 +366,7 @@ def restock(request):
     if sort in sort_fields:
         products_to_restock = products_to_restock.order_by(sort)
 
-    paginator = Paginator(products_to_restock, 15)
+    paginator = Paginator(products_to_restock, 12)
     page_num = request.GET.get("page")
     page_obj = paginator.get_page(page_num)
 
@@ -393,6 +393,7 @@ def restock(request):
         "high_count": high_count,
         "medium_count": medium_count,
         "low_count": low_count,
+        "pagination_position": "bottom",  # Move pagination to bottom
     }
 
     return render(
@@ -413,7 +414,7 @@ def add_stock_select(request):
             Q(name__icontains=query) | Q(description__icontains=query)
         )
 
-    paginator = Paginator(products, 15)
+    paginator = Paginator(products, 12)
     page_num = request.GET.get("page")
     page_obj = paginator.get_page(page_num)
 
@@ -503,7 +504,7 @@ def customers(request):
         # Default ordering to avoid pagination warning
         customers = customers.order_by("user__first_name", "user__last_name")
 
-    paginator = Paginator(customers, 15)
+    paginator = Paginator(customers, 12)
     page_num = request.GET.get("page")
     page_obj = paginator.get_page(page_num)
 
@@ -580,13 +581,16 @@ def deactivate_customer(request, pk):
             )
             return redirect("customer_detail", pk=customer.pk)
 
+        # Deactivate the user account with the new reason
         customer.user.is_active = False
         customer.user.deactivation_reason = deactivation_reason
-        customer.user.save()
+        customer.user.save(update_fields=["is_active", "deactivation_reason"])
+
         messages.success(
             request,
-            'Customer "{name}" deactivated successfully!'.format(
-                name=customer.user.get_full_name() or customer.user.username
+            'Customer "{name}" deactivated successfully! Reason: {reason}'.format(
+                name=customer.user.get_full_name() or customer.user.username,
+                reason=deactivation_reason,
             ),
         )
         return redirect("customer_detail", pk=customer.pk)
@@ -599,14 +603,6 @@ def activate_customer(request, pk):
     customer = get_object_or_404(Customer.objects.select_related("user"), pk=pk)
 
     if request.method == "POST":
-        # Check if customer is permanently blocked from reactivation
-        if not customer.can_appeal:
-            messages.error(
-                request,
-                "This customer's appeal was declined and they are permanently blocked from reactivation. Manual reactivation is not allowed.",
-            )
-            return redirect("customer_detail", pk=customer.pk)
-
         customer.user.is_active = True
         customer.user.deactivation_reason = None  # Clear the deactivation reason
         customer.user.save()
@@ -678,7 +674,7 @@ def appeals_list(request):
         )
     ).order_by("priority", "-created_at")
 
-    paginator = Paginator(appeals, 15)
+    paginator = Paginator(appeals, 12)
     page_num = request.GET.get("page")
     page_obj = paginator.get_page(page_num)
 
@@ -735,11 +731,15 @@ def approve_appeal(request, pk):
     appeal.reviewed_by = request.user
     appeal.save()
 
-    # Reactivate the customer account
+    # Reactivate the customer account and ensure they can appeal in future
     customer_user = appeal.customer.user
     customer_user.is_active = True
     customer_user.deactivation_reason = None
     customer_user.save()
+
+    # Reset can_appeal to True in case it was blocked before
+    appeal.customer.can_appeal = True
+    appeal.customer.save()
 
     messages.success(
         request,
@@ -776,13 +776,10 @@ def decline_appeal(request, pk):
     appeal.decline_reason = decline_reason
     appeal.save()
 
-    # Permanently block future appeals for this customer
-    appeal.customer.can_appeal = False
-    appeal.customer.save()
-
+    # Note: No longer blocking future appeals - customer can submit again
     messages.success(
         request,
-        f"Appeal declined. The customer is permanently blocked from submitting future appeals.",
+        f"Appeal declined. The customer can submit a new appeal if desired.",
     )
 
     return redirect("appeal_detail", pk=pk)

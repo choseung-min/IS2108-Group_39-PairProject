@@ -113,39 +113,6 @@
     </form>
 </div>
 
-<!-- Pagination (Top) -->
-{% if page_obj and page_obj.paginator.num_pages > 1 %}
-<div class="pagination-container" style="margin-bottom: 10px;">
-    <div class="pagination-info" style="font-size: 13px;">
-        <strong>{{ page_obj.paginator.count }}</strong> total • 
-        Page <strong>{{ page_obj.number }}</strong> of <strong>{{ page_obj.paginator.num_pages }}</strong>
-    </div>
-    <div class="pagination">
-        {% if page_obj.has_previous %}
-            <a href="?{{ query_string }}&page={{ page_obj.previous_page_number }}" style="font-size: 13px;">← Prev</a>
-        {% endif %}
-        
-        {% for num in page_obj.paginator.page_range %}
-            {% if num == page_obj.number %}
-                <span style="font-size: 13px;">{{ num }}</span>
-            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <a href="?{{ query_string }}&page={{ num }}" style="font-size: 13px;">{{ num }}</a>
-            {% endif %}
-        {% endfor %}
-        
-        {% if page_obj.has_next %}
-            <a href="?{{ query_string }}&page={{ page_obj.next_page_number }}" style="font-size: 13px;">Next →</a>
-        {% endif %}
-    </div>
-</div>
-{% elif page_obj %}
-<div class="pagination-container" style="margin-bottom: 10px;">
-    <div class="pagination-info" style="font-size: 13px;">
-        <strong>{{ page_obj.paginator.count }}</strong> total records
-    </div>
-</div>
-{% endif %}
-
 <!-- Table -->
 <div class="table-container">
     <table class="table" style="table-layout: fixed;">
@@ -256,5 +223,34 @@
         </tbody>
     </table>
 </div>
+
+<!-- Bottom Right Pagination -->
+{% if page_obj and page_obj.paginator.num_pages > 1 %}
+<div style="display: flex; justify-content: flex-end; margin-top: 0;">
+    <div class="pagination-container" style="margin-bottom: 0; display: flex; align-items: center; gap: 15px; padding: 2px 20px;">
+        <div class="pagination-info" style="font-size: 13px; margin: 0;">
+            <strong>{{ page_obj.paginator.count }}</strong> total • 
+            Page <strong>{{ page_obj.number }}</strong> of <strong>{{ page_obj.paginator.num_pages }}</strong>
+        </div>
+        <div class="pagination" style="margin: 0;">
+            {% if page_obj.has_previous %}
+                <a href="?{{ query_string }}&page={{ page_obj.previous_page_number }}" style="font-size: 13px;">← Prev</a>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                    <span style="font-size: 13px;">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <a href="?{{ query_string }}&page={{ num }}" style="font-size: 13px;">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+                <a href="?{{ query_string }}&page={{ page_obj.next_page_number }}" style="font-size: 13px;">Next →</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
 
 {% endblock %}

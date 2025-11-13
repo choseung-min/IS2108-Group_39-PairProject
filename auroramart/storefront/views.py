@@ -152,7 +152,6 @@ def account_deactivated_view(request):
     email = request.session.get("deactivated_email", "")
     reason = request.session.get("deactivation_reason", "")
     user_id = request.session.get("deactivated_user_id", None)
-    appeal_blocked = request.session.get("appeal_blocked", False)
 
     # Check for pending or declined appeals
     has_pending_appeal = False
@@ -164,10 +163,6 @@ def account_deactivated_view(request):
         try:
             user = User.objects.get(id=user_id)
             customer = Customer.objects.get(user=user)
-
-            # Check if appeals are permanently blocked
-            if not customer.can_appeal:
-                appeal_blocked = True
 
             # Check for latest appeal
             latest_appeal = (
@@ -192,8 +187,6 @@ def account_deactivated_view(request):
         del request.session["deactivated_email"]
     if "deactivation_reason" in request.session:
         del request.session["deactivation_reason"]
-    if "appeal_blocked" in request.session:
-        del request.session["appeal_blocked"]
 
     context = {
         "email": email,
@@ -202,7 +195,6 @@ def account_deactivated_view(request):
         "appeal_declined": appeal_declined,
         "decline_reason": decline_reason,
         "pending_appeal_date": pending_appeal_date,
-        "appeal_blocked": appeal_blocked,
     }
     return render(request, "storefront/account_deactivated.html", context)
 
@@ -605,33 +597,26 @@ def submit_appeal_view(request):
     if request.method != "POST":
         return redirect("login")
 
-    email = request.POST.get("email", "").strip().lower()
     appeal_statement = request.POST.get("appeal_statement", "").strip()
+    user_id = request.session.get("deactivated_user_id")
 
-    if not email or not appeal_statement:
-        messages.error(request, "Please provide both your email and appeal statement.")
+    if not appeal_statement:
+        messages.error(request, "Please provide an appeal statement.")
         return redirect("account_deactivated")
 
+    if not user_id:
+        messages.error(request, "Session expired. Please log in again.")
+        return redirect("login")
+
     try:
-        # Find the user and customer
-        user = User.objects.get(email__iexact=email)
+        # Find the user and customer from session
+        user = User.objects.get(id=user_id)
         customer = Customer.objects.get(user=user)
 
         # Check if user is actually deactivated
         if user.is_active:
             messages.error(request, "This account is not deactivated.")
             return redirect("login")
-
-        # Check if customer is permanently blocked from appeals
-        if not customer.can_appeal:
-            messages.error(
-                request,
-                "Your account is permanently deactivated and you are no longer eligible to submit appeals.",
-            )
-            request.session["deactivated_email"] = email
-            request.session["deactivated_user_id"] = user.id
-            request.session["appeal_blocked"] = True
-            return redirect("account_deactivated")
 
         # Check if there's already a pending appeal
         existing_pending = Appeal.objects.filter(
@@ -643,8 +628,6 @@ def submit_appeal_view(request):
                 request,
                 "You already have a pending appeal. Please wait for it to be reviewed.",
             )
-            request.session["deactivated_email"] = email
-            request.session["deactivated_user_id"] = user.id
             return redirect("account_deactivated")
 
         # Create the appeal
@@ -663,12 +646,11 @@ def submit_appeal_view(request):
             "Your appeal has been submitted successfully and is pending review by our admin team.",
         )
 
-        # Set session variables to show pending appeal status
-        request.session["deactivated_email"] = email
-        request.session["deactivated_user_id"] = user.id
+        # Session already has the user_id, no need to reset
 
     except User.DoesNotExist:
-        messages.error(request, "No account found with that email address.")
+        messages.error(request, "User account not found. Please log in again.")
+        return redirect("login")
     except Customer.DoesNotExist:
         messages.error(request, "Customer profile not found.")
     except Exception as e:

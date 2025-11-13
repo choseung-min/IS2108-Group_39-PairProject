@@ -195,9 +195,6 @@
       {% if decline_reason %}
       <p style="color: #c62828;"><strong>Reason:</strong> {{ decline_reason }}</p>
       {% endif %}
-      {% if appeal_blocked %}
-      <p style="color: #c62828; font-weight: bold; margin-top: 12px;">⚠️ Your account is permanently deactivated and you are no longer eligible to submit further appeals.</p>
-      {% endif %}
     </div>
     {% elif reason %}
     <div class="contact-info">
@@ -220,15 +217,23 @@
       <p>Your appeal request has been submitted and is currently under review by our admin team. You will be notified once a decision has been made.</p>
       <p><small>Submitted on: {{ pending_appeal_date|date:"F d, Y" }}</small></p>
     </div>
-    {% elif not appeal_declined and not appeal_blocked %}
-    <!-- Appeal Form Section -->
+    {% else %}
+    <!-- Appeal Form Section - Always show for deactivated accounts -->
     <div class="appeal-section">
       <h3>Submit an Appeal</h3>
+      {% if appeal_declined %}
+        <div class="contact-info" style="background: #fff3cd; border: 1px solid #ffc107; margin-bottom: 20px;">
+          <h4 style="color: #856404; margin-top: 0;">Previous Appeal Declined</h4>
+          <p style="color: #856404;">Your previous appeal was declined. However, you can submit a new appeal with additional information.</p>
+          {% if decline_reason %}
+          <p style="color: #856404;"><strong>Previous Decline Reason:</strong> {{ decline_reason }}</p>
+          {% endif %}
+        </div>
+      {% endif %}
       <p style="font-size: 14px; margin-bottom: 20px;">If you believe your account was deactivated in error or would like to request reactivation, you can submit an appeal below.</p>
       
       <form method="post" enctype="multipart/form-data" action="{% url 'submit_appeal' %}">
         {% csrf_token %}
-        <input type="hidden" name="email" value="{{ email }}">
         
         <div class="form-group">
           <label for="id_appeal_statement">Appeal Statement *</label>

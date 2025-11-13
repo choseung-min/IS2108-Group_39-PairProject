@@ -33,7 +33,7 @@
                         <span class="badge">{{ pending_appeals_count }}</span>
                     {% endif %}
                 </a>
-                <a href="{% url 'admin_logout' %}" class="admin-nav-item" style="margin-top: auto; border-top: 1px solid var(--neutral-300);">
+                <a href="#" onclick="confirmLogout(event)" class="admin-nav-item" style="margin-top: auto; border-top: 1px solid var(--neutral-300);">
                     🚪 Logout
                 </a>
             </nav>
@@ -44,6 +44,16 @@
             {% block content %}{% endblock %}
         </main>
     </div>
+    
+    <script>
+        function confirmLogout(event) {
+            event.preventDefault();
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = "{% url 'admin_logout' %}";
+            }
+        }
+    </script>
+    
     {% block extra_js %}{% endblock %}
 </body>
 </html>

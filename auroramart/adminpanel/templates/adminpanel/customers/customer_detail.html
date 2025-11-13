@@ -42,10 +42,10 @@
         <div class="card-body">
             <form method="post">
                 {% csrf_token %}
-                <div class="info-grid">
+                <div class="info-grid" style="gap: 8px;">
                     {% for field in form %}
-                        <div class="form-group">
-                            <label class="form-label">{{ field.label }}</label>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" style="margin-bottom: 3px; font-size: 14px;">{{ field.label }}</label>
                             {% if field.field.widget.input_type == 'select' %}
                                 {{ field }}
                             {% elif field.field.widget.input_type == 'checkbox' %}
@@ -58,6 +58,7 @@
                                        name="{{ field.name }}" 
                                        value="{{ field.value|default:'' }}"
                                        class="form-input"
+                                       style="padding: 7px 10px; font-size: 14px;"
                                        {% if field.field.required %}required{% endif %}>
                             {% endif %}
                             {% if field.errors %}
@@ -66,7 +67,7 @@
                         </div>
                     {% endfor %}
                 </div>
-                <div style="display: flex; gap: 12px; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--neutral-200);">
+                <div style="display: flex; gap: 12px; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--neutral-200);">
                     <button type="submit" class="btn btn-success">Save Changes</button>
                     <a href="{% url 'customer_detail' pk=customer.pk %}" class="btn btn-ghost">Cancel</a>
                 </div>
@@ -324,49 +325,28 @@
                     </div>
                 </div>
             {% else %}
-                {% if not customer.can_appeal %}
-                    <!-- Permanently Blocked -->
-                    <div class="card" style="border-left: 4px solid var(--danger);">
-                        <div class="card-header">
-                            <h3 class="card-title text-danger">⚠️ Account Permanently Deactivated</h3>
-                        </div>
-                        <div class="card-body">
-                            {% if customer.user.deactivation_reason %}
-                                <div class="alert alert-danger">
-                                    <strong>Deactivation Reason:</strong><br>
-                                    {{ customer.user.deactivation_reason }}
-                                </div>
-                            {% endif %}
-                            <p class="text-danger" style="font-weight: 600;">
-                                This customer's appeal was declined and they are permanently blocked from reactivation. 
-                                Admin reactivation is no longer available for this account.
-                            </p>
-                        </div>
+                <!-- Can Reactivate -->
+                <div id="activate-section" class="card" style="border-left: 4px solid var(--success);">
+                    <div class="card-header">
+                        <h3 class="card-title text-success">Reactivate Customer Account</h3>
                     </div>
-                {% else %}
-                    <!-- Can Reactivate -->
-                    <div id="activate-section" class="card" style="border-left: 4px solid var(--success);">
-                        <div class="card-header">
-                            <h3 class="card-title text-success">Reactivate Customer Account</h3>
-                        </div>
-                        <div class="card-body">
-                            {% if customer.user.deactivation_reason %}
-                                <div class="alert alert-warning">
-                                    <strong>Previous Deactivation Reason:</strong><br>
-                                    {{ customer.user.deactivation_reason }}
-                                </div>
-                            {% endif %}
-                            <form method="post" action="{% url 'activate_customer' pk=customer.pk %}">
-                                {% csrf_token %}
-                                <button type="submit" 
-                                        class="btn btn-success"
-                                        onclick="return confirm('Are you sure you want to reactivate this customer account?');">
-                                    Activate Customer
-                                </button>
-                            </form>
-                        </div>
+                    <div class="card-body">
+                        {% if customer.user.deactivation_reason %}
+                            <div class="alert alert-warning">
+                                <strong>Previous Deactivation Reason:</strong><br>
+                                {{ customer.user.deactivation_reason }}
+                            </div>
+                        {% endif %}
+                        <form method="post" action="{% url 'activate_customer' pk=customer.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" 
+                                    class="btn btn-success"
+                                    onclick="return confirm('Are you sure you want to reactivate this customer account?');">
+                                Activate Customer
+                            </button>
+                        </form>
                     </div>
-                {% endif %}
+                </div>
             {% endif %}
         </div>
     </div>

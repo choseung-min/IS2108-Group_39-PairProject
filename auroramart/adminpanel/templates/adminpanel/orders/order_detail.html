@@ -2,7 +2,7 @@
 
 {% block title %}Order #{{ order.id }}{% endblock %}
 
-{% block page_title %}Order #{{ order.id }}{% endblock %}
+{% block page_title %}Order Details{% endblock %}
 
 {% block back_url %}{% url 'customer_detail' pk=order.customer.pk %}{% endblock %}
 
@@ -22,126 +22,362 @@
 
 {% block detail_content %}
 
-<div class="detail-container">
-    <!-- Sidebar -->
-    <div class="detail-sidebar">
-        <!-- Order Summary -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Order Summary</h3>
-            </div>
-            <div class="card-body">
-                <div class="info-item">
-                    <div class="info-label">Order ID</div>
-                    <div class="info-value"><code>#{{ order.id }}</code></div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Status</div>
-                    <div class="info-value">
-                        {% if order.status == 'Completed' %}
-                            <span class="badge badge-success">{{ order.status }}</span>
-                        {% elif order.status == 'Processing' %}
-                            <span class="badge badge-warning">{{ order.status }}</span>
-                        {% elif order.status == 'Cancelled' %}
-                            <span class="badge badge-danger">{{ order.status }}</span>
-                        {% else %}
-                            <span class="badge badge-info">{{ order.status }}</span>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Total Amount</div>
-                    <div class="info-value"><strong>${{ order.total_amount }}</strong></div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Order Date</div>
-                    <div class="info-value text-muted">{{ order.order_date|date:"M d, Y" }}<br><small>{{ order.order_date|date:"h:i A" }}</small></div>
-                </div>
-            </div>
-        </div>
+<style>
+    .order-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 28px 32px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+    
+    .order-header h1 {
+        margin: 0 0 8px 0;
+        font-size: 28px;
+        font-weight: 700;
+    }
+    
+    .order-header-meta {
+        display: flex;
+        gap: 32px;
+        align-items: center;
+        margin-top: 14px;
+    }
+    
+    .order-header-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .order-header-label {
+        font-size: 11px;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .order-header-value {
+        font-size: 17px;
+        font-weight: 600;
+    }
+    
+    .status-badge-large {
+        display: inline-block;
+        padding: 6px 16px;
+        border-radius: 16px;
+        font-weight: 600;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .order-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+    
+    .info-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 16px 20px;
+    }
+    
+    .info-card-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0 0 10px 0;
+        padding-bottom: 8px;
+        border-bottom: 2px solid var(--border-color);
+    }
+    
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px solid #f5f5f5;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    
+    .info-row-label {
+        color: var(--text-muted);
+        font-size: 13px;
+        font-weight: 500;
+    }
+    
+    .info-row-value {
+        color: var(--text-primary);
+        font-size: 13px;
+        font-weight: 600;
+        text-align: right;
+    }
+    
+    .address-text {
+        color: var(--text-primary);
+        line-height: 1.6;
+        font-size: 13px;
+        margin: 0;
+    }
+    
+    .items-section {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .items-section-header {
+        background: #f8f9fa;
+        padding: 16px 24px;
+        border-bottom: 2px solid var(--border-color);
+    }
+    
+    .items-section-title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    .product-item {
+        display: grid;
+        grid-template-columns: 60px 1fr auto;
+        gap: 16px;
+        padding: 18px 24px;
+        border-bottom: 1px solid #f0f0f0;
+        align-items: center;
+        transition: background 0.2s;
+    }
+    
+    .product-item:hover {
+        background: #fafbfc;
+    }
+    
+    .product-item:last-child {
+        border-bottom: none;
+    }
+    
+    .product-image {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 1px solid var(--border-color);
+        background: white;
+    }
+    
+    .product-image-placeholder {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        background: white;
+        border: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+    }
+    
+    .product-info {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    
+    .product-name {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 15px;
+        text-decoration: none;
+    }
+    
+    .product-name:hover {
+        color: var(--aurora-primary);
+    }
+    
+    .product-sku {
+        font-size: 13px;
+        color: var(--text-muted);
+        font-family: monospace;
+    }
+    
+    .product-pricing {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+    }
+    
+    .product-quantity {
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+    
+    .product-price {
+        font-size: 14px;
+        color: var(--text-muted);
+    }
+    
+    .product-subtotal {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    
+    .order-total {
+        background: #f8f9fa;
+        padding: 20px 24px;
+        border-top: 2px solid var(--border-color);
+    }
+    
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .total-label {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    .total-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--aurora-primary);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-muted);
+    }
+    
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.3;
+    }
+    
+    @media (max-width: 768px) {
+        .order-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .product-item {
+            grid-template-columns: 50px 1fr;
+            gap: 12px;
+        }
+        
+        .product-pricing {
+            grid-column: 2;
+            align-items: flex-start;
+            margin-top: 8px;
+        }
+    }
+</style>
 
-        <!-- Customer Info -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Customer</h3>
-            </div>
-            <div class="card-body">
-                <div class="info-item">
-                    <div class="info-label">Name</div>
-                    <div class="info-value">
-                        <a href="{% url 'customer_detail' pk=order.customer.pk %}">
-                            {% if order.customer.user.first_name or order.customer.user.last_name %}
-                                {{ order.customer.user.first_name }} {{ order.customer.user.last_name }}
-                            {% else %}
-                                {{ order.customer.user.username }}
-                            {% endif %}
-                        </a>
-                    </div>
-                </div>
-            </div>
+<div class="order-header">
+    <h1>Order #{{ order.id }}</h1>
+    <div class="order-header-meta">
+        <div class="order-header-item">
+            <span class="order-header-label">Status</span>
+            <span class="status-badge-large">{{ order.status }}</span>
         </div>
-
-        <!-- Delivery Address -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Delivery Address</h3>
-            </div>
-            <div class="card-body">
-                <p style="margin: 0; line-height: 1.6;">{{ order.delivery_address }}</p>
-            </div>
+        <div class="order-header-item">
+            <span class="order-header-label">Order Date</span>
+            <span class="order-header-value">{{ order.order_date|date:"M d, Y h:i A" }}</span>
+        </div>
+        <div class="order-header-item">
+            <span class="order-header-label">Total Amount</span>
+            <span class="order-header-value">${{ order.total_amount }}</span>
         </div>
     </div>
+</div>
 
-    <!-- Main Content -->
-    <div class="detail-main">
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">Order Items</h2>
-            </div>
-            <div class="card-body">
-                {% if order_items %}
-                    <div class="table-container">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Product</th>
-                                    <th>SKU</th>
-                                    <th style="text-align: center;">Quantity</th>
-                                    <th style="text-align: right;">Price</th>
-                                    <th style="text-align: right;">Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in order_items %}
-                                    <tr>
-                                        <td>
-                                            <a href="{% url 'product_detail' pk=item.product.pk %}">{{ item.product.name }}</a>
-                                        </td>
-                                        <td><code>{{ item.product.sku }}</code></td>
-                                        <td style="text-align: center;">{{ item.quantity }}</td>
-                                        <td style="text-align: right;">${{ item.price_at_purchase }}</td>
-                                        <td style="text-align: right;"><strong>${{ item.subtotal }}</strong></td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                            <tfoot>
-                                <tr style="border-top: 2px solid var(--border-color);">
-                                    <td colspan="4" style="text-align: right; font-weight: 600;">Total:</td>
-                                    <td style="text-align: right; font-weight: 700; font-size: 16px; color: var(--aurora-primary);">
-                                        ${{ order.total_amount }}
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
+<div class="order-grid">
+    <!-- Customer Info -->
+    <div class="info-card">
+        <h3 class="info-card-title">Customer Information</h3>
+        <div class="info-row">
+            <span class="info-row-label">Name</span>
+            <span class="info-row-value">
+                <a href="{% url 'customer_detail' pk=order.customer.pk %}" style="text-decoration: none; color: var(--aurora-primary);">
+                    {% if order.customer.user.first_name or order.customer.user.last_name %}
+                        {{ order.customer.user.first_name }} {{ order.customer.user.last_name }}
+                    {% else %}
+                        {{ order.customer.user.username }}
+                    {% endif %}
+                </a>
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-row-label">Email</span>
+            <span class="info-row-value">{{ order.customer.user.email }}</span>
+        </div>
+    </div>
+    
+    <!-- Delivery Address -->
+    <div class="info-card">
+        <h3 class="info-card-title">Delivery Address</h3>
+        <p class="address-text">{{ order.delivery_address }}</p>
+    </div>
+</div>
+
+<!-- Order Items -->
+<div class="items-section">
+    <div class="items-section-header">
+        <h2 class="items-section-title">Order Items</h2>
+    </div>
+    
+    {% if order_items %}
+        {% for item in order_items %}
+            <div class="product-item">
+                {% if item.product.image %}
+                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="product-image">
                 {% else %}
-                    <div style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
-                        <p style="font-size: 16px; margin: 0;">No items in this order.</p>
-                    </div>
+                    <div class="product-image-placeholder">📦</div>
                 {% endif %}
+                
+                <div class="product-info">
+                    <a href="{% url 'product_detail' pk=item.product.pk %}" class="product-name">
+                        {{ item.product.name }}
+                    </a>
+                    <span class="product-sku">SKU: {{ item.product.sku }}</span>
+                </div>
+                
+                <div class="product-pricing">
+                    <span class="product-quantity">Qty: {{ item.quantity }}</span>
+                    <span class="product-price">${{ item.price_at_purchase }} each</span>
+                    <span class="product-subtotal">${{ item.subtotal }}</span>
+                </div>
+            </div>
+        {% endfor %}
+        
+        <div class="order-total">
+            <div class="total-row">
+                <span class="total-label">Order Total</span>
+                <span class="total-value">${{ order.total_amount }}</span>
             </div>
         </div>
-    </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <p style="font-size: 16px; margin: 0;">No items in this order.</p>
+        </div>
+    {% endif %}
 </div>
 
 {% endblock %}

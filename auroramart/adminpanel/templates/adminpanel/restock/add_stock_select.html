@@ -4,55 +4,60 @@
 
 {% block page_title %}Select Product to Restock{% endblock %}
 
+{% block page_subtitle %}
+    <p class="admin-header-subtitle" style="margin: 0;">Choose a product to add stock</p>
+{% endblock %}
+
 {% block header_actions %}
-    <a href="{% url 'restock' %}" class="btn btn-ghost">← Back to Restock Dashboard</a>
+    <a href="{% url 'restock' %}" class="btn btn-ghost" style="font-size: 14px; padding: 8px 16px;">← Back to Restock Dashboard</a>
 {% endblock %}
 
 {% block filter_fields %}
-    <div class="form-group">
+    <div class="form-group" style="margin: 0;">
         <input type="text" 
                name="q" 
                value="{{ query|default:'' }}" 
                placeholder="Search by product name..."
-               class="form-input">
+               class="form-input"
+               style="font-size: 14px; padding: 8px 12px;">
     </div>
     
-    <button type="submit" class="btn btn-primary">Search</button>
-    <a href="{% url 'add_stock_select' %}" class="btn btn-ghost">Clear</a>
+    <button type="submit" class="btn btn-primary" style="font-size: 14px; padding: 8px 16px;">Search</button>
+    <a href="{% url 'add_stock_select' %}" class="btn btn-ghost" style="font-size: 14px; padding: 8px 16px;">Clear</a>
 {% endblock %}
 
 {% block table_headers %}
-    <th style="width: 100px;">SKU</th>
-    <th>Product Name</th>
-    <th>Category</th>
-    <th style="text-align: center;">Current Stock</th>
-    <th style="text-align: center;">Threshold</th>
-    <th style="text-align: center;">Actions</th>
+    <th style="width: 100px; font-size: 14px; padding: 9px 11px;">SKU</th>
+    <th style="width: 280px; font-size: 14px; padding: 9px 11px;">Product Name</th>
+    <th style="width: 160px; font-size: 14px; padding: 9px 11px;">Category</th>
+    <th style="width: 120px; text-align: center; font-size: 14px; padding: 9px 11px;">Current Stock</th>
+    <th style="width: 100px; text-align: center; font-size: 14px; padding: 9px 11px;">Threshold</th>
+    <th style="width: 100px; text-align: center; font-size: 14px; padding: 9px 11px;">Actions</th>
 {% endblock %}
 
 {% block table_rows %}
     {% for p in page_obj %}
         <tr>
-            <td><code>{{ p.sku }}</code></td>
-            <td><a href="{% url 'add_stock' p.pk %}" style="font-weight: 500;">{{ p.name }}</a></td>
-            <td>{{ p.category }}</td>
-            <td style="text-align: center;">
+            <td style="padding: 9px 11px;"><code style="font-size: 14px;">{{ p.sku }}</code></td>
+            <td style="padding: 9px 11px;"><a href="{% url 'add_stock' p.pk %}" style="font-weight: 500; font-size: 15px;">{{ p.name }}</a></td>
+            <td style="padding: 9px 11px; font-size: 14px;">{{ p.category }}</td>
+            <td style="text-align: center; padding: 9px 11px;">
                 {% if p.stock == 0 %}
-                    <span class="badge badge-danger">{{ p.stock }}</span>
+                    <span class="badge badge-danger" style="font-size: 13px; padding: 4px 10px;">{{ p.stock }}</span>
                 {% elif p.stock <= p.reorder_threshold %}
-                    <span class="badge badge-warning">{{ p.stock }}</span>
+                    <span class="badge badge-warning" style="font-size: 13px; padding: 4px 10px;">{{ p.stock }}</span>
                 {% else %}
-                    <span class="badge badge-success">{{ p.stock }}</span>
+                    <span class="badge badge-success" style="font-size: 13px; padding: 4px 10px;">{{ p.stock }}</span>
                 {% endif %}
             </td>
-            <td style="text-align: center;">{{ p.reorder_threshold }}</td>
-            <td style="text-align: center;">
-                <a href="{% url 'add_stock' p.pk %}" class="btn btn-sm btn-primary">Add Stock</a>
+            <td style="text-align: center; font-size: 14px; padding: 9px 11px;">{{ p.reorder_threshold }}</td>
+            <td style="text-align: center; padding: 9px 11px;">
+                <a href="{% url 'add_stock' p.pk %}" class="btn btn-sm btn-primary" style="font-size: 13px; padding: 6px 12px;">Add Stock</a>
             </td>
         </tr>
     {% empty %}
         <tr>
-            <td colspan="6" class="text-center text-muted" style="padding: 40px;">
+            <td colspan="6" class="text-center text-muted" style="padding: 20px; font-size: 14px;">
                 No products found.
             </td>
         </tr>

@@ -2,12 +2,12 @@
 
 {% block content %}
 <!-- Page Header -->
-<div class="admin-header">
+<div class="admin-header" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
     <div>
-        <h1 class="admin-header-title">{% block page_title %}List View{% endblock %}</h1>
+        <h1 class="admin-header-title" style="margin-bottom: 4px;">{% block page_title %}List View{% endblock %}</h1>
         {% block page_subtitle %}{% endblock %}
     </div>
-    <div class="admin-header-actions">
+    <div style="display: flex; align-items: center; gap: 12px;">
         {% block header_actions %}{% endblock %}
     </div>
 </div>
@@ -24,80 +24,81 @@
 <!-- Alert/Stats Bar (if needed) -->
 {% block alert_bar %}{% endblock %}
 
-<!-- Filters -->
+<!-- Filters Row -->
 {% if show_filters|default:True %}
-<div class="filters-bar">
+<div class="filters-bar" style="margin-bottom: 15px; padding: 8px 20px; display: flex; align-items: center;">
     {% block filters %}
-        <form method="get" class="filters-form">
+        <form method="get" class="filters-form" style="width: 100%; margin: 0;">
             {% block filter_fields %}
-                <div class="form-group">
+                <div class="form-group" style="margin: 0;">
                     <input type="text" 
                            name="q" 
                            value="{{ query|default:'' }}" 
                            placeholder="Search..."
-                           class="form-input">
+                           class="form-input"
+                           style="font-size: 14px; padding: 8px 12px;">
                 </div>
-                <button type="submit" class="btn btn-primary">Search</button>
-                <a href="{{ request.path }}" class="btn btn-ghost">Clear</a>
+                <button type="submit" class="btn btn-primary" style="font-size: 14px; padding: 8px 16px;">Search</button>
+                <a href="{{ request.path }}" class="btn btn-ghost" style="font-size: 14px; padding: 8px 16px;">Clear</a>
             {% endblock %}
         </form>
     {% endblock %}
 </div>
+{% else %}
+<!-- No filters - just spacing -->
 {% endif %}
 
 <!-- Table -->
 <div class="table-container">
-    <table class="table">
+    <table class="table" style="table-layout: fixed;">
         <thead>
             <tr>
                 {% block table_headers %}
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Actions</th>
+                    <th style="font-size: 14px; padding: 9px 11px;">ID</th>
+                    <th style="font-size: 14px; padding: 9px 11px;">Name</th>
+                    <th style="font-size: 14px; padding: 9px 11px;">Actions</th>
                 {% endblock %}
             </tr>
         </thead>
         <tbody>
             {% block table_rows %}
                 <tr>
-                    <td colspan="100%" class="text-center">No data available.</td>
+                    <td colspan="100%" class="text-center" style="padding: 20px; font-size: 14px;">No data available.</td>
                 </tr>
             {% endblock %}
         </tbody>
     </table>
 </div>
 
-<!-- Pagination -->
+<!-- Bottom Right Pagination (Default for all list views) -->
+{% block bottom_pagination %}
 {% if page_obj and page_obj.paginator.num_pages > 1 %}
-<div class="pagination-container">
-    <div class="pagination-info">
-        <strong>{{ page_obj.paginator.count }}</strong> total records • 
-        Page <strong>{{ page_obj.number }}</strong> of <strong>{{ page_obj.paginator.num_pages }}</strong>
-    </div>
-    <div class="pagination">
-        {% if page_obj.has_previous %}
-            <a href="?{{ query_string }}&page={{ page_obj.previous_page_number }}">← Prev</a>
-        {% endif %}
-        
-        {% for num in page_obj.paginator.page_range %}
-            {% if num == page_obj.number %}
-                <span>{{ num }}</span>
-            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <a href="?{{ query_string }}&page={{ num }}">{{ num }}</a>
+<div style="display: flex; justify-content: flex-end; margin-top: 0;">
+    <div class="pagination-container" style="margin-bottom: 0; display: flex; align-items: center; gap: 15px; padding: 2px 20px;">
+        <div class="pagination-info" style="font-size: 13px; margin: 0;">
+            <strong>{{ page_obj.paginator.count }}</strong> total • 
+            Page <strong>{{ page_obj.number }}</strong> of <strong>{{ page_obj.paginator.num_pages }}</strong>
+        </div>
+        <div class="pagination" style="margin: 0;">
+            {% if page_obj.has_previous %}
+                <a href="?{{ query_string }}&page={{ page_obj.previous_page_number }}" style="font-size: 13px;">← Prev</a>
             {% endif %}
-        {% endfor %}
-        
-        {% if page_obj.has_next %}
-            <a href="?{{ query_string }}&page={{ page_obj.next_page_number }}">Next →</a>
-        {% endif %}
-    </div>
-</div>
-{% elif page_obj %}
-<div class="pagination-container">
-    <div class="pagination-info">
-        <strong>{{ page_obj.paginator.count }}</strong> total records
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                    <span style="font-size: 13px;">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <a href="?{{ query_string }}&page={{ num }}" style="font-size: 13px;">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+                <a href="?{{ query_string }}&page={{ page_obj.next_page_number }}" style="font-size: 13px;">Next →</a>
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endif %}
+{% endblock %}
 
 {% endblock %}

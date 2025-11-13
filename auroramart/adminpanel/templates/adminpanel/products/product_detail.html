@@ -5,7 +5,7 @@
 {% block page_title %}{{ product.name }}{% endblock %}
 
 {% block page_subtitle %}
-    <p class="admin-header-subtitle">View and manage product details • SKU: {{ product.sku }}</p>
+    <p class="admin-header-subtitle">View and manage product details</p>
 {% endblock %}
 
 {% block back_url %}{% url 'products' %}{% endblock %}
@@ -13,6 +13,9 @@
 {% block header_actions %}
     <a href="{% url 'products' %}" class="btn btn-ghost">← Back to Catalogue</a>
     {% if not editing %}
+        <a href="{% url 'add_stock' pk=product.pk %}" class="btn btn-secondary" style="background-color: var(--warning-color); color: white;">
+            🔄 Restock Product
+        </a>
         <a href="?edit=true" class="btn btn-primary">Edit Product</a>
     {% endif %}
 {% endblock %}

@@ -4,54 +4,54 @@
 
 {% block page_title %}Appeal Requests{% endblock %}
 
-{% block header_actions %}
-    <a href="{% url 'customers' %}" class="btn btn-secondary">Customer Records</a>
+{% block page_subtitle %}
+    <p class="admin-header-subtitle" style="margin: 0;">Review and manage customer account reactivation appeals</p>
 {% endblock %}
 
 {% block alert_bar %}
     {% if pending_count > 0 %}
-        <div class="alert alert-warning">
+        <div class="alert alert-warning" style="margin-bottom: 15px;">
             ⏳ <strong>{{ pending_count }}</strong> pending appeal{{ pending_count|pluralize }} awaiting your review
         </div>
     {% endif %}
 {% endblock %}
 
 {% block filter_fields %}
-    <div class="form-group">
+    <div class="form-group" style="margin: 0;">
         <input type="text" 
                name="q" 
                value="{{ query|default:'' }}" 
                placeholder="Search by customer name or email..."
-               class="form-input">
+               class="form-input"
+               style="font-size: 14px; padding: 8px 12px;">
     </div>
     
-    <div class="form-group">
-        <select name="status_filter" class="form-select">
+    <div class="form-group" style="margin: 0;">
+        <select name="status_filter" class="form-select" style="font-size: 14px; padding: 8px 12px;">
             <option value="">All Statuses</option>
-            <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending Only</option>
-            <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved Only</option>
-            <option value="declined" {% if status_filter == 'declined' %}selected{% endif %}>Declined Only</option>
+            <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+            <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+            <option value="declined" {% if status_filter == 'declined' %}selected{% endif %}>Declined</option>
         </select>
     </div>
     
-    <button type="submit" class="btn btn-primary">Apply Filters</button>
-    <a href="{% url 'appeals_list' %}" class="btn btn-ghost">Clear</a>
+    <button type="submit" class="btn btn-primary" style="font-size: 14px; padding: 8px 16px;">Apply Filters</button>
+    <a href="{% url 'appeals_list' %}" class="btn btn-ghost" style="font-size: 14px; padding: 8px 16px;">Clear</a>
 {% endblock %}
 
 {% block table_headers %}
-    <th>Customer</th>
-    <th>Email</th>
-    <th>Submitted On</th>
-    <th style="text-align: center;">Status</th>
-    <th>Appeal Preview</th>
-    <th style="text-align: center;">Actions</th>
+    <th style="width: 180px; font-size: 14px; padding: 9px 11px;">Customer</th>
+    <th style="width: 200px; font-size: 14px; padding: 9px 11px;">Email</th>
+    <th style="width: 140px; font-size: 14px; padding: 9px 11px;">Submitted On</th>
+    <th style="width: 110px; text-align: center; font-size: 14px; padding: 9px 11px;">Status</th>
+    <th style="width: 120px; text-align: center; font-size: 14px; padding: 9px 11px;">Actions</th>
 {% endblock %}
 
 {% block table_rows %}
     {% for appeal in appeals %}
         <tr>
-            <td>
-                <a href="{% url 'customer_detail' appeal.customer.pk %}" style="font-weight: 500;">
+            <td style="padding: 9px 11px;">
+                <a href="{% url 'customer_detail' appeal.customer.pk %}" style="font-weight: 500; font-size: 15px;">
                     {% if appeal.customer.user.first_name or appeal.customer.user.last_name %}
                         {{ appeal.customer.user.first_name }} {{ appeal.customer.user.last_name }}
                     {% else %}
@@ -59,29 +59,29 @@
                     {% endif %}
                 </a>
             </td>
-            <td>{{ appeal.customer.user.email|default:"—" }}</td>
-            <td>{{ appeal.created_at|date:"M d, Y H:i" }}</td>
-            <td style="text-align: center;">
+            <td style="padding: 9px 11px; font-size: 14px;">{{ appeal.customer.user.email|default:"—" }}</td>
+            <td style="padding: 9px 11px; font-size: 14px;">{{ appeal.created_at|date:"M d, Y H:i" }}</td>
+            <td style="text-align: center; padding: 9px 11px;">
                 {% if appeal.status == 'pending' %}
-                    <span class="badge badge-warning">⏳ Pending</span>
+                    <span class="badge badge-warning" style="font-size: 13px; padding: 4px 10px;">⏳ Pending</span>
                 {% elif appeal.status == 'approved' %}
-                    <span class="badge badge-success">✓ Approved</span>
+                    <span class="badge badge-success" style="font-size: 13px; padding: 4px 10px;">✓ Approved</span>
                 {% elif appeal.status == 'declined' %}
-                    <span class="badge badge-danger">✗ Declined</span>
+                    <span class="badge badge-danger" style="font-size: 13px; padding: 4px 10px;">✗ Declined</span>
                 {% endif %}
             </td>
-            <td style="max-width: 400px;">
-                <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--neutral-600);">
-                    {{ appeal.appeal_statement|truncatewords:20 }}
-                </div>
-            </td>
-            <td style="text-align: center;">
-                <a href="{% url 'appeal_detail' appeal.pk %}" class="btn btn-sm btn-ghost">View Details</a>
+            <td style="text-align: center; padding: 9px 11px;">
+                <a href="{% url 'appeal_detail' appeal.pk %}" title="View Details" style="color: var(--primary-color); text-decoration: none; font-size: 18px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </a>
             </td>
         </tr>
     {% empty %}
         <tr>
-            <td colspan="6" class="text-center text-muted" style="padding: 40px;">
+            <td colspan="5" class="text-center text-muted" style="padding: 20px; font-size: 14px;">
                 No appeal requests found.
             </td>
         </tr>
