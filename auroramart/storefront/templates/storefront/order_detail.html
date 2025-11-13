@@ -54,7 +54,7 @@
               <td>{{ it.product.name }}</td>
               <td>{{ it.quantity }}</td>
               <td>${{ it.price_at_purchase|floatformat:2 }}</td>
-              <td>${{ it.quantity|floatformat:0 }} × {{ it.price_at_purchase|floatformat:2 }}</td>
+              <td>{{ it.quantity|floatformat:0 }} × ${{ it.price_at_purchase|floatformat:2 }}</td>
             </tr>
           {% endfor %}
         </tbody>

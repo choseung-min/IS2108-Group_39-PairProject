@@ -6,53 +6,77 @@
         <meta name="viewport" content="width=device-width,initial-scale=1">
         <title>My Orders | Aurora Mart</title>
         <style>
-    :root{
-      --bg:#fafafa;--surface:#fff;--line:#e5e7eb;
-      --text:#0f172a;--muted:#6b7280;--accent:#111827;--r:12px
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
-      background:var(--bg);color:var(--text)}
-    header.topbar{
-      background:var(--surface);
-      border-bottom:1px solid var(--line);
-      padding:10px 0;
-      margin-bottom:24px;
-    }
-    .topbar-inner{
-      max-width:1000px;margin:0 auto;padding:0 24px;
-      display:flex;align-items:center;justify-content:space-between;
-    }
-    .logo-link{
-      display:flex;align-items:center;
-      text-decoration:none;color:var(--text);
-    }
-    .logo{
-      height:40px;width:auto;margin-right:10px;border-radius:8px;
-    }
-    .brand-name{font-weight:700;font-size:1.3rem;letter-spacing:-.02em}
-    header nav a{
-      margin-left:20px;text-decoration:none;
-      color:var(--muted);font-weight:500;
-    }
-    header nav a:hover{color:var(--text)}
+          :root{
+            --bg:#fafafa;--surface:#fff;--line:#e5e7eb;
+            --text:#0f172a;--muted:#6b7280;--accent:#111827;--r:12px
+          }
+          *{box-sizing:border-box}
+          body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+            background:var(--bg);color:var(--text)}
+          header.topbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 10px 0;
+            margin-bottom: 24px;
+          }
 
-    .container{max-width:1000px;margin:0 auto;padding:24px}
-    .card{
-      background:var(--surface);border:1px solid var(--line);
-      border-radius:var(--r);padding:20px;
-    }
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left}
-    a.btn{
-      padding:8px 10px;border-radius:8px;
-      background:var(--accent);color:#fff;text-decoration:none;margin-right:6px;
-      font-size:0.9rem;
-    }
-    a.btn:hover{background:#1f2937}
-    .muted{color:var(--muted)}
-  </style>
-</head>
+          .topbar-inner {
+            max-width: 1100px;       /* consistent width on all pages */
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+          }
+
+          .logo-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #111827;
+          }
+
+          .logo {
+            height: 42px;
+            width: auto;
+            margin-right: 10px;
+            border-radius: 8px;
+          }
+
+          .brand-name {
+            font-weight: 700;
+            font-size: 1.3rem;
+            letter-spacing: -0.02em;
+          }
+
+          header nav a {
+            margin-left: 24px;       /* spacing between “Home / Cart / My Profile / Logout” */
+            text-decoration: none;
+            color: #4b5563;          /* slightly muted grey */
+            font-weight: 500;
+            font-size: 0.98rem;
+          }
+
+          header nav a:hover {
+            color: #111827;
+          }
+
+          .container{max-width:1000px;margin:0 auto;padding:24px}
+          .card{
+            background:var(--surface);border:1px solid var(--line);
+            border-radius:var(--r);padding:20px;
+          }
+          table{width:100%;border-collapse:collapse}
+          th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left}
+          a.btn{
+            padding:8px 10px;border-radius:8px;
+            background:var(--accent);color:#fff;text-decoration:none;margin-right:6px;
+            font-size:0.9rem;
+          }
+          a.btn:hover{background:#1f2937}
+          .muted{color:var(--muted)}
+        </style>
+    </head>
 <body>
   <header class="topbar">
     <div class="topbar-inner">
@@ -85,7 +109,7 @@
                 <td>{{ o.status }}</td>
                 <td>${{ o.total_amount|floatformat:2 }}</td>
                 <td>
-                  <a class="btn" href="{% url 'order_detail' o.id %}">View</a>
+                  <a class="btn" href="{% url 'order_detail2' o.id %}">View</a>
                   <a class="btn" href="{% url 'order_reorder' o.id %}">Reorder</a>
                 </td>
               </tr>

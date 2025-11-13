@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from urllib.parse import urlencode
@@ -19,7 +20,7 @@ from .forms import (
     PaymentForm,
     ProfileForm,
 )
-from .models import Product, Category, Cart, CartItem, Customer, Order, OrderItem
+from .models import Product, Category, Cart, CartItem, Customer, Order, OrderItem, Appeal, AppealDocument
 from .ml.category_predictor import predict_preferred_category
 import joblib
 import os
@@ -99,7 +100,6 @@ def home(request, slug=None):
 
 # Signup / Login / Logout Views
 def preferred_category_url_for(user) -> str:
-    """Return URL to the user's preferred category page, or home2 as fallback."""
     customer = getattr(user, "customer", None)
     if not customer or not customer.preferred_category:
         return reverse("home2")
@@ -319,7 +319,9 @@ def product_detail(request, slug):
                     item.price_snapshot = p.price
             item.save(update_fields=["quantity", "price_snapshot"])
         request.session["cart_count"] = cart.count
-        return redirect("cart")
+        messages.success(request, f"Added {qty} × {p.name} to cart!")
+
+        return redirect("product", slug=slug)
     return render(request, "storefront/product_detail.html", {"product": p})
 
 
@@ -354,14 +356,12 @@ def cart_add(request, product_id):
             item.save(update_fields=["quantity", "price_snapshot"])
 
     request.session["cart_count"] = cart.count
-    messages.success(request, f"Added {qty} × {p.name} to cart!")
 
     referer = request.META.get("HTTP_REFERER", "")
     if "/cart/recommendations/" in referer:
         return redirect("cart_recommendations")
 
     return redirect("cart")
-
 
 def cart_view(request):
     if not request.user.is_authenticated:
@@ -678,9 +678,7 @@ def profile_view(request):
     if request.method == "POST":
         form = ProfileForm(request.user, request.POST)
         if form.is_valid():
-            form.save()  # ✅ Save updated profile info first
-
-            # 🔁 Re-run AI prediction after saving
+            form.save()  
             try:
                 payload = {
                     "age": customer.age,
@@ -694,7 +692,6 @@ def profile_view(request):
                 }
 
                 category_pred = predict_preferred_category(payload)
-                # Extract string from NumPy array if needed
                 if isinstance(category_pred, (list, tuple)) or hasattr(
                     category_pred, "__iter__"
                 ):
@@ -748,7 +745,7 @@ def order_detail_view(request, order_id):
 def order_mark_received(request, order_id):
     # Only allow POST
     if request.method != "POST":
-        return redirect("order_detail", order_id=order_id)
+        return redirect("order_detail2", order_id=order_id)
 
     # Order belongs to the current user via customer -> user
     order = get_object_or_404(Order, pk=order_id, customer__user=request.user)
@@ -758,8 +755,7 @@ def order_mark_received(request, order_id):
     order.status = completed_value
     order.save(update_fields=["status"])
 
-    messages.success(request, f"Order #{order.id} marked as Completed.")
-    return redirect("order_detail", order_id=order.id)
+    return redirect("order_detail2", order_id=order.id)
 
 
 @login_required

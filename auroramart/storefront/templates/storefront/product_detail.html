@@ -2,63 +2,115 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta charset="utf-8">
+      <meta charset="utf-8">
         <title>{{ product.name }} – Aurora Mart</title>
         <style>
-    .wrap{
-        max-width:1000px;
-        margin:auto;padding:24px;
-        font-family:system-ui;
-    }
-    .row{
-        display:grid;
-        grid-template-columns: 1fr 1.2fr;
-        gap:24px;
-    }
-    .img{
-        background:#f7f7f7;
-        border:1px solid #eee;
-        aspect-ratio:1/1;display:flex;align-items:center;
-        justify-content:center;
-    }
-    .price{
-        font-weight:700;
-        font-size:20px;
-        margin:6px 0 12px;
-    }
-    input[type=number]{
-        width:80px;
-        padding:8px;
-    }
-    .btn{
-        padding:10px 14px;
-        border-radius:8px;
-        border:1px solid #ddd;
-        background:#111;
-        color:#fff;
-    }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <a href="{% url 'home2' %}">← Back</a>
-    <div class="row" style="margin-top:16px;">
-      <div class="img">
-        <img src="{{ product.image_url }}" alt="{{ product.name }}" style="max-width:100%;max-height:100%;">
-      </div>
-      <div>
-        <h1 style="margin:0 0 8px">{{ product.name }}</h1>
-        <div class="price">${{ product.price }}</div>
-        <p>{{ product.description|default:"No description." }}</p>
+          .wrap{
+              max-width:1000px;
+              margin:auto;padding:24px;
+              font-family:system-ui;
+          }
+          .row{
+              display:grid;
+              grid-template-columns: 1fr 1.2fr;
+              gap:24px;
+          }
+          .img{
+              background:#f7f7f7;
+              border:1px solid #eee;
+              aspect-ratio:1/1;display:flex;align-items:center;
+              justify-content:center;
+          }
+          .price{
+              font-weight:700;
+              font-size:20px;
+              margin:6px 0 12px;
+          }
+          input[type=number]{
+              width:80px;
+              padding:8px;
+          }
+          .btn {
+            background: #0f172a;
+            color: #fff;
+            padding: 10px 20px;   /* SAME padding for both */
+            border-radius: 12px;
+            border: 1px solid #0f172a;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            display: inline-flex;     /* FIXES SIZE DIFFERENCES */
+            align-items: center;      /* vertically center text */
+            justify-content: center;  /* center horizontally */
+            line-height: 1;           /* makes them identical */
+            cursor: pointer;
+            gap: 4px;
+          }
 
-        <form method="post">
-          {% csrf_token %}
-          <label>Qty</label>
-          <input type="number" name="quantity" value="1" min="1">
-          <button class="btn" type="submit">Add to cart</button>
-        </form>
+          .btn:hover {
+            background: #1f2937;
+          }
+
+          /* Fix default browser padding on button tag */
+          button.btn {
+            border: none;
+            padding: 10px 20px;  /* SAME as .btn */
+            background: #0f172a;
+          }
+          .inline-alert {
+            background:#ecfdf5;
+            border:1px solid #86efac;
+            padding:4px 8px;
+            border-radius:6px;
+            color:#166534;
+            font-size:0.8rem;
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            margin-bottom:8px;
+          }
+
+          .inline-alert button {
+            background:none;
+            border:none;
+            color:#166534;
+            cursor:pointer;
+            font-weight:bold;
+            font-size:0.9rem;
+            line-height:1;
+          }
+        </style>
+    </head>
+  <body>
+    <div class="wrap">
+      <a href="{% url 'category' request.user.customer.preferred_category|slugify %}">← Back</a>
+      <div class="row" style="margin-top:16px;">
+        <div class="img">
+          <img src="{{ product.image_url }}" alt="{{ product.name }}" style="max-width:100%;max-height:100%;">
+        </div>
+        <div>
+          <h1 style="margin:0 0 8px">{{ product.name }}</h1>
+          <div class="price">${{ product.price }}</div>
+          <p>{{ product.description|default:"No description." }}</p>
+          
+          {% if messages %}
+            {% for msg in messages %}
+              <div class="inline-alert">
+                {{ msg }}
+                <button type="button" onclick="this.parentElement.remove()">×</button>
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          <form method="post">
+            {% csrf_token %}
+            <label>Qty</label>
+            <input type="number" name="quantity" value="1" min="1">
+            <button class="btn" type="submit">Add to cart</button>
+            <a href="{% url 'cart' %}" class="btn">Go to cart</a>
+          </form>
+        </div>
       </div>
     </div>
-  </div>
-</body>
+  </body>
 </html>

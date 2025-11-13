@@ -6,99 +6,180 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>My Profile | Aurora Mart</title>
         <style>
-    body {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      background: #fafafa;
-      color: #0f172a;
-      margin: 0;
-    }
-    .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
-    header.topbar {
-      background: #fff;
-      border-bottom: 1px solid #e5e7eb;
-      padding: 10px 0;
-      margin-bottom: 24px;
-    }
-    .topbar-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
-    .logo-link {
-      display: flex;
-      align-items: center;
-      text-decoration: none;
-      color: #111827;
-    }
-    .logo {
-      height: 42px;
-      width: auto;
-      margin-right: 10px;
-      border-radius: 8px;
-    }
-    .brand-name {
-      font-weight: 700;
-      font-size: 1.3rem;
-      letter-spacing: -0.02em;
-    }
-    header nav a {
-      margin-left: 20px;
-      text-decoration: none;
-      color: #374151;
-      font-weight: 500;
-    }
-    header nav a:hover { color: #111827; }
+          *,
+          *::before,
+          *::after {
+            box-sizing: border-box;
+          }
+          body {
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+            background: #fafafa;
+            color: #0f172a;
+            margin: 0;
+          }
+          .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+          header.topbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 10px 0;
+            margin-bottom: 24px;
+          }
 
-    h1 { margin-top: 0; }
-    .card {
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-    }
-    label { display:block; margin:10px 0 6px; font-weight:500; }
-    input, select, textarea {
-      width:100%; padding:10px 12px;
-      border:1px solid #e5e7eb; border-radius:10px;
-      font-size: 0.95rem;
-    }
-    .row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    @media(max-width:900px){ .row2{grid-template-columns:1fr;} }
-    .btn {
-      background:#111827; color:#fff;
-      padding:12px 16px; border:0;
-      border-radius:10px; font-weight:700;
-      cursor:pointer;
-    }
-    .btn:hover { background:#1f2937; }
-    .msg { margin:8px 0; color:#b91c1c; }
-    table { width:100%; border-collapse:collapse; margin-top:10px; }
-    th,td { padding:10px; border-bottom:1px solid #e5e7eb; text-align:left; }
-    a.btn-sm {
-      display:inline-block;
-      padding:8px 10px;
-      border-radius:8px;
-      background:#111827;
-      color:#fff;
-      text-decoration:none;
-      font-size:0.9em;
-    }
-    button.btn-sm {
-      display:inline-block; padding:8px 10px; border-radius:8px;
-      background:#111827; color:#fff; border:0; font-size:0.9em; cursor:pointer;
-    }
-    button.btn-sm:hover { background:#1f2937; }
-    .badge-complete {
-      display:inline-block; padding:6px 8px; border-radius:8px;
-      background:#10b981; color:#fff; font-size:0.85em;
-    }
-  </style>
-</head>
+          .topbar-inner {
+            max-width: 1100px;       
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+          }
+
+          .logo-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #111827;
+          }
+
+          .logo {
+            height: 42px;
+            width: auto;
+            margin-right: 10px;
+            border-radius: 8px;
+          }
+
+          .brand-name {
+            font-weight: 700;
+            font-size: 1.3rem;
+            letter-spacing: -0.02em;
+          }
+
+          header nav a {
+            margin-left: 24px;      
+            text-decoration: none;
+            color: #4b5563;          
+            font-weight: 500;
+            font-size: 0.98rem;
+          }
+
+          header nav a:hover {
+            color: #111827;
+          }
+
+          h1 { margin-top: 0; }
+          .card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+          }
+          label {
+            display:block;
+            margin:10px 0 6px;
+            font-weight:500;
+          }
+
+          /* Only style text-like inputs full-width */
+          input[type="text"],
+          input[type="email"],
+          input[type="number"],
+          input[type="tel"],
+          input[type="password"],
+          input[type="search"],
+          input[type="url"],
+          select,
+          textarea {
+            width:100%;
+            padding:10px 12px;
+            border:1px solid #e5e7eb;
+            border-radius:10px;
+            font-size: 0.95rem;
+          }
+
+          /* Checkbox should stay small */
+          input[type="checkbox"] {
+            width:auto;
+            margin:0;
+          }
+          @media(max-width:900px){ .row2{grid-template-columns:1fr;} }
+          .btn {
+            background:#111827; color:#fff;
+            padding:12px 16px; border:0;
+            border-radius:10px; font-weight:700;
+            cursor:pointer;
+          }
+          .btn:hover { background:#1f2937; }
+          .msg { margin:8px 0; color:#b91c1c; }
+          table { width:100%; border-collapse:collapse; margin-top:10px; }
+          th,td { padding:10px; border-bottom:1px solid #e5e7eb; text-align:left; }
+          a.btn-sm {
+            display:inline-block;
+            padding:8px 10px;
+            border-radius:8px;
+            background:#111827;
+            color:#fff;
+            text-decoration:none;
+            font-size:0.9em;
+          }
+          button.btn-sm {
+            display:inline-block; padding:8px 10px; border-radius:8px;
+            background:#111827; color:#fff; border:0; font-size:0.9em; cursor:pointer;
+          }
+          button.btn-sm:hover { background:#1f2937; }
+          .badge-complete {
+            display:inline-block; padding:6px 8px; border-radius:8px;
+            background:#10b981; color:#fff; font-size:0.85em;
+          }
+          .section-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-top: 16px;
+            margin-bottom: 8px;
+          }
+
+          .section-header h2 {
+            margin: 0;
+            font-size: 1.1rem;
+          }
+
+          .section-hint {
+            font-size: 0.85rem;
+            color: #6b7280;
+          }
+
+          .field-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px 18px;
+          }
+
+          @media (max-width: 900px) {
+            .field-grid {
+              grid-template-columns: 1fr;
+            }
+          }
+
+          .field-group label {
+            margin: 0 0 6px;
+            font-weight: 500;
+            display: block;
+          }
+
+          .field-inline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 24px; /* so it lines up vertically with other fields */
+          }
+
+          .field-inline label {
+            margin: 0;
+          }
+        </style>
+    </head>
 
 <body>
   <header class="topbar">
@@ -147,38 +228,92 @@
         <label>Email</label>{{ form.email.errors }}{{ form.email }}
 
         <h2 style="margin-top:16px;">Personal & Household</h2>
-        <div class="row2">
-          <div>
-            <label>Full Name</label>{{ form.name.errors }}{{ form.name }}
+
+        <div class="field-grid">
+          <div class="field-group">
+            <label>First name</label>
+            {{ form.first_name.errors }}
+            {{ form.first_name }}
           </div>
-          <div>
-            <label>Phone</label>{{ form.phone.errors }}{{ form.phone }}
+
+          <div class="field-group">
+            <label>Last name</label>
+            {{ form.last_name.errors }}
+            {{ form.last_name }}
           </div>
-        </div>
-        <div class="row2">
-          <div><label>Age</label>{{ form.age.errors }}{{ form.age }}</div>
-          <div><label>Household Size</label>{{ form.household_size.errors }}{{ form.household_size }}</div>
-        </div>
-        <div class="row2">
-          <div><label>Gender</label>{{ form.gender.errors }}{{ form.gender }}</div>
-          <div><label>Has children</label>{{ form.has_children.errors }}{{ form.has_children }}</div>
+
+          <div class="field-group">
+            <label>Phone</label>
+            {{ form.phone.errors }}
+            {{ form.phone }}
+          </div>
+
+          <div class="field-group">
+            <label>Age</label>
+            {{ form.age.errors }}
+            {{ form.age }}
+          </div>
+
+          <div class="field-group">
+            <label>Household Size</label>
+            {{ form.household_size.errors }}
+            {{ form.household_size }}
+          </div>
+
+          <div class="field-group">
+            <label>Gender</label>
+            {{ form.gender.errors }}
+            {{ form.gender }}
+          </div>
+
+          <div class="field-group field-inline">
+            <label for="{{ form.has_children.id_for_label }}">Has children</label>
+            {{ form.has_children.errors }}
+            {{ form.has_children }}
+          </div>
         </div>
 
         <h2 style="margin-top:16px;">Work & Education</h2>
-        <div class="row2">
-          <div><label>Employment</label>{{ form.employment_status.errors }}{{ form.employment_status }}</div>
-          <div><label>Occupation</label>{{ form.occupation.errors }}{{ form.occupation }}</div>
-        </div>
-        <div class="row2">
-          <div><label>Education</label>{{ form.education.errors }}{{ form.education }}</div>
-          <div><label>Monthly Income</label>{{ form.monthly_income.errors }}{{ form.monthly_income }}</div>
+        <div class="field-grid">
+          <div class="field-group">
+            <label>Employment</label>
+            {{ form.employment_status.errors }}
+            {{ form.employment_status }}
+          </div>
+          <div class="field-group">
+            <label>Occupation</label>
+            {{ form.occupation.errors }}
+            {{ form.occupation }}
+          </div>
+          <div class="field-group">
+            <label>Education</label>
+            {{ form.education.errors }}
+            {{ form.education }}
+          </div>
+          <div class="field-group">
+            <label>Monthly Income</label>
+            {{ form.monthly_income.errors }}
+            {{ form.monthly_income }}
+          </div>
         </div>
 
         <h2 style="margin-top:16px;">Address</h2>
-        <label>Address Line</label>{{ form.address.errors }}{{ form.address }}
-        <div class="row2">
-          <div><label>City / State</label>{{ form.city_state.errors }}{{ form.city_state }}</div>
-          <div><label>Postal Code</label>{{ form.postal_code.errors }}{{ form.postal_code }}</div>
+        <div class="field-group">
+          <label>Address Line</label>
+          {{ form.address.errors }}
+          {{ form.address }}
+        </div>
+        <div class="field-grid">
+          <div class="field-group">
+            <label>City / State</label>
+            {{ form.city_state.errors }}
+            {{ form.city_state }}
+          </div>
+          <div class="field-group">
+            <label>Postal Code</label>
+            {{ form.postal_code.errors }}
+            {{ form.postal_code }}
+          </div>
         </div>
 
         <div style="margin-top:16px;">
@@ -202,7 +337,7 @@
                     <td>{{ o.status }}</td>
                     <td>${{ o.total_amount|floatformat:2 }}</td>
                     <td>
-                      <a class="btn-sm" href="{% url 'order_detail' o.id %}">View</a>
+                      <a class="btn-sm" href="{% url 'order_detail2' o.id %}">View</a>
 
                       {% if 'complete' in o.status|lower %}
                         <span class="badge-complete" style="margin-left:6px;">Completed</span>
