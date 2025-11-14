@@ -336,6 +336,16 @@ def restock(request):
     )
 
     total_restock_count = products_to_restock.count()
+    
+    # Calculate priority counts BEFORE filters (should remain constant)
+    critical_count = products_to_restock.filter(restock_ratio__lte=0.25).count()
+    high_count = products_to_restock.filter(
+        restock_ratio__gt=0.25, restock_ratio__lte=0.5
+    ).count()
+    medium_count = products_to_restock.filter(
+        restock_ratio__gt=0.5, restock_ratio__lte=0.75
+    ).count()
+    low_count = products_to_restock.filter(restock_ratio__gt=0.75).count()
 
     main_categories = Category.objects.filter(parent__isnull=True)
     selected_categories = [
@@ -376,15 +386,6 @@ def restock(request):
     paginator = Paginator(products_to_restock, 12)
     page_num = request.GET.get("page")
     page_obj = paginator.get_page(page_num)
-
-    critical_count = products_to_restock.filter(restock_ratio__lte=0.25).count()
-    high_count = products_to_restock.filter(
-        restock_ratio__gt=0.25, restock_ratio__lte=0.5
-    ).count()
-    medium_count = products_to_restock.filter(
-        restock_ratio__gt=0.5, restock_ratio__lte=0.75
-    ).count()
-    low_count = products_to_restock.filter(restock_ratio__gt=0.75).count()
 
     context = {
         "products_to_restock": page_obj.object_list,

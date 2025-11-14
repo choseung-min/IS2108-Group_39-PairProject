@@ -155,6 +155,20 @@ class Product(models.Model):
         default_image = category_images.get(parent_category_name, "Placeholder Img.png")
         return f"/static/img/default_categories/{default_image}"
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.name)
+            slug = base_slug
+            counter = 1
+
+            while Product.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+
+            self.slug = slug
+
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
 
