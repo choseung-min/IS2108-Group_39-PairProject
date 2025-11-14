@@ -28,7 +28,7 @@ urlpatterns = [
     path("account/data_ack/", views.data_acknowledgement, name="data_ack"),
     path("account/orders", views.orders_list_view, name="orders_list"),
     path(
-        "account/orders/<int:order_id>/", views.order_detail_view, name="order_detail"
+        "account/orders/<int:order_id>/", views.order_detail_view, name="order_detail2"
     ),
     path(
         "account/orders/<int:order_id>/received/",

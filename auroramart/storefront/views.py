@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -51,13 +52,11 @@ def get_recommendations(loaded_rules, items, metric="confidence", top_n=5):
     recommendations = set()
 
     for item in items:
-        # Find rules where the item is in the antecedents
         matched_rules = loaded_rules[
             loaded_rules["antecedents"].apply(lambda x: item in x)
         ]
 
         if len(matched_rules) > 0:
-            # Sort by the specified metric and get the top N
             if metric in loaded_rules.columns:
                 top_rules = matched_rules.sort_values(by=metric, ascending=False).head(
                     top_n
@@ -66,13 +65,12 @@ def get_recommendations(loaded_rules, items, metric="confidence", top_n=5):
                 for idx, row in top_rules.iterrows():
                     recommendations.update(row["consequents"])
 
-    # Remove items that are already in the input list
     recommendations.difference_update(items)
 
     return list(recommendations)[:top_n]
 
 
-# Home / Product Listing View
+# Home View
 def home(request, slug=None):
     # Only show active products in storefront
     products = Product.objects.select_related("category").filter(is_active=True)
@@ -110,9 +108,8 @@ def home(request, slug=None):
     return render(request, "storefront/home.html", context)
 
 
-# Signup / Login / Logout Views
+# Signup/Login/Logout Views
 def preferred_category_url_for(user) -> str:
-    """Return URL to the user's preferred category page, or home2 as fallback."""
     customer = getattr(user, "customer", None)
     if not customer or not customer.preferred_category:
         return reverse("home2")
@@ -121,7 +118,6 @@ def preferred_category_url_for(user) -> str:
 
     cat = Category.objects.filter(name__iexact=label).first()
     if not cat:
-        # try slug too, in case the model returned a slug-like string
         cat = Category.objects.filter(slug__iexact=label).first()
 
     if cat:
@@ -134,13 +130,11 @@ def signup(request):
         uform = UserSignupForm(request.POST)
         cform = CustomerForm(request.POST)
         if uform.is_valid() and cform.is_valid():
-            # Create User
-            user = uform.save()
 
-            # Create Customer linked to that User
+            user = uform.save()
             customer = cform.save(user=user)
 
-            # Optional ML-based category prediction
+            # For category prediction
             try:
                 payload = {
                     "age": customer.age,
@@ -166,7 +160,7 @@ def signup(request):
 
             # Log in and send to Data Acknowledgement
             login(request, user)
-            next_url = preferred_category_url_for(user)  # e.g., your category/home
+            next_url = preferred_category_url_for(user)
             ack_url = f"{reverse('data_ack')}?{urlencode({'next': next_url})}"
             return redirect(ack_url)
     else:
@@ -182,12 +176,6 @@ def data_acknowledgement(request):
 
     if request.method == "POST":
         if request.POST.get("agree") == "on":
-            # Optional: persist a timestamp if your Customer model has this field
-            customer = getattr(request.user, "customer", None)
-            if customer and hasattr(customer, "privacy_ack_at"):
-                customer.privacy_ack_at = timezone.now()
-                customer.save(update_fields=["privacy_ack_at"])
-
             return redirect(next_url)
         messages.error(request, "Please check the acknowledgement box to continue.")
 
@@ -332,7 +320,9 @@ def product_detail(request, slug):
                     item.price_snapshot = p.price
             item.save(update_fields=["quantity", "price_snapshot"])
         request.session["cart_count"] = cart.count
-        return redirect("cart")
+        messages.success(request, f"Added {qty} × {p.name} to cart!")
+
+        return redirect("product", slug=slug)
     return render(request, "storefront/product_detail.html", {"product": p})
 
 
@@ -346,12 +336,12 @@ def cart_add(request, product_id):
             referer = request.META.get("HTTP_REFERER", "")
             if "/cart/recommendations/" in referer:
                 return redirect("cart_recommendations")
-            return redirect("product", slug=p.slug)  # <-- changed
+            return redirect("product", slug=p.slug)
         try:
             qty = max(1, int(quantity_str))
         except ValueError:
             messages.error(request, "Quantity must be a whole number.")
-            return redirect("product", slug=p.slug)  # <-- robust fallback
+            return redirect("product", slug=p.slug)
     else:
         qty = 1
 
@@ -367,7 +357,6 @@ def cart_add(request, product_id):
             item.save(update_fields=["quantity", "price_snapshot"])
 
     request.session["cart_count"] = cart.count
-    messages.success(request, f"Added {qty} × {p.name} to cart!")
 
     referer = request.META.get("HTTP_REFERER", "")
     if "/cart/recommendations/" in referer:
@@ -445,12 +434,10 @@ def recommend_addons_view(request):
     if not items:
         return redirect("checkout_address")
 
-    # Collect the SKUs in the current cart
     skus = [ci.product.sku for ci in items]
     suggested_products = []
 
     try:
-        # Get ML recommendations
         suggested_skus = (
             get_recommendations(loaded_rules, skus, metric="confidence", top_n=5) or []
         )
@@ -463,10 +450,8 @@ def recommend_addons_view(request):
                 product_map[sku] for sku in suggested_skus if sku in product_map
             ]
     except Exception as e:
-        # Silent fallback on ML errors - leave suggested_products as empty list
         pass
 
-    # Add fallback products if needed
     if len(suggested_products) < 5:
         fallback_count = 5 - len(suggested_products)
         fallback_products = (
@@ -691,9 +676,7 @@ def profile_view(request):
     if request.method == "POST":
         form = ProfileForm(request.user, request.POST)
         if form.is_valid():
-            form.save()  # ✅ Save updated profile info first
-
-            # 🔁 Re-run AI prediction after saving
+            form.save()
             try:
                 payload = {
                     "age": customer.age,
@@ -707,7 +690,6 @@ def profile_view(request):
                 }
 
                 category_pred = predict_preferred_category(payload)
-                # Extract string from NumPy array if needed
                 if isinstance(category_pred, (list, tuple)) or hasattr(
                     category_pred, "__iter__"
                 ):
@@ -761,9 +743,8 @@ def order_detail_view(request, order_id):
 def order_mark_received(request, order_id):
     # Only allow POST
     if request.method != "POST":
-        return redirect("order_detail", order_id=order_id)
+        return redirect("order_detail2", order_id=order_id)
 
-    # Order belongs to the current user via customer -> user
     order = get_object_or_404(Order, pk=order_id, customer__user=request.user)
 
     # Set to your "completed" value. If you use choices/consts, replace accordingly.

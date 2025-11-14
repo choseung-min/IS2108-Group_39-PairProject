@@ -68,10 +68,6 @@ class ProfileForm(forms.Form):
     postal_code = forms.CharField(required=False, max_length=10)
 
     def __init__(self, user, *args, **kwargs):
-        """
-        Pass the logged-in user as the first arg:
-            form = ProfileForm(request.user, request.POST or None)
-        """
         super().__init__(*args, **kwargs)
         self.user = user
         self.customer = getattr(user, "customer", None)

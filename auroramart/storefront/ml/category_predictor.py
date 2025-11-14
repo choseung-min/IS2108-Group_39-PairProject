@@ -34,7 +34,6 @@ def predict_preferred_category(customer_data):
 
             df[col] = customer_encoded[col]
     
-    # Now input_encoded can be used for prediction
     prediction = model.predict(df)    
 
     return prediction

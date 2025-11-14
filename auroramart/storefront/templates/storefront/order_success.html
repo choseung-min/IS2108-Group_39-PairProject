@@ -5,16 +5,105 @@
         <title>Order Placed</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <style>
-    :root { --border:#e5e7eb; --text:#111827; --muted:#6b7280; }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin:0; color:var(--text); background:#fff; }
-    main { max-width: 720px; margin: 40px auto; padding: 0 16px; }
-    .card { border:1px solid var(--border); border-radius:12px; padding:20px; }
-    h1 { margin: 0 0 10px; }
-    .muted { color:var(--muted); }
-    .btn { display:inline-block; margin-top:16px; padding:12px 14px; border:0; border-radius:10px; font-weight:600; cursor:pointer; background:#111827; color:#fff; text-decoration:none; }
-    ul { padding-left: 18px; }
-  </style>
-</head>
+          :root{
+            --bg:#020617;
+            --surface:#020617;
+            --line:#1e293b;
+            --text:#e5e7eb;
+            --muted:#9ca3af;
+            --accent-1:#22d3ee;
+            --accent-2:#4f46e5;
+            --accent-3:#a855f7;
+          }
+
+          *{ box-sizing:border-box; }
+
+          body{
+            margin:0;
+            font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+            background:radial-gradient(circle at top left,#0b1220,#020617 45%,#000 100%);
+            color:var(--text);
+          }
+
+          main{
+            max-width:720px;
+            margin:40px auto;
+            padding:0 18px;
+          }
+
+          .card{
+            background:radial-gradient(circle at top,#0b1120,#020617 70%);
+            border:1px solid var(--line);
+            border-radius:18px;
+            padding:32px;
+            box-shadow:0 22px 52px rgba(15,23,42,0.95);
+          }
+
+          h1{
+            margin:0 0 10px;
+            font-size:28px;
+            letter-spacing:-0.02em;
+            color:#f9fafb;
+          }
+
+          h3{
+            margin-top:24px;
+            font-size:18px;
+            color:#f9fafb;
+          }
+
+          .muted{
+            color:var(--muted);
+            margin-bottom:12px;
+          }
+
+          pre{
+            white-space:pre-wrap;
+            border:1px dashed var(--line);
+            padding:12px;
+            border-radius:12px;
+            background:#010a18;
+            color:var(--text);
+          }
+
+          ul{
+            padding-left:18px;
+            margin:8px 0 16px;
+            color:var(--text);
+          }
+
+          .btn{
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            padding:12px 20px;
+            border-radius:999px;
+            font-weight:600;
+            font-size:15px;
+            color:#fff;
+            text-decoration:none;
+            cursor:pointer;
+
+            background:linear-gradient(90deg,
+              var(--accent-1),
+              var(--accent-2),
+              var(--accent-3)
+            );
+            background-size:200% 100%;
+            box-shadow:0 12px 30px rgba(15,23,42,0.9);
+
+            transition:background-position .18s ease,
+                      transform .12s ease,
+                      box-shadow .18s ease;
+          }
+
+          .btn:hover{
+            background-position:100% 0;
+            transform:translateY(-1px);
+            box-shadow:0 18px 40px rgba(15,23,42,1);
+          }
+        </style>
+    </head>
 <body>
   <main>
     <div class="card">

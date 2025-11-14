@@ -5,73 +5,148 @@
         <meta charset="UTF-8">
         <title>Sign In - Aurora Mart</title>
         <style>
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      background: #fafafa;
-    }
-    .container {
-      background: #fff;
-      border: 1px solid #eee;
-      border-radius: 10px;
-      padding: 32px;
-      width: 360px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-    }
-    .logo {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-    .logo img {
-      width: 140px;
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    label {
-      font-weight: 600;
-      font-size: 14px;
-    }
-    input {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-    .actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 8px;
-    }
-    .btn {
-      background: black;
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .link {
-      font-size: 14px;
-      text-decoration: underline;
-      color: #333;
-    }
-    .signup-link {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 14px;
-    }
-  </style>
+          :root {
+            --bg:#020617;
+            --surface:#020617;
+            --line:#1e293b;
+            --text:#e5e7eb;
+            --muted:#9ca3af;
+            --accent-1:#22d3ee;
+            --accent-2:#4f46e5;
+            --accent-3:#a855f7;
+          }
+
+          * { box-sizing:border-box; }
+
+          body {
+            margin:0;
+            font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+            min-height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            background:radial-gradient(circle at top left,#0b1220,#020617 45%,#000 100%);
+            color:var(--text);
+          }
+
+          .container {
+            background:radial-gradient(circle at top,#0b1120,#020617 70%);
+            border:1px solid var(--line);
+            border-radius:18px;
+            padding:36px 32px 40px;
+            width:360px;
+            box-shadow:0 22px 52px rgba(15,23,42,0.95);
+          }
+
+          .logo {
+            text-align:center;
+            margin-bottom:24px;
+          }
+
+          .logo img {
+            width:150px;
+            filter:drop-shadow(0 0 12px rgba(34,211,238,0.45));
+          }
+
+          h2 {
+            text-align:center;
+            margin:0 0 20px;
+            font-size:24px;
+            letter-spacing:-0.02em;
+          }
+
+          form {
+            display:flex;
+            flex-direction:column;
+            gap:12px;
+          }
+
+          label {
+            font-size:14px;
+            font-weight:600;
+            color:var(--text);
+          }
+
+          input {
+            padding:10px 12px;
+            border-radius:12px;
+            font-size:14px;
+            color:var(--text);
+            background:#020617;
+            border:1px solid var(--line);
+            transition:border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+          }
+
+          input::placeholder {
+            color:rgba(148,163,184,0.9);
+          }
+
+          input:focus {
+            outline:none;
+            border-color:var(--accent-1);
+            background:#010a18;
+            box-shadow:
+              0 0 0 1px rgba(34,211,238,0.5),
+              0 0 28px rgba(79,70,229,0.45);
+          }
+
+          .btn {
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border:none;
+            border-radius:999px;
+            padding:10px 16px;
+            margin-top:4px;
+            cursor:pointer;
+            font-size:14px;
+            font-weight:600;
+            color:#f9fafb;
+            background:linear-gradient(90deg,var(--accent-1),var(--accent-2),var(--accent-3));
+            background-size:200% 100%;
+            box-shadow:0 12px 30px rgba(15,23,42,0.9);
+            transition:background-position .18s ease, transform .12s ease, box-shadow .18s ease;
+          }
+
+          .btn:hover {
+            background-position:100% 0;
+            transform:translateY(-1px);
+            box-shadow:0 18px 40px rgba(15,23,42,1);
+          }
+
+          .link {
+            color:var(--muted);
+            font-size:14px;
+            text-decoration:none;
+            transition:color .15s ease;
+          }
+
+          .link:hover {
+            color:var(--text);
+          }
+
+          .actions {
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-top:6px;
+          }
+
+          .signup-link {
+            margin-top:20px;
+            text-align:center;
+            font-size:14px;
+            color:var(--muted);
+          }
+
+          .signup-link .link {
+            text-decoration:underline;
+          }
+
+          .signup-link .link:hover {
+            color:var(--text);
+          }
+        </style>
 </head>
 <body>
   <div class="container">

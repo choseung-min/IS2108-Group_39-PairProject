@@ -5,94 +5,215 @@
         <meta charset="UTF-8">
         <title>Create Account - Aurora Mart</title>
         <style>
-        body {
-            font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;
-            background-color: #fafafa;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 800px;
-            margin: 40px auto;
-            background: #fff;
-            border: 1px solid #eee;
-            border-radius: 12px;
-            padding: 32px 40px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        }
-        .logo img {
-            width: 60px;
-            height: auto;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        form {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px 24px;
-        }
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 8px 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-        textarea { resize: vertical; }
-        .full {
-            grid-column: 1 / -1;
-        }
-        .checkbox {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .actions {
-            grid-column: 1 / -1;
-            text-align: center;
-            margin-top: 10px;
-        }
-        button {
-            background: #111;
-            color: #fff;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 6px;
-            font-size: 15px;
-            cursor: pointer;
-        }
-        .errorlist {
-            color: red;
-            font-size: 13px;
-            list-style: none;
-            padding: 0;
-            margin: 2px 0 0;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .header a { color: #0070f3; text-decoration: none; }
+          :root{
+            --bg:#020617;
+            --surface:#020617;
+            --line:#1e293b;
+            --text:#e5e7eb;
+            --muted:#9ca3af;
+            --accent-1:#22d3ee;
+            --accent-2:#4f46e5;
+            --accent-3:#a855f7;
+          }
 
-        .checkbox.full { grid-column: 1 / -1; }
+          *{box-sizing:border-box}
 
-        .checkbox .checkwrap {
-            display: inline-flex;         
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            margin: 0;                     
-        }
-    </style>
+          body{
+            font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;
+            margin:0;
+            padding:0;
+            color:var(--text);
+            background:radial-gradient(circle at top left,#0b1220,#020617 45%,#000 100%);
+          }
+
+          a{color:inherit;text-decoration:none}
+
+          header{
+            position:sticky;
+            top:0;
+            z-index:20;
+            background:radial-gradient(circle at top left,
+                      rgba(34,211,238,0.35),
+                      rgba(79,70,229,0.85),
+                      rgba(10,10,26,0.98));
+            border-bottom:1px solid rgba(148,163,184,0.4);
+            backdrop-filter:blur(14px);
+          }
+
+          header .wrap.row{
+            max-width:1100px !important;
+            margin:auto !important;
+            padding:16px !important;
+            display:flex !important;
+            align-items:center !important;
+            justify-content:space-between !important;
+            border-bottom:0 !important;
+          }
+
+          header .wrap.row > a:first-child{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            color:#f9fafb;
+          }
+
+          header img{
+            height:60px;
+            width:auto;
+            border-radius:12px;
+          }
+
+          header span{
+            font-weight:700;
+            font-size:18px;
+            letter-spacing:-0.02em;
+            text-shadow:0 0 14px rgba(34,211,238,0.45);
+          }
+
+          header a[href*="login"]{
+            color:#e5e7eb !important;
+            font-size:14px;
+          }
+
+          header a[href*="login"]:hover{
+            text-decoration:underline;
+          }
+
+          .container{
+            max-width:800px;
+            margin:40px auto;
+            background:radial-gradient(circle at top,#0b1120,#020617 70%);
+            border:1px solid var(--line);
+            border-radius:18px;
+            padding:32px 40px;
+            box-shadow:0 22px 52px rgba(15,23,42,0.95);
+          }
+
+          h2{
+            text-align:center;
+            margin:0 0 20px;
+            font-size:24px;
+            letter-spacing:-0.02em;
+            color:#f9fafb;
+          }
+
+          form{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:16px 24px;
+          }
+
+          label{
+            display:block;
+            font-weight:600;
+            margin-bottom:4px;
+            font-size:14px;
+            color:var(--text);
+          }
+
+          input,
+          select,
+          textarea{
+            width:100%;
+            padding:9px 11px;
+            border-radius:12px;
+            border:1px solid var(--line);
+            font-size:14px;
+            background:#020617;
+            color:var(--text);
+            transition:border-color .18s ease,box-shadow .18s ease,background .18s ease;
+          }
+
+          input::placeholder,
+          textarea::placeholder{
+            color:rgba(148,163,184,0.9);
+          }
+
+          input:focus,
+          select:focus,
+          textarea:focus{
+            outline:none;
+            border-color:var(--accent-1);
+            background:#010a18;
+            box-shadow:
+              0 0 0 1px rgba(34,211,238,0.5),
+              0 0 30px rgba(79,70,229,0.55);
+          }
+
+          textarea{resize:vertical}
+
+          .full{grid-column:1 / -1}
+
+          .checkbox{
+            display:flex;
+            align-items:center;
+            gap:8px;
+          }
+
+          .checkbox.full{grid-column:1 / -1}
+
+          .checkbox .checkwrap{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            font-weight:600;
+            margin:0;
+          }
+
+          .checkbox input[type="checkbox"]{
+            width:auto;
+            accent-color:var(--accent-2);
+          }
+
+          .actions{
+            grid-column:1 / -1;
+            text-align:center;
+            margin-top:10px;
+          }
+
+          button{
+            background:linear-gradient(90deg,
+                      var(--accent-1),
+                      var(--accent-2),
+                      var(--accent-3));
+            background-size:200% 100%;
+            color:#f9fafb;
+            border:none;
+            padding:10px 18px;
+            border-radius:999px;
+            font-size:15px;
+            font-weight:600;
+            cursor:pointer;
+            box-shadow:0 12px 30px rgba(15,23,42,0.9);
+            transition:background-position .18s ease,
+                      transform .12s ease,
+                      box-shadow .18s ease;
+          }
+
+          button:hover{
+            background-position:100% 0;
+            transform:translateY(-1px);
+            box-shadow:0 18px 40px rgba(15,23,42,1);
+          }
+
+          .errorlist{
+            color:#fecaca;
+            font-size:13px;
+            list-style:none;
+            padding:0;
+            margin:2px 0 0;
+          }
+
+          .errorlist li::before{
+            content:"⚠ ";
+          }
+
+          @media (max-width:768px){
+            .container{margin:24px 12px;padding:24px;}
+            form{grid-template-columns:1fr;}
+            .full{grid-column:1 / -1;}
+          }
+        </style>
 </head>
 <body>
   <!-- HEADER -->
