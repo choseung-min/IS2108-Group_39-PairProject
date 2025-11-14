@@ -169,19 +169,17 @@
                     <h2 class="card-title">Review Appeal</h2>
                 </div>
                 <div class="card-body">
-                    <div style="display: flex; gap: 12px; margin-bottom: 20px;">
-                        <form method="post" action="{% url 'approve_appeal' appeal.pk %}" style="flex: 1;">
+                    <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 20px;">
+                        <form method="post" action="{% url 'approve_appeal' appeal.pk %}">
                             {% csrf_token %}
-                            <button type="submit" 
-                                    class="btn btn-success" 
-                                    style="width: 100%;">
-                                ✓ Approve & Reactivate Account
+                            <button type="submit" class="btn btn-success appeal-action-btn">
+                                ✓ Approve Appeal
                             </button>
                         </form>
-                        
-                        <label for="decline-toggle" class="btn btn-danger" style="flex: 1; cursor: pointer; margin: 0;">
+                        <label for="decline-toggle" class="btn btn-danger appeal-action-btn" style="cursor: pointer;">
                             ✗ Decline Appeal
                         </label>
+                    </div>
                     </div>
 
                     <input type="checkbox" id="decline-toggle" style="display: none;">

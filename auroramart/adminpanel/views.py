@@ -583,18 +583,19 @@ def deactivate_customer(request, pk):
             )
             return redirect("customer_detail", pk=customer.pk)
 
-        customer.user.is_active = False
-        customer.user.deactivation_reason = deactivation_reason
-        customer.user.save(update_fields=["is_active", "deactivation_reason"])
-
-        messages.success(
-            request,
-            'Customer "{name}" deactivated successfully! Reason: {reason}'.format(
-                name=customer.user.get_full_name() or customer.user.username,
-                reason=deactivation_reason,
-            ),
-        )
-        return redirect("customer_detail", pk=customer.pk)
+    customer.user.is_active = False
+    customer.user.deactivation_reason = deactivation_reason
+    customer.user.save(update_fields=["is_active", "deactivation_reason"])
+    Appeal.objects.filter(customer=customer, status="declined").update(
+        decline_reason=None
+    )
+    messages.success(
+        request,
+        'Customer "{name}" deactivated successfully! Reason: {reason}'.format(
+            name=customer.user.get_full_name() or customer.user.username,
+            reason=deactivation_reason,
+        ),
+    )
     return redirect("customer_detail", pk=customer.pk)
 
 
@@ -607,6 +608,12 @@ def activate_customer(request, pk):
         customer.user.is_active = True
         customer.user.deactivation_reason = None
         customer.user.save()
+        # Clear all previous declined appeal reasons for this customer
+        from storefront.models import Appeal
+
+        Appeal.objects.filter(customer=customer, status="declined").update(
+            decline_reason=None
+        )
         messages.success(
             request,
             'Customer "{name}" activated successfully!'.format(
@@ -728,6 +735,10 @@ def approve_appeal(request, pk):
     customer_user.is_active = True
     customer_user.deactivation_reason = None
     customer_user.save()
+
+    Appeal.objects.filter(customer=appeal.customer, status="declined").update(
+        decline_reason=None
+    )
 
     messages.success(
         request,
