@@ -336,8 +336,7 @@ def restock(request):
     )
 
     total_restock_count = products_to_restock.count()
-    
-    # Calculate priority counts BEFORE filters (should remain constant)
+
     critical_count = products_to_restock.filter(restock_ratio__lte=0.25).count()
     high_count = products_to_restock.filter(
         restock_ratio__gt=0.25, restock_ratio__lte=0.5

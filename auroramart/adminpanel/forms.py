@@ -20,7 +20,7 @@ class ProductForm(forms.ModelForm):
         widgets = {
             "description": forms.Textarea(attrs={"rows": 4}),
             "is_active": forms.CheckboxInput(),
-            "image": forms.FileInput(),  # Use FileInput instead of ClearableFileInput
+            "image": forms.FileInput(),
         }
         labels = {
             "sku": "SKU Code",
@@ -41,7 +41,6 @@ class ProductForm(forms.ModelForm):
 
 
 class CustomerForm(forms.ModelForm):
-    # Add User model fields
     first_name = forms.CharField(max_length=150, required=False, label="First Name")
     last_name = forms.CharField(max_length=150, required=False, label="Last Name")
     email = forms.EmailField(required=True, label="Email Address")
@@ -97,7 +96,6 @@ class CustomerForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Populate initial values from the related User object
         if self.instance and self.instance.pk and self.instance.user:
             self.fields["first_name"].initial = self.instance.user.first_name
             self.fields["last_name"].initial = self.instance.user.last_name
@@ -107,13 +105,12 @@ class CustomerForm(forms.ModelForm):
                 self.instance.user.deactivation_reason or ""
             )
 
-        # Reorder fields so User fields come first
         field_order = [
             "first_name",
             "last_name",
             "email",
             "is_active",
-            "deactivation_reason",  # User fields first
+            "deactivation_reason",
             "phone",
             "age",
             "household_size",
@@ -131,21 +128,17 @@ class CustomerForm(forms.ModelForm):
 
     def save(self, commit=True):
         customer = super().save(commit=False)
-        # Save the User fields
         if customer.user:
             customer.user.first_name = self.cleaned_data.get("first_name", "")
             customer.user.last_name = self.cleaned_data.get("last_name", "")
             customer.user.email = self.cleaned_data.get("email", "")
             customer.user.is_active = self.cleaned_data.get("is_active", True)
 
-            # Handle deactivation reason
             if not customer.user.is_active:
-                # If deactivating, save the reason
                 customer.user.deactivation_reason = self.cleaned_data.get(
                     "deactivation_reason", ""
                 )
             else:
-                # If reactivating, clear the reason
                 customer.user.deactivation_reason = None
 
             if commit:
