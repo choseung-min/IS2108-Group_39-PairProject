@@ -174,23 +174,21 @@
                             {% csrf_token %}
                             <button type="submit" 
                                     class="btn btn-success" 
-                                    style="width: 100%;"
-                                    onclick="return confirm('Are you sure you want to approve this appeal and reactivate the customer account?');">
+                                    style="width: 100%;">
                                 ✓ Approve & Reactivate Account
                             </button>
                         </form>
                         
-                        <button type="button" 
-                                class="btn btn-danger" 
-                                style="flex: 1;"
-                                onclick="document.getElementById('decline-form').style.display='block'; this.style.display='none';">
+                        <label for="decline-toggle" class="btn btn-danger" style="flex: 1; cursor: pointer; margin: 0;">
                             ✗ Decline Appeal
-                        </button>
+                        </label>
                     </div>
 
+                    <input type="checkbox" id="decline-toggle" style="display: none;">
+                    
                     <!-- Decline Form (hidden by default) -->
-                    <div id="decline-form" style="display: none; background: var(--warning-light); border: 2px solid var(--warning); padding: 20px; border-radius: var(--radius-md); margin-top: 20px;">
-                        <h3 style="margin-top: 0; color: var(--warning-dark);">Decline Appeal</h3>
+                    <div id="decline-form" style="display: none; background: #fef3cd; border: 2px solid #ed8936; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                        <h3 style="margin-top: 0; color: #c05621;">Decline Appeal</h3>
                         <form method="post" action="{% url 'decline_appeal' appeal.pk %}">
                             {% csrf_token %}
                             <div class="form-group">
@@ -203,14 +201,21 @@
                             </div>
                             <div style="display: flex; gap: 12px;">
                                 <button type="submit" class="btn btn-danger">Submit Decline Decision</button>
-                                <button type="button" 
-                                        class="btn btn-ghost" 
-                                        onclick="document.getElementById('decline-form').style.display='none'; document.querySelector('.btn-danger:not([type=submit])').style.display='inline-flex';">
+                                <label for="decline-toggle" class="btn btn-ghost" style="cursor: pointer; margin: 0;">
                                     Cancel
-                                </button>
+                                </label>
                             </div>
                         </form>
                     </div>
+
+                    <style>
+                        #decline-toggle:checked ~ #decline-form {
+                            display: block !important;
+                        }
+                        #decline-toggle:checked ~ div label[for="decline-toggle"].btn-danger {
+                            display: none;
+                        }
+                    </style>
                 </div>
             </div>
         {% endif %}

@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>{% block title %}Admin Panel{% endblock %} - AuroraMart</title>
-    <link rel="stylesheet" href="{% static 'adminpanel/css/admin.css' %}">
+    <link rel="stylesheet" href="{% static 'adminpanel/css/admin.css' %}?v=2">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -11,8 +11,9 @@
         <aside class="admin-sidebar">
             <div class="admin-sidebar-logo">
                 <a href="{% url 'home' %}">
-                    <img src="{% static 'adminpanel/images/AuroraMart Logo.png' %}" alt="AuroraMart">
+                    <img src="{% static 'img/AuroraMart Logo.png' %}" alt="AuroraMart">
                 </a>
+                <h2 style="margin-top: 12px; color: var(--dark-gray);">Admin Panel</h2>
             </div>
             <nav class="admin-sidebar-nav">
                 <a href="{% url 'home' %}" class="admin-nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
@@ -23,6 +24,9 @@
                 </a>
                 <a href="{% url 'restock' %}" class="admin-nav-item {% if 'restock' in request.resolver_match.url_name or 'add_stock' in request.resolver_match.url_name %}active{% endif %}">
                     🔄 Restocking
+                    {% if low_stock_count > 0 %}
+                        <span class="badge">{{ low_stock_count }}</span>
+                    {% endif %}
                 </a>
                 <a href="{% url 'customers' %}" class="admin-nav-item {% if 'customer' in request.resolver_match.url_name %}active{% endif %}">
                     👥 Customers
@@ -33,7 +37,7 @@
                         <span class="badge">{{ pending_appeals_count }}</span>
                     {% endif %}
                 </a>
-                <a href="#" onclick="confirmLogout(event)" class="admin-nav-item" style="margin-top: auto; border-top: 1px solid var(--neutral-300);">
+                <a href="{% url 'admin_logout' %}" class="admin-nav-item logout">
                     🚪 Logout
                 </a>
             </nav>
@@ -44,16 +48,5 @@
             {% block content %}{% endblock %}
         </main>
     </div>
-    
-    <script>
-        function confirmLogout(event) {
-            event.preventDefault();
-            if (confirm('Are you sure you want to logout?')) {
-                window.location.href = "{% url 'admin_logout' %}";
-            }
-        }
-    </script>
-    
-    {% block extra_js %}{% endblock %}
 </body>
 </html>

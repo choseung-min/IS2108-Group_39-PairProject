@@ -3,7 +3,8 @@ Context processors for admin panel
 Provides global context variables available in all templates
 """
 
-from storefront.models import Appeal
+from django.db.models import F
+from storefront.models import Appeal, Product
 
 
 def admin_context(request):
@@ -18,6 +19,11 @@ def admin_context(request):
     ):
         context["pending_appeals_count"] = Appeal.objects.filter(
             status="pending"
+        ).count()
+
+        # Add low-stock count for sidebar badge (stock < reorder_threshold)
+        context["low_stock_count"] = Product.objects.filter(
+            stock__lt=F("reorder_threshold")
         ).count()
 
     return context

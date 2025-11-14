@@ -1,4 +1,3 @@
-from urllib import request
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -15,16 +14,23 @@ from storefront.models import (
     Appeal,
     AppealDocument,
 )
-from django.db.models import Q, F, ExpressionWrapper, FloatField
+from django.db.models import (
+    Q,
+    F,
+    ExpressionWrapper,
+    FloatField,
+    Case,
+    When,
+    Value,
+    IntegerField,
+)
 from django.core.paginator import Paginator
 from .forms import ProductForm, CustomerForm
 
 
 def is_admin_or_staff(user):
     """Check if user is authenticated and is either staff or admin"""
-    return user.is_authenticated and (
-        user.is_staff or user.is_superuser or user.role == "admin"
-    )
+    return user.is_authenticated and (user.is_superuser or user.role == "admin")
 
 
 @login_required(login_url="/login")
@@ -34,7 +40,6 @@ def home(request):
     from django.db.models import Sum
     from django.utils import timezone
 
-    # Product metrics
     total_products = Product.objects.count()
     active_products = Product.objects.filter(is_active=True).count()
     inactive_products = Product.objects.filter(is_active=False).count()
@@ -43,8 +48,10 @@ def home(request):
     ).count()
     out_of_stock_products = Product.objects.filter(stock=0).count()
 
-    # Critical restock priority (restock_ratio <= 0.25)
-    products_needing_restock = Product.objects.filter(stock__lt=F("reorder_threshold"))
+    products_needing_restock = Product.objects.filter(
+        is_active=True, stock__lt=F("reorder_threshold")
+    )
+    total_restock_count = products_needing_restock.count()
     products_with_ratio = products_needing_restock.annotate(
         restock_ratio=ExpressionWrapper(
             F("stock") * 1.0 / F("reorder_threshold"), output_field=FloatField()
@@ -52,19 +59,15 @@ def home(request):
     )
     critical_restock_count = products_with_ratio.filter(restock_ratio__lte=0.25).count()
 
-    # Customer metrics
     total_customers = Customer.objects.count()
     active_customers = Customer.objects.filter(user__is_active=True).count()
     inactive_customers = Customer.objects.filter(user__is_active=False).count()
 
-    # Appeal metrics
     pending_appeals_count = Appeal.objects.filter(status="pending").count()
     total_appeals = Appeal.objects.count()
 
-    # Sales Analytics: Last 7 days
     seven_days_ago = timezone.now() - timedelta(days=7)
 
-    # Top 10 most purchased products by quantity in last 7 days
     top_products = (
         OrderItem.objects.filter(order__order_date__gte=seven_days_ago)
         .values("product__name", "product__id")
@@ -72,32 +75,33 @@ def home(request):
         .order_by("-total_quantity")[:10]
     )
 
-    # Top 5 most purchased categories
     top_categories = (
         OrderItem.objects.filter(order__order_date__gte=seven_days_ago)
         .values("product__category__name")
         .annotate(total_quantity=Sum("quantity"))
-        .order_by("-total_quantity")[:5]
+        .order_by("-total_quantity")[:10]
     )
 
+    recent_orders = Order.objects.select_related("customer__user").order_by(
+        "-order_date"
+    )[:10]
+
     context = {
-        # Products
         "total_products": total_products,
         "active_products": active_products,
         "inactive_products": inactive_products,
         "low_stock_products": low_stock_products,
         "out_of_stock_products": out_of_stock_products,
+        "total_restock_count": total_restock_count,
         "critical_restock_count": critical_restock_count,
-        # Customers
         "total_customers": total_customers,
         "active_customers": active_customers,
         "inactive_customers": inactive_customers,
-        # Appeals
         "pending_appeals_count": pending_appeals_count,
         "total_appeals": total_appeals,
-        # Sales Analytics
         "top_products": top_products,
         "top_categories": top_categories,
+        "recent_orders": recent_orders,
     }
     return render(request, "adminpanel/home_page.html", context)
 
@@ -187,7 +191,9 @@ def products(request):
     page_num = request.GET.get("page")
     page_obj = paginator.get_page(page_num)
 
-    low_stock_count = Product.objects.filter(stock__lte=F("reorder_threshold")).count()
+    low_stock_count = Product.objects.filter(
+        is_active=True, stock__lt=F("reorder_threshold")
+    ).count()
 
     context = {
         "page_obj": page_obj,
@@ -245,21 +251,21 @@ def product_detail(request, pk):
     if editing:
         if request.method == "POST":
             form = ProductForm(request.POST, request.FILES, instance=product)
-            # Disable stock field and preserve its value
             form.fields["stock"].disabled = True
-            # Remove is_active field from edit form
             form.fields.pop("is_active", None)
 
             if form.is_valid():
-                # Preserve the original stock value since it's disabled
+
                 updated_product = form.save(commit=False)
                 updated_product.stock = product.stock
                 updated_product.save()
 
-                # Redirect with updated=true to show preview link
-                # No messages.success() needed - the template shows custom preview message
                 return redirect(
-                    f"{reverse('product_detail', kwargs={'pk': product.pk})}?updated=true"
+                    reverse(
+                        "product_detail",
+                        kwargs={"pk": product.pk},
+                        query={"updated": "true"},
+                    )
                 )
 
             else:
@@ -270,10 +276,8 @@ def product_detail(request, pk):
         else:
             form = ProductForm(instance=product)
             form.fields["stock"].disabled = True
-            # Remove is_active field from edit form
             form.fields.pop("is_active", None)
 
-    # Check if product was just updated
     just_updated = request.GET.get("updated") == "true"
 
     return render(
@@ -330,6 +334,9 @@ def restock(request):
             F("stock") * 1.0 / F("reorder_threshold"), output_field=FloatField()
         )
     )
+
+    total_restock_count = products_to_restock.count()
+
     main_categories = Category.objects.filter(parent__isnull=True)
     selected_categories = [
         c for c in request.GET.getlist("category") if c.strip() != ""
@@ -370,7 +377,6 @@ def restock(request):
     page_num = request.GET.get("page")
     page_obj = paginator.get_page(page_num)
 
-    # Restock priority breakdown
     critical_count = products_to_restock.filter(restock_ratio__lte=0.25).count()
     high_count = products_to_restock.filter(
         restock_ratio__gt=0.25, restock_ratio__lte=0.5
@@ -380,7 +386,6 @@ def restock(request):
     ).count()
     low_count = products_to_restock.filter(restock_ratio__gt=0.75).count()
 
-    # Pass critical_count to home view context
     context = {
         "products_to_restock": page_obj.object_list,
         "page_obj": page_obj,
@@ -393,7 +398,7 @@ def restock(request):
         "high_count": high_count,
         "medium_count": medium_count,
         "low_count": low_count,
-        "pagination_position": "bottom",  # Move pagination to bottom
+        "total_restock_count": total_restock_count,
     }
 
     return render(
@@ -500,15 +505,11 @@ def customers(request):
 
     if sort in sort_fields:
         customers = customers.order_by(sort)
-    else:
-        # Default ordering to avoid pagination warning
-        customers = customers.order_by("user__first_name", "user__last_name")
 
     paginator = Paginator(customers, 12)
     page_num = request.GET.get("page")
     page_obj = paginator.get_page(page_num)
 
-    # Count pending appeals
     pending_appeals_count = Appeal.objects.filter(status="pending").count()
 
     context = {
@@ -531,13 +532,11 @@ def customer_detail(request, pk):
     editing = request.GET.get("edit") == "true"
     form = None
 
-    # Get all orders for this customer
     orders = customer.order_set.all().order_by("-order_date")
 
     if editing:
         if request.method == "POST":
             form = CustomerForm(request.POST, instance=customer)
-            # Remove is_active and deactivation_reason from editable fields
             form.fields.pop("is_active", None)
             form.fields.pop("deactivation_reason", None)
 
@@ -556,7 +555,6 @@ def customer_detail(request, pk):
                 )
         else:
             form = CustomerForm(instance=customer)
-            # Remove is_active and deactivation_reason from editable fields
             form.fields.pop("is_active", None)
             form.fields.pop("deactivation_reason", None)
 
@@ -581,7 +579,6 @@ def deactivate_customer(request, pk):
             )
             return redirect("customer_detail", pk=customer.pk)
 
-        # Deactivate the user account with the new reason
         customer.user.is_active = False
         customer.user.deactivation_reason = deactivation_reason
         customer.user.save(update_fields=["is_active", "deactivation_reason"])
@@ -604,7 +601,7 @@ def activate_customer(request, pk):
 
     if request.method == "POST":
         customer.user.is_active = True
-        customer.user.deactivation_reason = None  # Clear the deactivation reason
+        customer.user.deactivation_reason = None
         customer.user.save()
         messages.success(
             request,
@@ -636,13 +633,12 @@ def order_detail(request, pk):
 
 def logout_view(request):
     logout(request)
-    return redirect("home2")  # Redirect to storefront home
+    return redirect("home2")
 
 
 @login_required(login_url="/login")
 @user_passes_test(is_admin_or_staff, login_url="/login")
 def appeals_list(request):
-    """View all appeal requests with filtering and sorting"""
     appeals = Appeal.objects.select_related("customer__user").all()
     query = request.GET.get("q")
     status_filter = request.GET.get("status_filter")
@@ -663,9 +659,6 @@ def appeals_list(request):
     if status_filter:
         appeals = appeals.filter(status=status_filter)
 
-    # Always sort by pending first, then by submission time (newest first)
-    from django.db.models import Case, When, Value, IntegerField
-
     appeals = appeals.annotate(
         priority=Case(
             When(status="pending", then=Value(1)),
@@ -678,7 +671,6 @@ def appeals_list(request):
     page_num = request.GET.get("page")
     page_obj = paginator.get_page(page_num)
 
-    # Count pending appeals for the badge
     pending_count = Appeal.objects.filter(status="pending").count()
 
     context = {
@@ -697,7 +689,6 @@ def appeals_list(request):
 @login_required(login_url="/login")
 @user_passes_test(is_admin_or_staff, login_url="/login")
 def appeal_detail(request, pk):
-    """View individual appeal request details"""
     appeal = get_object_or_404(
         Appeal.objects.select_related("customer__user", "reviewed_by"), pk=pk
     )
@@ -715,7 +706,6 @@ def appeal_detail(request, pk):
 @user_passes_test(is_admin_or_staff, login_url="/login")
 @transaction.atomic
 def approve_appeal(request, pk):
-    """Approve an appeal and reactivate the customer account"""
     if request.method != "POST":
         return redirect("appeal_detail", pk=pk)
 
@@ -725,21 +715,15 @@ def approve_appeal(request, pk):
         messages.error(request, "This appeal has already been reviewed.")
         return redirect("appeal_detail", pk=pk)
 
-    # Update appeal status
     appeal.status = "approved"
     appeal.reviewed_at = timezone.now()
     appeal.reviewed_by = request.user
     appeal.save()
 
-    # Reactivate the customer account and ensure they can appeal in future
     customer_user = appeal.customer.user
     customer_user.is_active = True
     customer_user.deactivation_reason = None
     customer_user.save()
-
-    # Reset can_appeal to True in case it was blocked before
-    appeal.customer.can_appeal = True
-    appeal.customer.save()
 
     messages.success(
         request,
@@ -753,7 +737,6 @@ def approve_appeal(request, pk):
 @user_passes_test(is_admin_or_staff, login_url="/login")
 @transaction.atomic
 def decline_appeal(request, pk):
-    """Decline an appeal with a reason"""
     if request.method != "POST":
         return redirect("appeal_detail", pk=pk)
 
@@ -769,17 +752,15 @@ def decline_appeal(request, pk):
         messages.error(request, "Please provide a reason for declining the appeal.")
         return redirect("appeal_detail", pk=pk)
 
-    # Update appeal status
     appeal.status = "declined"
     appeal.reviewed_at = timezone.now()
     appeal.reviewed_by = request.user
     appeal.decline_reason = decline_reason
     appeal.save()
 
-    # Note: No longer blocking future appeals - customer can submit again
     messages.success(
         request,
-        f"Appeal declined. The customer can submit a new appeal if desired.",
+        f"Appeal declined successfully.",
     )
 
     return redirect("appeal_detail", pk=pk)

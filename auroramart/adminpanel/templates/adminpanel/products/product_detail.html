@@ -215,13 +215,13 @@
             <div class="card-body">
                 {% if product.is_active %}
                     <p class="text-muted" style="margin-bottom: 16px;">Deactivating this product will hide it from the storefront. Customers will not be able to purchase it.</p>
-                    <form method="post" action="{% url 'deactivate_product' pk=product.pk %}" onsubmit="return confirm('Are you sure you want to deactivate this product?');">
+                    <form method="post" action="{% url 'deactivate_product' pk=product.pk %}">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-danger">Deactivate Product</button>
                     </form>
                 {% else %}
                     <p class="text-muted" style="margin-bottom: 16px;">Activating this product will make it visible on the storefront for customers to purchase.</p>
-                    <form method="post" action="{% url 'activate_product' pk=product.pk %}" onsubmit="return confirm('Are you sure you want to activate this product?');">
+                    <form method="post" action="{% url 'activate_product' pk=product.pk %}">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-success">Activate Product</button>
                     </form>

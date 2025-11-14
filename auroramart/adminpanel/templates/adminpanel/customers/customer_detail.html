@@ -120,6 +120,35 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Account Status -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Account Status</h2>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <div class="info-label">Status</div>
+                        <div class="info-value">
+                            {% if customer.user.is_active %}
+                                <span class="badge badge-success">Active</span>
+                            {% else %}
+                                <span class="badge badge-danger">Deactivated</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="info-item" style="margin-top: 12px;">
+                        <div class="info-label">Date Joined</div>
+                        <div class="info-value" style="font-size: 14px;">{{ customer.user.date_joined|date:"F d, Y g:i A" }}</div>
+                    </div>
+                    {% if not customer.user.is_active and customer.user.deactivation_reason %}
+                        <div class="info-item" style="margin-top: 12px;">
+                            <div class="info-label">Deactivation Reason</div>
+                            <div class="info-value" style="font-size: 13px;">{{ customer.user.deactivation_reason }}</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
 
         <div class="detail-main">
@@ -226,37 +255,6 @@
                 </div>
             </div>
 
-            <!-- Account Status -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Account Status</h2>
-                </div>
-                <div class="card-body">
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <div class="info-label">Status</div>
-                            <div class="info-value">
-                                {% if customer.user.is_active %}
-                                    <span class="badge badge-success">Active</span>
-                                {% else %}
-                                    <span class="badge badge-danger">Deactivated</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Date Joined</div>
-                            <div class="info-value">{{ customer.user.date_joined|date:"F d, Y g:i A" }}</div>
-                        </div>
-                        {% if not customer.user.is_active and customer.user.deactivation_reason %}
-                            <div class="info-item" style="grid-column: 1 / -1;">
-                                <div class="info-label">Deactivation Reason</div>
-                                <div class="info-value">{{ customer.user.deactivation_reason }}</div>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
             <!-- Order History -->
             <div class="card">
                 <div class="card-header">
@@ -282,7 +280,11 @@
                                         <tr>
                                             <td><code>#{{ order.id }}</code></td>
                                             <td>{{ order.order_date|date:"M d, Y" }}</td>
-                                            <td><span class="badge badge-info">{{ order.status }}</span></td>
+                                            <td>
+                                                <span class="badge {% if 'Completed' in order.status %}badge-success{% else %}badge-warning{% endif %}">
+                                                    {{ order.status }}
+                                                </span>
+                                            </td>
                                             <td style="text-align: right; font-weight: 600;">${{ order.total_amount }}</td>
                                             <td>{{ order.delivery_address|truncatechars:40 }}</td>
                                             <td style="text-align: center;">
@@ -317,8 +319,7 @@
                                           required></textarea>
                             </div>
                             <button type="submit" 
-                                    class="btn btn-danger"
-                                    onclick="return confirm('Are you sure you want to deactivate this customer account?');">
+                                    class="btn btn-danger">
                                 Deactivate Customer
                             </button>
                         </form>
@@ -326,9 +327,9 @@
                 </div>
             {% else %}
                 <!-- Can Reactivate -->
-                <div id="activate-section" class="card" style="border-left: 4px solid var(--success);">
+                <div id="activate-section" class="card" style="border-left: 4px solid var(--success-color);">
                     <div class="card-header">
-                        <h3 class="card-title text-success">Reactivate Customer Account</h3>
+                        <h3 class="card-title" style="color: var(--success-color);">Reactivate Customer Account</h3>
                     </div>
                     <div class="card-body">
                         {% if customer.user.deactivation_reason %}
@@ -340,8 +341,7 @@
                         <form method="post" action="{% url 'activate_customer' pk=customer.pk %}">
                             {% csrf_token %}
                             <button type="submit" 
-                                    class="btn btn-success"
-                                    onclick="return confirm('Are you sure you want to reactivate this customer account?');">
+                                    class="btn btn-success">
                                 Activate Customer
                             </button>
                         </form>

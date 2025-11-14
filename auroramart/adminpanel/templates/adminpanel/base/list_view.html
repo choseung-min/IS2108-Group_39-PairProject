@@ -30,13 +30,13 @@
     {% block filters %}
         <form method="get" class="filters-form" style="width: 100%; margin: 0;">
             {% block filter_fields %}
-                <div class="form-group" style="margin: 0;">
+                <div class="form-group" style="margin: 0; min-width: 300px;">
                     <input type="text" 
                            name="q" 
                            value="{{ query|default:'' }}" 
                            placeholder="Search..."
                            class="form-input"
-                           style="font-size: 14px; padding: 8px 12px;">
+                           style="font-size: 14px; padding: 8px 12px; width: 100%;">
                 </div>
                 <button type="submit" class="btn btn-primary" style="font-size: 14px; padding: 8px 16px;">Search</button>
                 <a href="{{ request.path }}" class="btn btn-ghost" style="font-size: 14px; padding: 8px 16px;">Clear</a>

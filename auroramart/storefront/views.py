@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
 from django.utils import timezone
 from urllib.parse import urlencode
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -19,7 +20,19 @@ from .forms import (
     PaymentForm,
     ProfileForm,
 )
-from .models import Product, Category, Cart, CartItem, Customer, Order, OrderItem
+from .models import (
+    Product,
+    Category,
+    Cart,
+    CartItem,
+    Customer,
+    Order,
+    OrderItem,
+    Appeal,
+    AppealDocument,
+)
+
+User = get_user_model()
 from .ml.category_predictor import predict_preferred_category
 import joblib
 import os
@@ -753,12 +766,11 @@ def order_mark_received(request, order_id):
     # Order belongs to the current user via customer -> user
     order = get_object_or_404(Order, pk=order_id, customer__user=request.user)
 
-    # Set to your “completed” value. If you use choices/consts, replace accordingly.
+    # Set to your "completed" value. If you use choices/consts, replace accordingly.
     completed_value = "Order Completed"  # e.g., Order.STATUS_COMPLETED if you have it
     order.status = completed_value
     order.save(update_fields=["status"])
 
-    messages.success(request, f"Order #{order.id} marked as Completed.")
     return redirect("order_detail", order_id=order.id)
 
 

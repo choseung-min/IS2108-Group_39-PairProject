@@ -4,10 +4,15 @@
 
 {% block content %}
 <!-- Page Header -->
-<div class="admin-header">
+<div class="admin-header" style="display: flex; justify-content: space-between; align-items: center;">
     <div>
         <h1 class="admin-header-title">Welcome back, Admin!</h1>
         <p class="admin-header-subtitle">Here's a quick overview of your AuroraMart store performance</p>
+    </div>
+    <div>
+        <a href="{% url 'home2' %}" class="btn" style="display: inline-flex; align-items: center; gap: 6px; background-color: #dee2f9; color: var(--primary-color); border: 1px solid var(--primary-color);">
+            🛒 Visit Storefront
+        </a>
     </div>
 </div>
 
@@ -34,22 +39,22 @@
 
     <!-- Restocking Dashboard -->
     {% if out_of_stock_products > 0 %}
-        <div class="card" style="text-align: center; border: 2px solid var(--danger-color); background-color: rgba(245, 101, 101, 0.05);">
+        <div class="card" style="text-align: center; border: 2px solid var(--danger-color); background-color: white;">
     {% elif low_stock_products > 0 %}
-        <div class="card" style="text-align: center; border: 2px solid var(--warning-color); background-color: rgba(237, 137, 54, 0.05);">
+        <div class="card" style="text-align: center; border: 2px solid var(--warning-color); background-color: white;">
     {% elif critical_restock_count == 0 and low_stock_products == 0 %}
-        <div class="card" style="text-align: center; border: 2px solid var(--success-color); background-color: rgba(72, 187, 120, 0.05);">
+        <div class="card" style="text-align: center; border: 2px solid var(--success-color); background-color: white;">
     {% elif critical_restock_count == 0 %}
-        <div class="card" style="text-align: center; border: 2px solid #ecc94b; background-color: rgba(236, 201, 75, 0.05);">
+        <div class="card" style="text-align: center; border: 2px solid var(--warning-color); background-color: white;">
     {% else %}
-        <div class="card" style="text-align: center; border: 2px solid var(--warning-color); background-color: rgba(237, 137, 54, 0.05);">
+        <div class="card" style="text-align: center; border: 2px solid var(--warning-color); background-color: white;">
     {% endif %}
         <div style="font-size: 48px; margin-bottom: 12px;">
             {% if out_of_stock_products > 0 %}🚨{% elif low_stock_products > 0 %}⚠️{% elif critical_restock_count == 0 and low_stock_products == 0 %}✅{% else %}⚠️{% endif %}
         </div>
         <h3 style="font-size: 18px; font-weight: bold; margin-bottom: 15px;">Restocking Dashboard</h3>
-        <div style="font-size: 36px; font-weight: bold; margin-bottom: 8px; {% if out_of_stock_products > 0 %}color: var(--danger-color);{% elif low_stock_products > 0 %}color: var(--warning-color);{% elif critical_restock_count == 0 and low_stock_products == 0 %}color: var(--success-color);{% endif %}">
-            {{ low_stock_products }}
+        <div style="font-size: 36px; font-weight: bold; margin-bottom: 8px; {% if out_of_stock_products > 0 %}color: var(--danger-color);{% elif total_restock_count > 0 %}color: var(--warning-color);{% elif critical_restock_count == 0 and total_restock_count == 0 %}color: var(--success-color);{% endif %}">
+            {{ total_restock_count }}
         </div>
         <div style="font-size: 15px; color: var(--medium-gray); margin-bottom: 15px;">Need Restocking</div>
         <div style="display: flex; justify-content: space-around; margin-bottom: 15px; padding-top: 15px; border-top: 1px solid var(--light-gray);">
@@ -94,9 +99,9 @@
 
     <!-- Appeals -->
     {% if pending_appeals_count > 0 %}
-        <div class="card" style="text-align: center; border: 2px solid var(--danger-color); background-color: rgba(245, 101, 101, 0.05);">
+        <div class="card" style="text-align: center; border: 2px solid var(--danger-color); background-color: white;">
     {% else %}
-        <div class="card" style="text-align: center; border: 2px solid var(--success-color); background-color: rgba(72, 187, 120, 0.05);">
+        <div class="card" style="text-align: center; border: 2px solid var(--success-color); background-color: white;">
     {% endif %}
         <div style="font-size: 48px; margin-bottom: 12px;">📝</div>
         <h3 style="font-size: 18px; font-weight: bold; margin-bottom: 15px;">Appeals</h3>
@@ -122,8 +127,8 @@
     </div>
 </div>
 
-<!-- Top Products and Categories -->
-<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+<!-- Top Products, Categories, and Recent Orders -->
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
     <!-- Top Products -->
     <div class="card">
         <div class="card-header">
@@ -170,6 +175,36 @@
                 {% endfor %}
             {% else %}
                 <p class="text-muted" style="text-align: center; padding: 20px;">No data available</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Recent Orders</h3>
+        </div>
+        <div class="card-body">
+            {% if recent_orders %}
+                {% for order in recent_orders %}
+                    <div style="padding: 10px 0; {% if not forloop.last %}border-bottom: 1px solid var(--light-gray);{% endif %}">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <div style="font-weight: 600;">
+                                    <a href="{% url 'order_detail' pk=order.id %}" style="color: var(--primary-color); text-decoration: none;">
+                                        Order #{{ order.id }}
+                                    </a>
+                                </div>
+                                <div style="font-size: 12px; color: var(--medium-gray); margin-top: 2px;">
+                                    {{ order.customer.user.get_full_name|default:order.customer.user.email }}
+                                </div>
+                            </div>
+                            <span class="badge badge-success">${{ order.total_amount }}</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted" style="text-align: center; padding: 20px;">No orders yet</p>
             {% endif %}
         </div>
     </div>

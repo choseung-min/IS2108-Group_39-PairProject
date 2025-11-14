@@ -76,10 +76,6 @@ class Customer(models.Model):
     )
     household_size = models.IntegerField(choices=HOUSEHOLD_SIZE)
     has_children = models.BooleanField(default=False)
-    can_appeal = models.BooleanField(
-        default=True,
-        help_text="Whether this customer can submit appeals (set to False after appeal denial)",
-    )
     monthly_income = models.DecimalField(max_digits=10, decimal_places=2)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
     employment_status = models.CharField(max_length=15, choices=EMPLOYMENT_STATUS)
@@ -101,7 +97,6 @@ class Category(models.Model):
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE)
 
     class Meta:
-        # A category name should be unique within the same parent level
         unique_together = [["name", "parent"]]
 
     def __str__(self):
@@ -136,7 +131,7 @@ class Product(models.Model):
         """Return product image URL or default category image"""
         if self.image:
             return self.image.url
-        # Map parent category names to default image filenames
+
         category_images = {
             "Automotive": "Automotive.png",
             "Beauty & Personal Care": "Beauty and Personal Care.png",
@@ -151,7 +146,7 @@ class Product(models.Model):
             "Sports & Outdoors": "Sport and Outdoors.png",
             "Toys & Games": "Toys and Games.png",
         }
-        # Get parent category name (traverse up to root category)
+
         category = self.category
         while category.parent is not None:
             category = category.parent

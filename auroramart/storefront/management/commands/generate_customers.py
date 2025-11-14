@@ -187,7 +187,6 @@ class Command(BaseCommand):
                 age=age,
                 household_size=household_size,
                 has_children=has_children,
-                can_appeal=True,
                 monthly_income=Decimal(random.randint(2000, 15000)),
                 gender=random.choice(genders),
                 employment_status=random.choice(employment_statuses),

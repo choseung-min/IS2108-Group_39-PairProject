@@ -12,7 +12,7 @@
     <div style="display: flex; align-items: center; gap: 12px;">
         {% if low_stock_count > 0 %}
             <a href="{% url 'restock' %}" class="badge badge-warning" style="padding: 10px 18px; font-size: 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600;">
-                ⚠ {{ low_stock_count }} product{{ low_stock_count|pluralize }} need{{ low_stock_count|pluralize:"s," }} restocking
+                ⚠ {{ low_stock_count }} product{{ low_stock_count|pluralize }} need{{ low_stock_count|pluralize:"s," }} restocking →
             </a>
         {% else %}
             <span class="badge badge-success" style="padding: 10px 18px; font-size: 16px; display: inline-flex; align-items: center; gap: 8px; font-weight: 600;">
@@ -35,13 +35,13 @@
 <!-- Filters -->
 <div class="filters-bar" style="margin-bottom: 15px;">
     <form method="get" class="filters-form">
-        <div class="form-group" style="margin: 0;">
+        <div class="form-group" style="margin: 0; min-width: 300px;">
             <input type="text" 
                    name="q" 
                    value="{{ query|default:'' }}" 
                    placeholder="Search products..."
                    class="form-input"
-                   style="font-size: 14px; padding: 8px 12px;">
+                   style="font-size: 14px; padding: 8px 12px; width: 100%;">
         </div>
         
         <div class="form-group" style="margin: 0;">
@@ -163,7 +163,7 @@
         </thead>
         <tbody>
             {% for product in products %}
-                <tr class="{% if product.stock == 0 %}low-stock{% elif product.stock <= product.reorder_threshold %}low-stock{% endif %}">
+                <tr class="{% if product.stock == 0 %}out-of-stock{% elif product.stock <= product.reorder_threshold %}low-stock{% endif %}">
                     <td style="padding: 9px 11px;"><code style="font-size: 14px;">{{ product.sku }}</code></td>
                     <td style="padding: 9px 11px;">
                         <a href="{% url 'product_detail' product.pk %}" style="font-weight: 500; font-size: 15px;">{{ product.name }}</a>

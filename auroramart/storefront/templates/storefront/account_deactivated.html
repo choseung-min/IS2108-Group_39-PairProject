@@ -224,13 +224,13 @@
       {% if appeal_declined %}
         <div class="contact-info" style="background: #fff3cd; border: 1px solid #ffc107; margin-bottom: 20px;">
           <h4 style="color: #856404; margin-top: 0;">Previous Appeal Declined</h4>
-          <p style="color: #856404;">Your previous appeal was declined. However, you can submit a new appeal with additional information.</p>
+          <p style="color: #856404;">Your previous appeal was declined. You may submit a new appeal with additional information.</p>
           {% if decline_reason %}
           <p style="color: #856404;"><strong>Previous Decline Reason:</strong> {{ decline_reason }}</p>
           {% endif %}
         </div>
       {% endif %}
-      <p style="font-size: 14px; margin-bottom: 20px;">If you believe your account was deactivated in error or would like to request reactivation, you can submit an appeal below.</p>
+      <p style="font-size: 14px; margin-bottom: 20px;">If you believe your account was deactivated in error or would like to request reactivation, submit an appeal below.</p>
       
       <form method="post" enctype="multipart/form-data" action="{% url 'submit_appeal' %}">
         {% csrf_token %}
@@ -258,7 +258,7 @@
             accept="image/*"
             multiple
           >
-          <div class="help-text">You can upload multiple images (e.g., ID, proof of purchase, etc.) to support your appeal.</div>
+          <div class="help-text">Upload multiple images (e.g., ID, proof of purchase, etc.) to support your appeal.</div>
         </div>
         
         <button type="submit" class="btn-primary">Submit Appeal</button>

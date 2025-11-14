@@ -19,6 +19,12 @@ urlpatterns = [
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
     path("account", views.profile_view, name="account"),
+    path(
+        "account/deactivated/",
+        views.account_deactivated_view,
+        name="account_deactivated",
+    ),
+    path("account/appeal/", views.submit_appeal_view, name="submit_appeal"),
     path("account/data_ack/", views.data_acknowledgement, name="data_ack"),
     path("account/orders", views.orders_list_view, name="orders_list"),
     path(

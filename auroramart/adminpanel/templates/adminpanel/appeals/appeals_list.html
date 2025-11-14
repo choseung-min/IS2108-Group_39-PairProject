@@ -11,19 +11,19 @@
 {% block alert_bar %}
     {% if pending_count > 0 %}
         <div class="alert alert-warning" style="margin-bottom: 15px;">
-            ⏳ <strong>{{ pending_count }}</strong> pending appeal{{ pending_count|pluralize }} awaiting your review
+            ⏳ <b>{{ pending_count }}</b> pending appeal{{ pending_count|pluralize }} awaiting your review
         </div>
     {% endif %}
 {% endblock %}
 
 {% block filter_fields %}
-    <div class="form-group" style="margin: 0;">
+    <div class="form-group" style="margin: 0; min-width: 300px;">
         <input type="text" 
                name="q" 
                value="{{ query|default:'' }}" 
                placeholder="Search by customer name or email..."
                class="form-input"
-               style="font-size: 14px; padding: 8px 12px;">
+               style="font-size: 14px; padding: 8px 12px; width: 100%;">
     </div>
     
     <div class="form-group" style="margin: 0;">
