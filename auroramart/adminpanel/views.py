@@ -360,6 +360,7 @@ def restock(request):
     if query:
         products_to_restock = products_to_restock.filter(
             Q(name__icontains=query)
+            | Q(sku__icontains=query)
             | Q(description__icontains=query)
             | Q(category__name__icontains=query)
         )
@@ -416,7 +417,10 @@ def add_stock_select(request):
 
     if query:
         products = products.filter(
-            Q(name__icontains=query) | Q(description__icontains=query)
+            Q(name__icontains=query)
+            | Q(category__name__icontains=query)
+            | Q(description__icontains=query)
+            | Q(sku__icontains=query)
         )
 
     paginator = Paginator(products, 12)
