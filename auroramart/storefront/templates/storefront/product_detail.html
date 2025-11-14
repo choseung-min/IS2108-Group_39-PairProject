@@ -5,84 +5,184 @@
       <meta charset="utf-8">
         <title>{{ product.name }} – Aurora Mart</title>
         <style>
+          :root{
+            --bg:#020617;
+            --surface:#020617;
+            --line:#1e293b;
+            --text:#e5e7eb;
+            --muted:#9ca3af;
+
+            --accent-1:#22d3ee;
+            --accent-2:#4f46e5;
+            --accent-3:#a855f7;
+
+            --radius:16px;
+          }
+
+          *{ box-sizing:border-box; }
+
+          body{
+            margin:0;
+            font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;
+            background:radial-gradient(circle at top left,#0b1220,#020617 45%,#000 100%);
+            color:var(--text);
+          }
+
+          a{ color:var(--accent-1); text-decoration:none; }
+          a:hover{ text-decoration:underline; }
+
           .wrap{
-              max-width:1000px;
-              margin:auto;padding:24px;
-              font-family:system-ui;
+            max-width:1000px;
+            margin:auto;
+            padding:24px;
           }
+
           .row{
-              display:grid;
-              grid-template-columns: 1fr 1.2fr;
-              gap:24px;
+            display:grid;
+            grid-template-columns:1fr 1.2fr;
+            gap:32px;
           }
+
           .img{
-              background:#f7f7f7;
-              border:1px solid #eee;
-              aspect-ratio:1/1;display:flex;align-items:center;
-              justify-content:center;
+            background:#0b1120;
+            border:1px solid var(--line);
+            border-radius:var(--radius);
+            aspect-ratio:1/1;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:12px;
+            box-shadow:0 18px 40px rgba(15,23,42,0.9);
           }
+
+          .img img{
+            max-width:100%;
+            max-height:100%;
+            object-fit:contain;
+          }
+
+          h1{
+            margin:0 0 10px;
+            color:#f9fafb;
+            letter-spacing:-0.02em;
+          }
+
           .price{
-              font-weight:700;
-              font-size:20px;
-              margin:6px 0 12px;
+            font-weight:700;
+            font-size:22px;
+            margin:8px 0 14px;
+            color:#f9fafb;
           }
+
+          p{
+            color:var(--muted);
+            line-height:1.5;
+            font-size:15px;
+            margin-bottom:20px;
+          }
+
+          label{
+            display:block;
+            margin-bottom:6px;
+            font-weight:600;
+            color:var(--muted);
+          }
+
           input[type=number]{
-              width:80px;
-              padding:8px;
-          }
-          .btn {
-            background: #0f172a;
-            color: #fff;
-            padding: 10px 20px;   
-            border-radius: 12px;
-            border: 1px solid #0f172a;
-            font-weight: 600;
-            font-size: 0.95rem;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center; 
-            justify-content: center;  
-            line-height: 1;           
-            cursor: pointer;
-            gap: 4px;
+            width:90px;
+            padding:10px;
+            background:#0d1628;
+            border:1px solid var(--line);
+            border-radius:10px;
+            color:var(--text);
+            font-size:15px;
           }
 
-          .btn:hover {
-            background: #1f2937;
+          input[type=number]:focus{
+            outline:none;
+            border-color:var(--accent-1);
+            box-shadow:0 0 0 3px rgba(34,211,238,0.2);
           }
 
-          button.btn {
-            border: none;
-            padding: 10px 20px;  
-            background: #0f172a;
-          }
-          .inline-alert {
-            background:#ecfdf5;
-            border:1px solid #86efac;
-            padding:4px 8px;
-            border-radius:6px;
-            color:#166534;
-            font-size:0.8rem;
+          .btn{
+            background:linear-gradient(90deg,var(--accent-1),var(--accent-2),var(--accent-3));
+            background-size:200% 100%;
+            color:#fff;
+            padding:12px 20px;
+            border-radius:999px;
+            border:none;
+            font-weight:700;
+            font-size:0.95rem;
+            text-decoration:none;
             display:inline-flex;
             align-items:center;
-            gap:6px;
-            margin-bottom:8px;
+            justify-content:center;
+            cursor:pointer;
+            line-height:1;
+            gap:4px;
+
+            box-shadow:0 12px 30px rgba(15,23,42,0.9);
+            transition:background-position .18s ease,
+                      transform .12s ease,
+                      box-shadow .18s ease;
           }
 
-          .inline-alert button {
+          .btn:hover{
+            background-position:100% 0;
+            transform:translateY(-1px);
+            box-shadow:0 18px 40px rgba(15,23,42,1);
+          }
+
+          .inline-alert{
+            background:rgba(34,197,94,0.15);
+            border:1px solid rgba(34,197,94,0.4);
+            padding:6px 10px;
+            border-radius:10px;
+            color:#4ade80;
+            font-size:0.85rem;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            margin-bottom:12px;
+            box-shadow:0 10px 18px rgba(0,0,0,0.2);
+          }
+
+          .inline-alert button{
             background:none;
             border:none;
-            color:#166534;
+            color:#4ade80;
             cursor:pointer;
             font-weight:bold;
-            font-size:0.9rem;
+            font-size:1rem;
             line-height:1;
+          }
+
+          @media(max-width:900px){
+            .row{
+              grid-template-columns:1fr;
+            }
+          }
+
+          .back-link {
+            color: #94a3b8;           
+            font-size: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            padding: 6px 0;
+            transition: color 0.15s ease;
+          }
+
+          .back-link:hover {
+            color: #cbd5e1;            
+            text-decoration: underline;
           }
         </style>
     </head>
   <body>
     <div class="wrap">
-      <a href="{% url 'category' request.user.customer.preferred_category|slugify %}">← Back</a>
+      <a class="back-link" href="{% url 'category' request.user.customer.preferred_category|slugify %}">← Back</a>
       <div class="row" style="margin-top:16px;">
         <div class="img">
           <img src="{{ product.image_url }}" alt="{{ product.name }}" style="max-width:100%;max-height:100%;">
