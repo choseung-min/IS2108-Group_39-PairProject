@@ -24,6 +24,7 @@ from django.db.models import (
     Value,
     IntegerField,
 )
+from django.db.models.functions import Concat
 from django.core.paginator import Paginator
 from .forms import ProductForm, CustomerForm
 
@@ -44,7 +45,7 @@ def home(request):
     active_products = Product.objects.filter(is_active=True).count()
     inactive_products = Product.objects.filter(is_active=False).count()
     low_stock_products = Product.objects.filter(
-        stock__lte=F("reorder_threshold"), stock__gt=0
+        is_active=True, stock__lt=F("reorder_threshold")
     ).count()
     out_of_stock_products = Product.objects.filter(stock=0).count()
 
@@ -90,7 +91,7 @@ def home(request):
         "total_products": total_products,
         "active_products": active_products,
         "inactive_products": inactive_products,
-        "low_stock_products": low_stock_products,
+        "low_stock_products": total_restock_count,  # For sidebar badge
         "out_of_stock_products": out_of_stock_products,
         "total_restock_count": total_restock_count,
         "critical_restock_count": critical_restock_count,
@@ -488,10 +489,13 @@ def customers(request):
     query_string = query_params.urlencode()
 
     if query:
-        customers = customers.filter(
+        customers = customers.annotate(
+            full_name=Concat("user__first_name", Value(" "), "user__last_name")
+        ).filter(
             Q(user__first_name__icontains=query)
             | Q(user__last_name__icontains=query)
             | Q(user__email__icontains=query)
+            | Q(full_name__icontains=query)
         )
 
     if status_filter:
@@ -608,12 +612,8 @@ def activate_customer(request, pk):
         customer.user.is_active = True
         customer.user.deactivation_reason = None
         customer.user.save()
-        # Clear all previous declined appeal reasons for this customer
-        from storefront.models import Appeal
 
-        Appeal.objects.filter(customer=customer, status="declined").update(
-            decline_reason=None
-        )
+        Appeal.objects.filter(customer=customer).delete()
         messages.success(
             request,
             'Customer "{name}" activated successfully!'.format(
