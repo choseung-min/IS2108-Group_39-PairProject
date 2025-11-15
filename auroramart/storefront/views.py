@@ -824,11 +824,20 @@ def reorder_order_view(request, order_id):
     if skipped_products:
         messages.warning(
             request,
-            f"The following products are no longer available and were not added to your cart: {', '.join(skipped_products)}",
+            f"The following product(s) have been deactivated and were not added to your cart: {', '.join(skipped_products)}",
         )
 
     if added_count > 0:
-        messages.success(request, f"{added_count} item(s) added to your cart.")
+        messages.success(request, f"{added_count} item(s) successfully added to your cart.")
+    elif skipped_products:
+        # All products were deactivated
+        messages.error(
+            request,
+            "Unable to reorder: All products from this order have been deactivated."
+        )
+    else:
+        # No items in the order (edge case)
+        messages.info(request, "This order has no items to reorder.")
 
     request.session["cart_count"] = cart.count
     return redirect("cart")
