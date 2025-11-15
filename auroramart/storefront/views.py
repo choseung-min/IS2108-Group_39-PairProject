@@ -87,7 +87,12 @@ def home(request, slug=None):
         products = products.filter(Q(category=category) | Q(category__parent=category))
 
     if q:
-        products = products.filter(name__icontains=q)
+        products = products.filter(
+            Q(name__icontains=q) |
+            Q(description__icontains=q) |
+            Q(category__name__icontains=q) |
+            Q(category__parent__name__icontains=q)
+        )
 
     if sort == "price_asc":
         products = products.order_by("price", "-rating", "name")

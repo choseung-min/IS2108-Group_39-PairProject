@@ -377,6 +377,7 @@
             
             <form method="post" action="{% url 'cart_add' p.id %}">
               {% csrf_token %}
+              <input type="hidden" name="next" value="{% url 'cart_recommendations' %}">
               <div class="quantity-controls">
                 <span class="qty-label">Qty:</span>
                 <select name="quantity" class="qty-input" required>
