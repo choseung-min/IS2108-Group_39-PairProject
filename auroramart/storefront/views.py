@@ -48,7 +48,7 @@ loaded_rules = joblib.load(model_path)
 
 # Create your views here.
 # Association rules recommendation function
-def get_recommendations(loaded_rules, items, metric="confidence", top_n=5):
+def get_recommendations(loaded_rules, items, metric="confidence", top_n=3):
     recommendations = set()
 
     for item in items:
@@ -303,9 +303,11 @@ def _get_cart_for(user):
 
 def product_detail(request, slug):
     p = get_object_or_404(Product, slug=slug, is_active=True)
+
     if request.method == "POST":
         if not request.user.is_authenticated:
             return redirect("login")
+
         qty = max(1, int(request.POST.get("quantity", "1") or 1))
         with transaction.atomic():
             cart = _get_cart_for(request.user)
@@ -319,11 +321,45 @@ def product_detail(request, slug):
                 if item.price_snapshot is None:
                     item.price_snapshot = p.price
             item.save(update_fields=["quantity", "price_snapshot"])
+
         request.session["cart_count"] = cart.count
         messages.success(request, f"Added {qty} × {p.name} to cart!")
-
         return redirect("product", slug=slug)
-    return render(request, "storefront/product_detail.html", {"product": p})
+
+    fbt_products = []
+    try:
+        fbt_skus = (
+            get_recommendations(
+                loaded_rules,
+                items=[p.sku],          
+                metric="lift",    
+                top_n=3
+            ) or []
+        )
+
+        if fbt_skus:
+            qs = (
+                Product.objects.filter(
+                    sku__in=fbt_skus,
+                    is_active=True,
+                    stock__gt=0,
+                )
+                .exclude(pk=p.pk)
+            )
+            product_map = {prod.sku: prod for prod in qs}
+            fbt_products = [
+                product_map[sku] for sku in fbt_skus if sku in product_map
+            ]
+    except Exception as e:
+        print("FBT error:", e)
+        fbt_products = []
+
+    return render(request, "storefront/product_detail.html",
+        {
+            "product": p,
+            "fbt_products": fbt_products,   # 0–3 items
+        },
+    )
 
 
 @login_required
@@ -357,6 +393,12 @@ def cart_add(request, product_id):
             item.save(update_fields=["quantity", "price_snapshot"])
 
     request.session["cart_count"] = cart.count
+
+    # 👇 NEW: go back to where the form told us
+    next_url = request.POST.get("next")
+    if next_url:
+        messages.success(request, f"Added {qty} × {p.name} to cart!")
+        return redirect(next_url)
 
     referer = request.META.get("HTTP_REFERER", "")
     if "/cart/recommendations/" in referer:
@@ -439,7 +481,7 @@ def recommend_addons_view(request):
 
     try:
         suggested_skus = (
-            get_recommendations(loaded_rules, skus, metric="confidence", top_n=5) or []
+            get_recommendations(loaded_rules, skus, metric="confidence", top_n=3) or []
         )
 
         if suggested_skus:
@@ -449,18 +491,8 @@ def recommend_addons_view(request):
             suggested_products = [
                 product_map[sku] for sku in suggested_skus if sku in product_map
             ]
-    except Exception as e:
-        pass
-
-    if len(suggested_products) < 5:
-        fallback_count = 5 - len(suggested_products)
-        fallback_products = (
-            Product.objects.exclude(sku__in=skus)
-            .filter(is_active=True, stock__gt=0)
-            .order_by("-rating")[:fallback_count]
-        )
-
-        suggested_products.extend(list(fallback_products))
+    except Exception:
+        suggested_products = []
 
     return render(
         request,
@@ -468,7 +500,7 @@ def recommend_addons_view(request):
         {
             "cart": cart,
             "items": items,
-            "suggested_products": suggested_products,
+            "suggested_products": suggested_products,  
         },
     )
 
@@ -752,7 +784,7 @@ def order_mark_received(request, order_id):
     order.status = completed_value
     order.save(update_fields=["status"])
 
-    return redirect("order_detail", order_id=order.id)
+    return redirect("order_detail2", order_id=order.id)
 
 
 @login_required

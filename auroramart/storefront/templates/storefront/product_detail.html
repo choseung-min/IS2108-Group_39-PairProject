@@ -178,6 +178,58 @@
             color: #cbd5e1;            
             text-decoration: underline;
           }
+
+          /* --- FBT section --- */
+          .fbt-section{
+            margin-top:40px;
+          }
+
+          .fbt-title{
+            font-size:18px;
+            font-weight:600;
+            margin-bottom:16px;
+            color:#e5e7eb;
+          }
+
+          .fbt-grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+            gap:16px;
+          }
+
+          .fbt-card{
+            background:#020617;
+            border:1px solid var(--line);
+            border-radius:var(--radius);
+            padding:12px;
+            box-shadow:0 14px 30px rgba(15,23,42,0.85);
+            transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+          }
+
+          .fbt-card:hover{
+            transform:translateY(-2px);
+            border-color:var(--accent-2);
+            box-shadow:0 18px 40px rgba(15,23,42,1);
+          }
+
+          .fbt-card img{
+            width:100%;
+            border-radius:12px;
+            margin-bottom:10px;
+            display:block;
+          }
+
+          .fbt-name{
+            font-size:14px;
+            font-weight:600;
+            margin-bottom:4px;
+            color:#f9fafb;
+          }
+
+          .fbt-price{
+            font-size:14px;
+            color:var(--muted);
+          }
         </style>
     </head>
   <body>
@@ -210,6 +262,34 @@
           </form>
         </div>
       </div>
+
+      {% if fbt_products %}
+      <section class="fbt-section">
+        <h2 class="fbt-title">Frequently bought together</h2>
+        <div class="fbt-grid">
+          {% for fp in fbt_products %}
+            <article class="fbt-card">
+              <a href="{% url 'product' fp.slug %}">
+                <img src="{{ fp.image_url }}" alt="{{ fp.name }}">
+              </a>
+              <div class="fbt-name">{{ fp.name }}</div>
+              <div class="fbt-price">${{ fp.price }}</div>
+
+              <form method="post"
+                    action="{% url 'cart_add' fp.id %}"
+                    class="fbt-form">
+                {% csrf_token %}
+                {# 👇 this is what keeps you on this page #}
+                <input type="hidden" name="next" value="{{ request.path }}">
+
+                <input type="number" name="quantity" value="1" min="1" class="fbt-qty">
+                <button type="submit" class="btn fbt-btn">Add to cart</button>
+              </form>
+            </article>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
     </div>
   </body>
 </html>
