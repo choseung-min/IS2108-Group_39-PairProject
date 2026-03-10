@@ -1,8 +1,7 @@
 # AuroraMart
 
-Members:
-Cho Seungmin, A0301102L, e1355468@u.nus.edu, 98502014
-(Group Leader) Jesper Tay Shi Jie, A0309109H, e1406528@u.nus.edu, 93636810
+Contributors:
+Cho Seungmin, Jesper Tay Shi Jie
 
 AuroraMart is a full-stack Django web application that replicates the core systems behind a modern e-commerce platform. It includes a customer-facing storefront for browsing products and managing a shopping cart, as well as an administrative interface for managing products, inventory, and customer records through CRUD workflows.
 
